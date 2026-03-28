@@ -7,11 +7,11 @@
 #define __DRIVERS_INTERCONNECT_QCOM_ICC_RPMH_H__
 
 #include <dt-bindings/interconnect/qcom,icc.h>
+#include <linux/regmap.h>
 
 struct qcom_icc_bcm;
 struct qcom_icc_qosbox;
 struct qcom_icc_noc_ops;
-struct regmap;
 
 #define to_qcom_provider(_provider) \
 	container_of(_provider, struct qcom_icc_provider, provider)
@@ -30,6 +30,7 @@ struct qcom_icc_provider {
 	struct qcom_icc_bcm * const *bcms;
 	size_t num_bcms;
 	struct bcm_voter *voter;
+	struct regmap *regmap;
 };
 
 /**
@@ -107,11 +108,14 @@ struct qcom_icc_bcm {
 	u64 vote_y[QCOM_ICC_NUM_BUCKETS];
 	u64 vote_scale;
 	u32 enable_mask;
+	u32 perf_mode_mask;
 	bool dirty;
 	bool keepalive;
+	bool keepalive_early;
 	struct bcm_db aux_data;
 	struct list_head list;
 	struct list_head ws_list;
+	int voter_idx;
 	size_t num_nodes;
 	struct qcom_icc_node *nodes[];
 };
@@ -126,6 +130,7 @@ struct qcom_icc_desc {
 	size_t num_nodes;
 	struct qcom_icc_bcm * const *bcms;
 	size_t num_bcms;
+	const struct regmap_config *config;
 };
 
 #define DEFINE_QNODE(_name, _id, _channels, _buswidth, ...)		\
