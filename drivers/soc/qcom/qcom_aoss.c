@@ -255,7 +255,7 @@ int qmp_send(struct qmp *qmp, const void *data, size_t len)
 
 	return ret;
 }
-EXPORT_SYMBOL(qmp_send);
+EXPORT_SYMBOL_GPL(qmp_send);
 
 static int qmp_qdss_clk_prepare(struct clk_hw *hw)
 {
@@ -459,7 +459,7 @@ struct qmp *qmp_get(struct device *dev)
 	}
 	return qmp;
 }
-EXPORT_SYMBOL(qmp_get);
+EXPORT_SYMBOL_GPL(qmp_get);
 
 /**
  * qmp_put() - release a qmp handle
@@ -474,7 +474,7 @@ void qmp_put(struct qmp *qmp)
 	if (!IS_ERR_OR_NULL(qmp))
 		put_device(qmp->dev);
 }
-EXPORT_SYMBOL(qmp_put);
+EXPORT_SYMBOL_GPL(qmp_put);
 
 static int qmp_probe(struct platform_device *pdev)
 {
