@@ -8,7 +8,7 @@
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/pinctrl/pinctrl.h>
-#include <trace/hooks/gpiolib.h>
+// #include <trace/hooks/gpiolib.h>
 
 #include "pinctrl-msm.h"
 #include "pinctrl-ravelin.h"
@@ -35,11 +35,13 @@ static const struct msm_pinctrl_soc_data ravelin_vm_pinctrl = {
 	.ngpios = 137,
 };
 
+/*
 static void qcom_trace_gpio_read(void *unused, struct gpio_device *gdev,
 				bool *block_gpio_read)
 {
 	*block_gpio_read = true;
 }
+*/
 
 static int ravelin_pinctrl_probe(struct platform_device *pdev)
 {
@@ -50,9 +52,11 @@ static int ravelin_pinctrl_probe(struct platform_device *pdev)
 	if (!pinctrl_data)
 		return -EINVAL;
 
+/*
 	if (of_device_is_compatible(dev->of_node, "qcom,ravelin-vm-pinctrl"))
 		register_trace_android_vh_gpio_block_read(qcom_trace_gpio_read,
 							NULL);
+*/
 
 	return msm_pinctrl_probe(pdev, pinctrl_data);
 }
