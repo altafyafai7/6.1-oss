@@ -13,6 +13,7 @@
 #include "bcm-voter.h"
 #include "icc-common.h"
 #include "icc-rpmh.h"
+#include "qnoc-qos.h"
 
 /**
  * qcom_icc_pre_aggregate - cleans up stale values from prior icc_set
@@ -159,6 +160,27 @@ int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev)
 }
 EXPORT_SYMBOL_GPL(qcom_icc_bcm_init);
 
+static struct regmap *qcom_icc_rpmh_map(struct platform_device *pdev,
+					const struct qcom_icc_desc *desc)
+{
+	void __iomem *base;
+	struct resource *res;
+	struct device *dev = &pdev->dev;
+
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	if (!res)
+		return NULL;
+
+	base = devm_ioremap_resource(dev, res);
+	if (IS_ERR(base))
+		return ERR_CAST(base);
+
+	if (!desc->config)
+		return NULL;
+
+	return devm_regmap_init_mmio(dev, base, desc->config);
+}
+
 int qcom_icc_rpmh_probe(struct platform_device *pdev)
 {
 	const struct qcom_icc_desc *desc;
@@ -204,6 +226,8 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
 	if (IS_ERR(qp->voter))
 		return PTR_ERR(qp->voter);
 
+	qp->regmap = qcom_icc_rpmh_map(pdev, desc);
+
 	for (i = 0; i < qp->num_bcms; i++)
 		qcom_icc_bcm_init(qp->bcms[i], dev);
 
@@ -212,10 +236,17 @@ int qcom_icc_rpmh_probe(struct platform_device *pdev)
 		if (!qn)
 			continue;
 
+		qn->regmap = qp->regmap;
+
 		node = icc_node_create(qn->id);
 		if (IS_ERR(node)) {
 			ret = PTR_ERR(node);
 			goto err_remove_nodes;
+		}
+
+		if (qn->qosbox && qn->noc_ops && qn->noc_ops->set_qos) {
+			qn->noc_ops->set_qos(qn);
+			qn->qosbox->initialized = true;
 		}
 
 		node->name = qn->name;
