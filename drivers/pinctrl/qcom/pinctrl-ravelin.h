@@ -51,8 +51,6 @@
 		.intr_polarity_bit = 1,		\
 		.intr_detection_bit = 2,	\
 		.intr_detection_width = 2,	\
-		.wake_reg = REG_BASE + wake_off,	\
-		.wake_bit = bit,		\
 	}
 
 #define SDC_QDSD_PINGROUP(pg_name, ctl, pull, drv)	\
