@@ -8,6 +8,8 @@
 #ifndef __DRIVERS_INTERCONNECT_QCOM_QNOC_QOS_H__
 #define __DRIVERS_INTERCONNECT_QCOM_QNOC_QOS_H__
 
+struct qcom_icc_node;
+
 #define QOSGEN_OFF_MAX_REGS 6
 #define ICC_QNOC_QOS_MAX_TYPE 1
 
