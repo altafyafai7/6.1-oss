@@ -192,13 +192,25 @@ config INTERCONNECT_QCOM_SM8350
 	  platforms.
 
 config INTERCONNECT_QCOM_SM8450
-	tristate "Qualcomm SM8450 interconnect driver"
-	depends on INTERCONNECT_QCOM_RPMH_POSSIBLE
-	select INTERCONNECT_QCOM_RPMH
-	select INTERCONNECT_QCOM_BCM_VOTER
-	help
-	  This is a driver for the Qualcomm Network-on-Chip on SM8450-based
-	  platforms.
+        tristate "Qualcomm SM8450 interconnect driver"
+        depends on INTERCONNECT_QCOM_RPMH_POSSIBLE
+        select INTERCONNECT_QCOM_RPMH
+        select INTERCONNECT_QCOM_BCM_VOTER
+        help
+          This is a driver for the Qualcomm Network-on-Chip on SM8450-based
+          platforms.
 
+config INTERCONNECT_QCOM_RAVELIN
+        tristate "RAVELIN interconnect driver"
+        depends on INTERCONNECT_QCOM
+        depends on QCOM_RPMH && QCOM_COMMAND_DB && OF
+        select INTERCONNECT_QCOM_BCM_VOTER
+        select INTERCONNECT_QCOM_RPMH
+        select INTERCONNECT_QCOM_QOS
+        help
+          This is a driver for the Qualcomm Technologies, Inc. Network-on-Chip
+          on Ravelin-based platforms. Interconnect driver provides interfaces
+          for setting bandwidth between two endpoints (path). It also used to
+          provide support for QoS.
 config INTERCONNECT_QCOM_SMD_RPM
 	tristate
