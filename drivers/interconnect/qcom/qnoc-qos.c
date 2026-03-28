@@ -8,6 +8,7 @@
 #include <linux/interconnect.h>
 #include <linux/interconnect-provider.h>
 #include <linux/module.h>
+#include <linux/regmap.h>
 
 #include "icc-rpmh.h"
 #include "qnoc-qos.h"
