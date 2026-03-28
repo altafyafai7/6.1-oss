@@ -11,7 +11,7 @@
 #include "mi_memory_sysfs.h"
 #include "mem_interface.h"
 #include "../../scsi/ufs/ufs-qcom.h"
-#include "../../scsi/mi_ufs/mi-ufshcd.h"
+#include "../../ufs/mi_ufs/mi-ufshcd.h"
 
 #define SCSI_LUN 		0
 

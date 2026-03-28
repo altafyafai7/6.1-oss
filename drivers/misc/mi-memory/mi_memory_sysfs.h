@@ -8,8 +8,8 @@
 #include <linux/err.h>
 #include <linux/slab.h>
 
-#include "../../scsi/mi_ufs/mi-ufs.h"
-#include "../../scsi/mi_ufs/mi-ufshcd.h"
+#include "../../ufs/mi_ufs/mi-ufs.h"
+#include "../../ufs/mi_ufs/mi-ufshcd.h"
 
 #define	MI_MEMORY_MODULE 	"mi_memory_module"
 #define	MI_MEMORY_DEVICE 	"mi_memory_device"

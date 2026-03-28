@@ -142,3 +142,14 @@ config SCSI_UFS_SPRD
 
 	  Select this if you have UFS controller on Unisoc chipset.
 	  If unsure, say N.
+config CLD
+        bool "UFS CLD"
+        depends on SCSI_UFS_QCOM
+        help
+         Kernel configuration file for MI UFS features
+
+config UFSGKI
+        bool "UFS GKI"
+        depends on SCSI_UFS_QCOM
+        help
+         Kernel configuration file for MI UFS features

@@ -4,7 +4,7 @@
 #include <scsi/scsi_device.h>
 #include <scsi/scsi_common.h>
 
-#include "../../scsi/mi_ufs/mi-ufshcd.h"
+#include "../../ufs/mi_ufs/mi-ufshcd.h"
 
 #define SD_ASCII_STD true
 #define SD_RAW false
