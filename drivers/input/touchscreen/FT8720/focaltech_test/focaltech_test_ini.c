@@ -1,5 +1,5 @@
 /************************************************************************
-* Copyright (c) 2012-2020, Focaltech Systems (R)£¬All Rights Reserved.
+* Copyright (c) 2012-2020, Focaltech Systems (R)ï¿½ï¿½All Rights Reserved.
 *
 * File Name: focaltech_test_ini.c
 *
@@ -266,34 +266,28 @@ static int fts_test_read_ini_data(char *config_name, char *config_buf)
     off_t fsize = 0;
     char filepath[FILE_NAME_LENGTH] = { 0 };
     loff_t pos = 0;
-    mm_segment_t old_fs;
+    int ret;
 
     FTS_TEST_FUNC_ENTER();
 
     memset(filepath, 0, sizeof(filepath));
     snprintf(filepath, FILE_NAME_LENGTH, "%s%s",
              FTS_INI_FILE_PATH, config_name);
-    if (NULL == pfile) {
-        //pfile = filp_open(filepath, O_RDONLY, 0);
-    }
+    
+    pfile = filp_open(filepath, O_RDONLY, 0);
     if (IS_ERR(pfile)) {
         FTS_TEST_ERROR("error occured while opening file %s.",  filepath);
         return -EIO;
     }
 
-#if 1
-    inode = pfile->f_inode;
-#else
-    /* reserved for linux earlier verion */
-    inode = pfile->f_dentry->d_inode;
-#endif
+    inode = file_inode(pfile);
     fsize = inode->i_size;
-    old_fs = get_fs();
-    set_fs(KERNEL_DS);
     pos = 0;
-    //vfs_read(pfile, config_buf, fsize, &pos);
+    ret = kernel_read(pfile, config_buf, fsize, &pos);
+    if (ret < 0)
+        FTS_TEST_ERROR("read file fail");
+    
     filp_close(pfile, NULL);
-    set_fs(old_fs);
 
     FTS_TEST_FUNC_EXIT();
     return 0;
