@@ -138,16 +138,16 @@ struct tlv_type_hdr {
 } __packed;
 
 enum qca_btsoc_type {
-	QCA_INVALID = -1,
-	QCA_AR3002,
-	QCA_ROME,
-	QCA_WCN3990,
-	QCA_WCN3998,
-	QCA_WCN3991,
-	QCA_QCA6390,
-	QCA_WCN6750,
+        QCA_INVALID = -1,
+        QCA_AR3002,
+        QCA_ROME,
+        QCA_WCN3990,
+        QCA_WCN3998,
+        QCA_WCN3991,
+        QCA_WCN3988,
+        QCA_QCA6390,
+        QCA_WCN6750,
 };
-
 #if IS_ENABLED(CONFIG_BT_QCA)
 
 int qca_set_bdaddr_rome(struct hci_dev *hdev, const bdaddr_t *bdaddr);
@@ -160,10 +160,9 @@ int qca_set_bdaddr(struct hci_dev *hdev, const bdaddr_t *bdaddr);
 int qca_send_pre_shutdown_cmd(struct hci_dev *hdev);
 static inline bool qca_is_wcn399x(enum qca_btsoc_type soc_type)
 {
-	return soc_type == QCA_WCN3990 || soc_type == QCA_WCN3991 ||
-	       soc_type == QCA_WCN3998;
-}
-static inline bool qca_is_wcn6750(enum qca_btsoc_type soc_type)
+        return soc_type == QCA_WCN3990 || soc_type == QCA_WCN3991 ||
+               soc_type == QCA_WCN3998 || soc_type == QCA_WCN3988;
+}static inline bool qca_is_wcn6750(enum qca_btsoc_type soc_type)
 {
 	return soc_type == QCA_WCN6750;
 }
