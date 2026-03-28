@@ -22,7 +22,8 @@ struct qcom_icc_noc_ops;
  * @dev: reference to the NoC device
  * @bcms: list of bcms that maps to the provider
  * @num_bcms: number of @bcms
- * @voter: bcm voter targeted by this provider
+ * @voters: list of bcm voters targeted by this provider
+ * @num_voters: number of @voters
  * @regmap: regmap for QoS configuration
  */
 struct qcom_icc_provider {
@@ -30,7 +31,8 @@ struct qcom_icc_provider {
 	struct device *dev;
 	struct qcom_icc_bcm * const *bcms;
 	size_t num_bcms;
-	struct bcm_voter *voter;
+	struct bcm_voter **voters;
+	size_t num_voters;
 	struct regmap *regmap;
 };
 
