@@ -1827,7 +1827,7 @@ int32_t fts_set_proximity_switch(uint8_t proximity_switch)
 	   return 0 ;
 
 }
-EXPORT_SYMBOL(fts_set_proximity_switch);
+EXPORT_SYMBOL_GPL(fts_set_proximity_switch);
 
 static ssize_t fts_proximity_switch_proc_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 {

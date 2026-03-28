@@ -137,7 +137,7 @@ struct class *get_xiaomi_touch_class(void)
 {
 	return xiaomi_touch_dev.class;
 }
-EXPORT_SYMBOL(get_xiaomi_touch_class);
+EXPORT_SYMBOL_GPL(get_xiaomi_touch_class);
 
 struct device *get_xiaomi_touch_dev(void)
 {
@@ -169,7 +169,7 @@ int xiaomitouch_register_modedata(struct xiaomi_touch_interface *data)
 	mutex_unlock(&xiaomi_touch_dev.mutex);
 	return ret;
 }
-EXPORT_SYMBOL(xiaomitouch_register_modedata);
+EXPORT_SYMBOL_GPL(xiaomitouch_register_modedata);
 
 int update_palm_sensor_value(int value)
 {
@@ -190,7 +190,7 @@ int update_palm_sensor_value(int value)
 	mutex_unlock(&xiaomi_touch_dev.palm_mutex);
 	return 0;
 }
-EXPORT_SYMBOL(update_palm_sensor_value);
+EXPORT_SYMBOL_GPL(update_palm_sensor_value);
 
 static ssize_t palm_sensor_show(struct device *dev,
 struct device_attribute *attr, char *buf)

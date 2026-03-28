@@ -1347,7 +1347,7 @@ out:
 	NVT_LOG("--\n");
 	return ret;
 }
-EXPORT_SYMBOL(nvt_set_proximity_switch);
+EXPORT_SYMBOL_GPL(nvt_set_proximity_switch);
 
 int32_t nvt_get_proximity_switch(uint8_t *proximity_switch)
 {
