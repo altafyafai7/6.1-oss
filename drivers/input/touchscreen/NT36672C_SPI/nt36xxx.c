@@ -54,13 +54,13 @@
 
 int nvt_charger_flag;
 
-char tp_hardware_info[HARDWARE_MAX_ITEM_LONGTH];
+extern char tp_hardware_info[HARDWARE_MAX_ITEM_LONGTH];
 extern void set_tpinfo_gki(char *TPINFO);
 
-extern wait_queue_head_t proximity_switch_queue;
+extern wait_queue_head_t nvt_proximity_switch_queue;
 extern  int32_t nvt_set_proximity_switch(uint8_t proximity_switch);
-extern int32_t	g_priximity_enable;
-int  g_priximity_data = -1;
+extern int32_t	nvt_priximity_enable;
+int  nvt_priximity_data = -1;
 int32_t g_new_proximity_event_flag;
 
 static int32_t nvt_ts_resume(struct device *dev);
@@ -1600,10 +1600,10 @@ int32_t nvt_check_proximity(uint8_t input_id, uint8_t *data)
 	if ((input_id == DATA_PROTOCOL) && (func_type == FUNCPAGE_PROXIMITY)) {
 		/*ret = proximity_state;
 		if (proximity_state == PROXIMITY_ON) {
-			g_priximity_data = 0;
+			nvt_priximity_data = 0;
 			NVT_LOG("get proximity on event.\n");
 		} else if (proximity_state == PROXIMITY_OFF) {
-			g_priximity_data = 1;
+			nvt_priximity_data = 1;
 			NVT_LOG("get proximity off event.\n");
 		} else {
 			NVT_ERR("invalid proximity state %d!\n", proximity_state);
@@ -1619,11 +1619,11 @@ int32_t nvt_check_proximity(uint8_t input_id, uint8_t *data)
 			ret = -1;
 		}
 		//NVT_LOG("proximity_state is %d\n",proximity_state);
-		if (proximity_state != g_priximity_data) {
+		if (proximity_state != nvt_priximity_data) {
 			NVT_LOG(" proximity state is %d, get proximity event.\n",proximity_state);
-			g_priximity_data = proximity_state;
+			nvt_priximity_data = proximity_state;
 			g_new_proximity_event_flag = 1;
-			wake_up(&proximity_switch_queue);
+			wake_up(&nvt_proximity_switch_queue);
 			return 0;
 		}
 	} else {
@@ -2935,8 +2935,8 @@ static int32_t nvt_ts_resume(struct device *dev)
 
 	msleep(50);
 
-	if(g_priximity_enable){
-		NVT_LOG("g_priximity_enable is %d\n",g_priximity_enable);
+	if(nvt_priximity_enable){
+		NVT_LOG("nvt_priximity_enable is %d\n",nvt_priximity_enable);
 		nvt_set_proximity_switch(1);
 	}
 #if IS_ENABLED(CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE)
@@ -2984,8 +2984,8 @@ static int nvt_xiaomi_panel_notifier_callback(struct notifier_block *self, unsig
 	if (ts_data) {
 		if (event == XIAOMI_PANEL_EARLY_EVENT_BLANK) {
 			if (evdata->blank == XIAOMI_PANEL_BLANK_POWERDOWN) {
-				if(!g_priximity_enable){
-				NVT_LOG("g_priximity_enable is %d\n",g_priximity_enable);
+				if(!nvt_priximity_enable){
+				NVT_LOG("nvt_priximity_enable is %d\n",nvt_priximity_enable);
 				nvt_ts_suspend(&ts->client->dev);
 				//queue_delayed_work(ts->wait_workqueue,&ts->suspend_work,msecs_to_jiffies(0));
 				}

@@ -89,11 +89,11 @@ static struct xiaomi_touch_notify_data touch_proximity_data;
 
 int fts_factory_test(void);
 
-DECLARE_WAIT_QUEUE_HEAD(proximity_switch_queue);
-extern int g_priximity_data;
+DECLARE_WAIT_QUEUE_HEAD(fts_proximity_switch_queue);
+extern int fts_priximity_data;
 extern int32_t g_new_proximity_event_falg;
 //extern void set_lcd_reset_gpio_keep_high(bool en);
-int32_t g_priximity_enable;
+int32_t fts_priximity_enable;
 static int aftersale_selftest=0;
 
 
@@ -1790,7 +1790,7 @@ static const struct file_operations fts_proc_save_rawdata_fops = {
 
 int32_t fts_get_proximity_switch(uint8_t *proximity_switch)
 {
-	*proximity_switch = g_priximity_enable;
+	*proximity_switch = fts_priximity_enable;
 	FTS_DEBUG("[PROXIMITY] proximity mode = %d", proximity_switch);
 	return 0;
 }
@@ -1808,22 +1808,22 @@ int32_t fts_set_proximity_switch(uint8_t proximity_switch)
 			touch_proximity_data.ps_enable = XIAOMI_TOUCH_SENSOR_PS_DISABLE;
 			xiaomi_touch_notifier_call_chain(XIAOMI_TOUCH_SENSOR_EVENT_PS_SWITCH, &touch_proximity_data);
 #endif
-			g_priximity_enable = 0;
-			g_priximity_data = -1;
+			fts_priximity_enable = 0;
+			fts_priximity_data = -1;
 	  } else if (proximity_switch == 1) {
 		   buf_value = 0x01;
 #if IS_ENABLED(CONFIG_XIAOMI_TOUCH_NOTIFIER)
 			touch_proximity_data.ps_enable = XIAOMI_TOUCH_SENSOR_PS_ENABLE;
 			xiaomi_touch_notifier_call_chain(XIAOMI_TOUCH_SENSOR_EVENT_PS_SWITCH, &touch_proximity_data);
 #endif
-			g_priximity_enable = 1;
+			fts_priximity_enable = 1;
 	}
 	   ret = fts_write_reg(buf_addr, buf_value);
 	   if (ret < 0) {
 		   FTS_ERROR("[PROXIMITY] Write proximity register(0xB0) fail!");
 		   return ret;
 	   }
-	   FTS_DEBUG("[PROXIMITY] proximity mode = %d,g_priximity_data = %d", g_priximity_enable,g_priximity_data);
+	   FTS_DEBUG("[PROXIMITY] proximity mode = %d,fts_priximity_data = %d", fts_priximity_enable,fts_priximity_data);
 	   return 0 ;
 
 }
@@ -1951,10 +1951,10 @@ static ssize_t fts_store_data_proximity_read(struct file *filp, char __user *buf
 	}
 
 	FTS_INFO("-----fts_store_data_proximity_read----\n");
-	FTS_INFO("g_new_proximity_event_falg is %d,g_priximity_data is %d\n",g_new_proximity_event_falg,g_priximity_data);
-	wait_event_interruptible(proximity_switch_queue,g_new_proximity_event_falg);
+	FTS_INFO("g_new_proximity_event_falg is %d,fts_priximity_data is %d\n",g_new_proximity_event_falg,fts_priximity_data);
+	wait_event_interruptible(fts_proximity_switch_queue,g_new_proximity_event_falg);
 
-	cnt = snprintf(data_buf,sizeof(data_buf),"%d\n",g_priximity_data);
+	cnt = snprintf(data_buf,sizeof(data_buf),"%d\n",fts_priximity_data);
 	if (copy_to_user(buf, data_buf, sizeof(data_buf))) {
 		FTS_INFO("copy_to_user() error!\n");
 		return -EFAULT;
@@ -1969,7 +1969,7 @@ static ssize_t fts_store_data_proximity_read(struct file *filp, char __user *buf
 static __poll_t fts_store_data_proximity_poll(struct file *file, poll_table *wait)
 {
 	int ret = 0;
-	poll_wait(file,&proximity_switch_queue,wait);
+	poll_wait(file,&fts_proximity_switch_queue,wait);
 	if(g_new_proximity_event_falg) {
 		ret = POLLIN | POLLRDNORM;
 	}

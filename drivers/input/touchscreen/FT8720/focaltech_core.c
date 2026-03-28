@@ -82,10 +82,10 @@
 *****************************************************************************/
 struct fts_ts_data *fts_data;
 
-extern wait_queue_head_t proximity_switch_queue;
+extern wait_queue_head_t fts_proximity_switch_queue;
 extern  int32_t fts_set_proximity_switch(uint8_t proximity_switch);
-extern int32_t	g_priximity_enable;
-int g_priximity_data = -1;
+extern int32_t	fts_priximity_enable;
+int fts_priximity_data = -1;
 int32_t g_new_proximity_event_falg;
 int fts_charger_flag;
 int fts_headset_flag;
@@ -785,7 +785,7 @@ static int fts_read_touchdata(struct fts_ts_data *ts_data, u8 *buf)
 
 	mutex_lock(&input_dev->mutex);
 
-    if ((fts_check_proximity() != 0) && (ts_data->suspended == true) && (g_priximity_enable == 1)) {
+    if ((fts_check_proximity() != 0) && (ts_data->suspended == true) && (fts_priximity_enable == 1)) {
 		mutex_unlock(&input_dev->mutex);
 		return 1;
     }
@@ -1028,7 +1028,7 @@ int fts_check_proximity(void)
 	u8 buf_addr = FTS_REG_IDE_PARA_STATUS;
 	int proximity_status = -1;
 
-	if (g_priximity_enable != 1) {
+	if (fts_priximity_enable != 1) {
 		return -EPERM;
 	}
 
@@ -1044,11 +1044,11 @@ int fts_check_proximity(void)
 	}
  
 	//FTS_INFO("proximity_status is %d\n",proximity_status);
-	if(proximity_status != g_priximity_data) {
+	if(proximity_status != fts_priximity_data) {
 		FTS_INFO("new falg is %d and proximity state is %d, get proximity event.\n",g_new_proximity_event_falg,proximity_status);
-		g_priximity_data = proximity_status;
+		fts_priximity_data = proximity_status;
 		g_new_proximity_event_falg = 1;
-		wake_up(&proximity_switch_queue);
+		wake_up(&fts_proximity_switch_queue);
 		return 0;
 	}
 	return -1;
@@ -1732,7 +1732,7 @@ static int fts_xiaomi_panel_notifier_callback(struct notifier_block *self, unsig
 				}
 		} else if (event == XIAOMI_PANEL_NORMAL_EVENT_BLANK) {
 			if (evdata->blank == XIAOMI_PANEL_BLANK_UNBLANK) {
-				if (!g_priximity_enable) {
+				if (!fts_priximity_enable) {
 				fts_fwresume_work();
 				}
 				queue_work(fts_data->ts_workqueue, &fts_data->resume_work);
@@ -2324,8 +2324,8 @@ static int fts_ts_suspend(struct device *dev)
     msleep(250);
     fts_esdcheck_suspend(ts_data);
 
-    if (g_priximity_enable) {
-        FTS_INFO("g_priximity_enable is %d can't suspend\n",g_priximity_enable);
+    if (fts_priximity_enable) {
+        FTS_INFO("fts_priximity_enable is %d can't suspend\n",fts_priximity_enable);
         fts_release_all_finger();
         ts_data->suspended = true;
         fts_enable_irq_wake(true);
@@ -2400,7 +2400,7 @@ static int fts_ts_resume(struct device *dev)
                 FTS_INFO("fts out headset mode\n");
         }
 
-	if(g_priximity_enable) {
+	if(fts_priximity_enable) {
 		fts_set_proximity_switch(1);
 		fts_enable_irq_wake(false);
 

@@ -47,7 +47,7 @@
 #define FTS_FLASH_PACKET_LENGTH_SPI_LOW             (4 * 1024 - 4)
 #define FTS_FLASH_PACKET_LENGTH_SPI                 (32 * 1024 - 16)
 
-char tp_hardware_info[HARDWARE_MAX_ITEM_LONGTH];
+extern char tp_hardware_info[HARDWARE_MAX_ITEM_LONGTH];
 extern void set_tpinfo_gki(char *TPINFO);
 
 /*****************************************************************************

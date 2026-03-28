@@ -89,11 +89,11 @@ static struct xiaomi_touch_notify_data touch_proximity_data;
 
 extern int nvt_factory_test(void);
 
-DECLARE_WAIT_QUEUE_HEAD(proximity_switch_queue);
-extern int g_priximity_data;
+DECLARE_WAIT_QUEUE_HEAD(nvt_proximity_switch_queue);
+extern int nvt_priximity_data;
 extern int32_t g_new_proximity_event_flag;
 //extern void set_lcd_reset_gpio_keep_high(bool en);
-int32_t g_priximity_enable;
+int32_t nvt_priximity_enable;
 
 /*******************************************************
 Description:
@@ -1318,10 +1318,10 @@ int32_t nvt_set_proximity_switch(uint8_t proximity_switch)
 #endif
 		// proximity disable
 		//set_lcd_reset_gpio_keep_high(false);
-		g_priximity_enable = 0;
-		g_priximity_data = -1;
+		nvt_priximity_enable = 0;
+		nvt_priximity_data = -1;
 		buf[1] = 0x86;
-		NVT_LOG("g_priximity_enable is %d,g_priximity_data = %d\n",g_priximity_enable,g_priximity_data);
+		NVT_LOG("nvt_priximity_enable is %d,nvt_priximity_data = %d\n",nvt_priximity_enable,nvt_priximity_data);
 	} else if (proximity_switch == 1) {
 #if IS_ENABLED(CONFIG_XIAOMI_TOUCH_NOTIFIER)
 		touch_proximity_data.ps_enable = XIAOMI_TOUCH_SENSOR_PS_ENABLE;
@@ -1329,9 +1329,9 @@ int32_t nvt_set_proximity_switch(uint8_t proximity_switch)
 #endif
 		// proximity enable
 		//set_lcd_reset_gpio_keep_high(true);
-		g_priximity_enable = 1;
+		nvt_priximity_enable = 1;
 		buf[1] = 0x85;
-		NVT_LOG("g_priximity_enable is %d\n",g_priximity_enable);
+		NVT_LOG("nvt_priximity_enable is %d\n",nvt_priximity_enable);
 	} else {
 		NVT_ERR("Invalid value! proximity_switch = %d\n", proximity_switch);
 		ret = -EINVAL;
@@ -1373,7 +1373,7 @@ int32_t nvt_get_proximity_switch(uint8_t *proximity_switch)
 		goto out;
 	}*/
 
-	*proximity_switch = g_priximity_enable; //((buf[1] >> 7) & 0x01);
+	*proximity_switch = nvt_priximity_enable; //((buf[1] >> 7) & 0x01);
 	NVT_LOG("proximity_switch = %d\n", *proximity_switch);
 
 //out:
@@ -1505,10 +1505,10 @@ static ssize_t nvt_store_data_proximity_read(struct file *filp, char __user *buf
 	}
 
 	NVT_LOG("-----nvt_store_data_proximity_read----\n");
-	NVT_LOG("g_new_proximity_event_flag is %d,g_priximity_data is %d\n",g_new_proximity_event_flag,g_priximity_data);
-	wait_event_interruptible(proximity_switch_queue,g_new_proximity_event_flag);
+	NVT_LOG("g_new_proximity_event_flag is %d,nvt_priximity_data is %d\n",g_new_proximity_event_flag,nvt_priximity_data);
+	wait_event_interruptible(nvt_proximity_switch_queue,g_new_proximity_event_flag);
 
-	cnt = snprintf(data_buf,sizeof(data_buf),"%d\n",g_priximity_data);
+	cnt = snprintf(data_buf,sizeof(data_buf),"%d\n",nvt_priximity_data);
 	if (copy_to_user(buf, data_buf, sizeof(data_buf))) {
 		NVT_ERR("copy_to_user() error!\n");
 		return -EFAULT;
@@ -1522,7 +1522,7 @@ static ssize_t nvt_store_data_proximity_read(struct file *filp, char __user *buf
 static __poll_t nvt_store_data_proximity_poll(struct file *file, poll_table *wait)
 {
 	int ret = 0;
-	poll_wait(file,&proximity_switch_queue,wait);
+	poll_wait(file,&nvt_proximity_switch_queue,wait);
 	if(g_new_proximity_event_flag) {
 		ret = POLLIN | POLLRDNORM;
 	}
