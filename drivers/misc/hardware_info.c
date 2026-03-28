@@ -45,13 +45,13 @@ void set_tpinfo_gki(char *TPINFO)
 {
 	strlcpy(tp_hardware_info, TPINFO, HARDWARE_MAX_ITEM_LONGTH);
 }
-EXPORT_SYMBOL(set_tpinfo_gki);
+EXPORT_SYMBOL_GPL(set_tpinfo_gki);
 
 void set_panel_name_gki(char *panel_name)
 {
 	strlcpy(Lcm_name, panel_name, HARDWARE_MAX_ITEM_LONGTH);
 }
-EXPORT_SYMBOL(set_panel_name_gki);
+EXPORT_SYMBOL_GPL(set_panel_name_gki);
 
 int hardwareinfo_set_prop(int cmd, const char *name)
 {
