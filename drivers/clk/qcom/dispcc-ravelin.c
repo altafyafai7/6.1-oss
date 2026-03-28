@@ -193,7 +193,6 @@ static struct clk_rcg2 disp_cc_mdss_byte0_clk_src = {
 		.flags = CLK_SET_RATE_PARENT,
 		.ops = &clk_byte2_ops,
 	},
-	},
 };
 
 static const struct freq_tbl ftbl_disp_cc_mdss_esc0_clk_src[] = {
@@ -212,7 +211,6 @@ static struct clk_rcg2 disp_cc_mdss_esc0_clk_src = {
 		.parent_data = disp_cc_parent_data_4,
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_4),
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 
@@ -252,7 +250,6 @@ static struct clk_rcg2 disp_cc_mdss_pclk0_clk_src = {
 		.flags = CLK_SET_RATE_PARENT,
 		.ops = &clk_pixel_ops,
 	},
-	},
 };
 
 static const struct freq_tbl ftbl_disp_cc_mdss_rot_clk_src[] = {
@@ -287,7 +284,6 @@ static struct clk_rcg2 disp_cc_mdss_vsync_clk_src = {
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_2),
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static const struct freq_tbl ftbl_disp_cc_sleep_clk_src[] = {
@@ -306,7 +302,6 @@ static struct clk_rcg2 disp_cc_sleep_clk_src = {
 		.parent_data = disp_cc_parent_data_5,
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_5),
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 

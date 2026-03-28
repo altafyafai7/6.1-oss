@@ -177,7 +177,6 @@ static struct clk_debug_mux cam_cc_debug_mux = {
 		.parent_names = cam_cc_debug_mux_parent_names,
 		.num_parents = ARRAY_SIZE(cam_cc_debug_mux_parent_names),
 	},
-	},
 };
 
 static const char *const disp_cc_debug_mux_parent_names[] = {
@@ -564,7 +563,6 @@ static struct clk_debug_mux gcc_debug_mux = {
 		.parent_names = gcc_debug_mux_parent_names,
 		.num_parents = ARRAY_SIZE(gcc_debug_mux_parent_names),
 	},
-	},
 };
 
 static const char *const gpu_cc_debug_mux_parent_names[] = {
@@ -649,7 +647,6 @@ static struct clk_debug_mux mc_cc_debug_mux = {
 		.parent_names = mc_cc_debug_mux_parent_names,
 		.num_parents = ARRAY_SIZE(mc_cc_debug_mux_parent_names),
 	},
-	},
 };
 
 static struct mux_regmap_names mux_list[] = {
@@ -667,7 +664,6 @@ static struct clk_dummy measure_only_apcs_gold_post_acd_clk = {
 		.name = "measure_only_apcs_gold_post_acd_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_apcs_gold_pre_acd_clk = {
@@ -683,7 +679,6 @@ static struct clk_dummy measure_only_apcs_l3_post_acd_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_apcs_l3_post_acd_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -701,7 +696,6 @@ static struct clk_dummy measure_only_apcs_silver_post_acd_clk = {
 		.name = "measure_only_apcs_silver_post_acd_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_apcs_silver_pre_acd_clk = {
@@ -717,7 +711,6 @@ static struct clk_dummy measure_only_cnoc_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_cnoc_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -735,7 +728,6 @@ static struct clk_dummy measure_only_gcc_anoc_pcie_north_at_clk = {
 		.name = "measure_only_gcc_anoc_pcie_north_at_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_aoss_at_clk = {
@@ -751,7 +743,6 @@ static struct clk_dummy measure_only_gcc_apss_qdss_apb_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_apss_qdss_apb_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -769,7 +760,6 @@ static struct clk_dummy measure_only_gcc_at_clk = {
 		.name = "measure_only_gcc_at_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_camera_ahb_clk = {
@@ -785,7 +775,6 @@ static struct clk_dummy measure_only_gcc_camera_xo_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_camera_xo_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -803,7 +792,6 @@ static struct clk_dummy measure_only_gcc_config_noc_at_clk = {
 		.name = "measure_only_gcc_config_noc_at_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_cpuss_at_clk = {
@@ -819,7 +807,6 @@ static struct clk_dummy measure_only_gcc_cpuss_trig_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_cpuss_trig_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -837,7 +824,6 @@ static struct clk_dummy measure_only_gcc_disp_ahb_clk = {
 		.name = "measure_only_gcc_disp_ahb_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_disp_xo_clk = {
@@ -853,7 +839,6 @@ static struct clk_dummy measure_only_gcc_gpu_at_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_gpu_at_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -871,7 +856,6 @@ static struct clk_dummy measure_only_gcc_gpu_trig_clk = {
 		.name = "measure_only_gcc_gpu_trig_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_ipa_tpdm_at_clk = {
@@ -887,7 +871,6 @@ static struct clk_dummy measure_only_gcc_lpass_at_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_lpass_at_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -905,7 +888,6 @@ static struct clk_dummy measure_only_gcc_mmnoc_hf_at_clk = {
 		.name = "measure_only_gcc_mmnoc_hf_at_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_mmnoc_sf_at_clk = {
@@ -921,7 +903,6 @@ static struct clk_dummy measure_only_gcc_mmss_center_at_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_mmss_center_at_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -939,7 +920,6 @@ static struct clk_dummy measure_only_gcc_mmss_trig_clk = {
 		.name = "measure_only_gcc_mmss_trig_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_mss_at_clk = {
@@ -955,7 +935,6 @@ static struct clk_dummy measure_only_gcc_mss_trig_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_mss_trig_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -973,7 +952,6 @@ static struct clk_dummy measure_only_gcc_phy_at_clk = {
 		.name = "measure_only_gcc_phy_at_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_pimem_at_clk = {
@@ -989,7 +967,6 @@ static struct clk_dummy measure_only_gcc_qdss_center_at_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_qdss_center_at_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -1007,7 +984,6 @@ static struct clk_dummy measure_only_gcc_qdss_dap_ahb_clk = {
 		.name = "measure_only_gcc_qdss_dap_ahb_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_qdss_dap_clk = {
@@ -1023,7 +999,6 @@ static struct clk_dummy measure_only_gcc_qdss_etr_ddr_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_qdss_etr_ddr_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -1041,7 +1016,6 @@ static struct clk_dummy measure_only_gcc_qdss_stm_clk = {
 		.name = "measure_only_gcc_qdss_stm_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_qdss_traceclkin_clk = {
@@ -1057,7 +1031,6 @@ static struct clk_dummy measure_only_gcc_qdss_trig_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_qdss_trig_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -1075,7 +1048,6 @@ static struct clk_dummy measure_only_gcc_qdss_usb_prim_clk = {
 		.name = "measure_only_gcc_qdss_usb_prim_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_qdss_wlan_at_clk = {
@@ -1091,7 +1063,6 @@ static struct clk_dummy measure_only_gcc_qdss_xo_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_qdss_xo_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -1109,7 +1080,6 @@ static struct clk_dummy measure_only_gcc_sdcc2_at_clk = {
 		.name = "measure_only_gcc_sdcc2_at_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_south_at_clk = {
@@ -1125,7 +1095,6 @@ static struct clk_dummy measure_only_gcc_sys_noc_at_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_sys_noc_at_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -1143,7 +1112,6 @@ static struct clk_dummy measure_only_gcc_tme_trig_clk = {
 		.name = "measure_only_gcc_tme_trig_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_video_ahb_clk = {
@@ -1159,7 +1127,6 @@ static struct clk_dummy measure_only_gcc_video_xo_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_video_xo_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -1177,7 +1144,6 @@ static struct clk_dummy measure_only_gcc_west_at_clk = {
 		.name = "measure_only_gcc_west_at_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_gcc_west_trig_clk = {
@@ -1193,7 +1159,6 @@ static struct clk_dummy measure_only_gcc_wpss_at_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_gcc_wpss_at_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -1211,7 +1176,6 @@ static struct clk_dummy measure_only_gcc_wpss_trig_clk = {
 		.name = "measure_only_gcc_wpss_trig_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_ipa_2x_clk = {
@@ -1227,7 +1191,6 @@ static struct clk_dummy measure_only_mccc_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_mccc_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 
@@ -1245,7 +1208,6 @@ static struct clk_dummy measure_only_snoc_clk = {
 		.name = "measure_only_snoc_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_ufs_phy_rx_symbol_0_clk = {
@@ -1262,7 +1224,6 @@ static struct clk_dummy measure_only_ufs_phy_rx_symbol_1_clk = {
 		.name = "measure_only_ufs_phy_rx_symbol_1_clk",
 		.ops = &clk_dummy_ops,
 	},
-	},
 };
 
 static struct clk_dummy measure_only_ufs_phy_tx_symbol_0_clk = {
@@ -1278,7 +1239,6 @@ static struct clk_dummy measure_only_usb3_phy_wrapper_gcc_usb30_pipe_clk = {
 	.hw.init = &(const struct clk_init_data){
 		.name = "measure_only_usb3_phy_wrapper_gcc_usb30_pipe_clk",
 		.ops = &clk_dummy_ops,
-	},
 	},
 };
 

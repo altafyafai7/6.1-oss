@@ -166,7 +166,6 @@ static struct clk_alpha_pll_postdiv cam_cc_pll1_out_even = {
 		.flags = CLK_SET_RATE_PARENT,
 		.ops = &clk_alpha_pll_postdiv_lucid_evo_ops,
 	},
-	},
 };
 
 /* 960MHz Configuration */
@@ -194,7 +193,6 @@ static struct clk_alpha_pll cam_cc_pll2 = {
 			.num_parents = 1,
 			.ops = &clk_alpha_pll_rivian_evo_ops,
 		},
-	},
 	},
 };
 
@@ -320,7 +318,6 @@ static struct clk_alpha_pll_postdiv cam_cc_pll4_out_even = {
 		.num_parents = 1,
 		.flags = CLK_SET_RATE_PARENT,
 		.ops = &clk_alpha_pll_postdiv_lucid_evo_ops,
-	},
 	},
 };
 
@@ -459,7 +456,6 @@ static struct clk_rcg2 cam_cc_bps_clk_src = {
 		.flags = CLK_SET_RATE_PARENT,
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static const struct freq_tbl ftbl_cam_cc_camnoc_axi_clk_src[] = {
@@ -482,7 +478,6 @@ static struct clk_rcg2 cam_cc_camnoc_axi_clk_src = {
 		.parent_data = cam_cc_parent_data_0,
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_0),
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 
@@ -520,7 +515,6 @@ static struct clk_rcg2 cam_cc_cci_1_clk_src = {
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_2),
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static const struct freq_tbl ftbl_cam_cc_cphy_rx_clk_src[] = {
@@ -542,7 +536,6 @@ static struct clk_rcg2 cam_cc_cphy_rx_clk_src = {
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_0),
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static struct clk_rcg2 cam_cc_cre_clk_src = {
@@ -557,7 +550,6 @@ static struct clk_rcg2 cam_cc_cre_clk_src = {
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_5),
 		.flags = CLK_SET_RATE_PARENT,
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 
@@ -592,7 +584,6 @@ static struct clk_rcg2 cam_cc_csi1phytimer_clk_src = {
 		.parent_data = cam_cc_parent_data_0,
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_0),
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 
@@ -653,7 +644,6 @@ static struct clk_rcg2 cam_cc_icp_clk_src = {
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_6),
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static const struct freq_tbl ftbl_cam_cc_mclk0_clk_src[] = {
@@ -674,7 +664,6 @@ static struct clk_rcg2 cam_cc_mclk0_clk_src = {
 		.parent_data = cam_cc_parent_data_1,
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_1),
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 
@@ -703,7 +692,6 @@ static struct clk_rcg2 cam_cc_mclk2_clk_src = {
 		.parent_data = cam_cc_parent_data_1,
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_1),
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 
@@ -764,7 +752,6 @@ static struct clk_rcg2 cam_cc_slow_ahb_clk_src = {
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_0),
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static const struct freq_tbl ftbl_cam_cc_tfe_0_clk_src[] = {
@@ -803,7 +790,6 @@ static struct clk_rcg2 cam_cc_tfe_0_csid_clk_src = {
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_0),
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static struct clk_rcg2 cam_cc_tfe_1_clk_src = {
@@ -818,7 +804,6 @@ static struct clk_rcg2 cam_cc_tfe_1_clk_src = {
 		.num_parents = ARRAY_SIZE(cam_cc_parent_data_3),
 		.flags = CLK_SET_RATE_PARENT | CLK_GET_RATE_NOCACHE,
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 
@@ -900,7 +885,7 @@ static struct clk_branch cam_cc_camnoc_atb_clk = {
 			.name = "cam_cc_camnoc_atb_clk",
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_camnoc_axi_clk = {
@@ -918,7 +903,7 @@ static struct clk_branch cam_cc_camnoc_axi_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_camnoc_axi_hf_clk = {
@@ -944,7 +929,7 @@ static struct clk_branch cam_cc_camnoc_axi_sf_clk = {
 			.name = "cam_cc_camnoc_axi_sf_clk",
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_cci_0_clk = {
@@ -962,7 +947,7 @@ static struct clk_branch cam_cc_cci_0_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_cci_1_clk = {
@@ -980,7 +965,7 @@ static struct clk_branch cam_cc_cci_1_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_core_ahb_clk = {
@@ -998,7 +983,7 @@ static struct clk_branch cam_cc_core_ahb_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_cpas_ahb_clk = {
@@ -1016,7 +1001,7 @@ static struct clk_branch cam_cc_cpas_ahb_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_cre_ahb_clk = {
@@ -1034,7 +1019,7 @@ static struct clk_branch cam_cc_cre_ahb_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_cre_clk = {
@@ -1052,7 +1037,7 @@ static struct clk_branch cam_cc_cre_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_csi0phytimer_clk = {
@@ -1070,7 +1055,7 @@ static struct clk_branch cam_cc_csi0phytimer_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_csi1phytimer_clk = {
@@ -1088,7 +1073,7 @@ static struct clk_branch cam_cc_csi1phytimer_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_csi2phytimer_clk = {
@@ -1106,7 +1091,7 @@ static struct clk_branch cam_cc_csi2phytimer_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_csiphy0_clk = {
@@ -1124,7 +1109,7 @@ static struct clk_branch cam_cc_csiphy0_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_csiphy1_clk = {
@@ -1142,7 +1127,7 @@ static struct clk_branch cam_cc_csiphy1_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_csiphy2_clk = {
@@ -1160,7 +1145,7 @@ static struct clk_branch cam_cc_csiphy2_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_icp_atb_clk = {
@@ -1204,7 +1189,7 @@ static struct clk_branch cam_cc_icp_cti_clk = {
 			.name = "cam_cc_icp_cti_clk",
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_icp_ts_clk = {
@@ -1356,7 +1341,7 @@ static struct clk_branch cam_cc_soc_ahb_clk = {
 			.name = "cam_cc_soc_ahb_clk",
 			.ops = &clk_branch2_ops,
 		},
-		},
+	},
 };
 
 static struct clk_branch cam_cc_sys_tmr_clk = {
