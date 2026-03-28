@@ -8,6 +8,11 @@
 
 #include <dt-bindings/interconnect/qcom,icc.h>
 
+struct qcom_icc_bcm;
+struct qcom_icc_qosbox;
+struct qcom_icc_noc_ops;
+struct regmap;
+
 #define to_qcom_provider(_provider) \
 	container_of(_provider, struct qcom_icc_provider, provider)
 
@@ -70,6 +75,9 @@ struct qcom_icc_node {
 	u64 max_peak[QCOM_ICC_NUM_BUCKETS];
 	struct qcom_icc_bcm *bcms[MAX_BCM_PER_NODE];
 	size_t num_bcms;
+	struct regmap *regmap;
+	struct qcom_icc_qosbox *qosbox;
+	const struct qcom_icc_noc_ops *noc_ops;
 };
 
 /**
