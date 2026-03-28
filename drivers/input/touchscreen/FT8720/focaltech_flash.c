@@ -58,15 +58,15 @@ extern void set_tpinfo_gki(char *TPINFO);
 * Global variable or extern global variabls/functions
 *****************************************************************************/
 u8 fw_file[] = {
-#include FTS_UPGRADE_FW_FILE
+#include "fw_sample.i"
 };
 
 u8 fw_file2[] = {
-#include FTS_UPGRADE_FW2_FILE
+#include "fw_sample.i"
 };
 
 u8 fw_file3[] = {
-#include FTS_UPGRADE_FW3_FILE
+#include "fw_sample.i"
 };
 
 struct upgrade_module module_list[] = {
