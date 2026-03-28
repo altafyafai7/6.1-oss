@@ -495,13 +495,18 @@ config SPRD_THERMAL
 	  framework.
 
 config KHADAS_MCU_FAN_THERMAL
-	tristate "Khadas MCU controller FAN cooling support"
-	depends on OF
-	depends on MFD_KHADAS_MCU
-	select MFD_CORE
-	select REGMAP
-	help
-	  If you say yes here you get support for the FAN controlled
-	  by the Microcontroller found on the Khadas VIM boards.
+        tristate "Khadas MCU controller FAN cooling support"
+        depends on OF
+        depends on MFD_KHADAS_MCU
+        select MFD_CORE
+        select REGMAP
+        help
+          If you say yes here you get support for the FAN controlled
+          by the Microcontroller found on the Khadas VIM boards.
+
+config MI_THERMAL_INTERFACE
+        tristate "Mi thermal interface support"
+        help
+          If you say yes here you get support for the Mi thermal interface.
 
 endif

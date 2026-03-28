@@ -121,3 +121,10 @@ void clk_runtime_put_regmap(struct clk_regmap *rclk)
 {
 }
 EXPORT_SYMBOL_GPL(clk_runtime_put_regmap);
+
+int clk_find_vdd_level(struct clk_hw *hw, struct clk_vdd_class_data *vdd_data,
+		       unsigned long rate)
+{
+	return -ENODATA;
+}
+EXPORT_SYMBOL_GPL(clk_find_vdd_level);
