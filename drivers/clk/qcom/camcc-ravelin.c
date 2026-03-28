@@ -1628,10 +1628,6 @@ static int cam_cc_ravelin_probe(struct platform_device *pdev)
 	if (IS_ERR(regmap))
 		return PTR_ERR(regmap);
 
-	ret = qcom_cc_runtime_init(pdev, &cam_cc_ravelin_desc);
-	if (ret)
-		return ret;
-
 	ret = pm_runtime_get_sync(&pdev->dev);
 	if (ret)
 		return ret;
@@ -1659,20 +1655,20 @@ static void cam_cc_ravelin_sync_state(struct device *dev)
 }
 
 static const struct dev_pm_ops cam_cc_ravelin_pm_ops = {
-	SET_RUNTIME_PM_OPS(qcom_cc_runtime_suspend, qcom_cc_runtime_resume, NULL)
+	SET_RUNTIME_PM_OPS(pm_runtime_force_suspend, pm_runtime_force_resume, NULL)
 	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
 				pm_runtime_force_resume)
 };
-
 static struct platform_driver cam_cc_ravelin_driver = {
 	.probe = cam_cc_ravelin_probe,
 	.driver = {
 		.name = "cam_cc-ravelin",
 		.of_match_table = cam_cc_ravelin_match_table,
 		.sync_state = cam_cc_ravelin_sync_state,
-	},
 		.pm = &cam_cc_ravelin_pm_ops,
+	},
 };
+
 
 static int __init cam_cc_ravelin_init(void)
 {
