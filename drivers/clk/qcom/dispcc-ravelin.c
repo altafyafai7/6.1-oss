@@ -65,7 +65,7 @@ static struct clk_alpha_pll disp_cc_pll0 = {
 			.num_parents = 1,
 			.ops = &clk_alpha_pll_lucid_evo_ops,
 		},
-		},
+	},
 };
 
 /* 600MHz Configuration */
@@ -93,6 +93,7 @@ static struct clk_alpha_pll disp_cc_pll1 = {
 			.num_parents = 1,
 			.ops = &clk_alpha_pll_lucid_evo_ops,
 		},
+	},
 };
 
 static const struct parent_map disp_cc_parent_map_0[] = {
@@ -178,7 +179,6 @@ static struct clk_rcg2 disp_cc_mdss_ahb_clk_src = {
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_3),
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static struct clk_rcg2 disp_cc_mdss_byte0_clk_src = {
@@ -192,6 +192,7 @@ static struct clk_rcg2 disp_cc_mdss_byte0_clk_src = {
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_0),
 		.flags = CLK_SET_RATE_PARENT,
 		.ops = &clk_byte2_ops,
+	},
 	},
 };
 
@@ -211,6 +212,7 @@ static struct clk_rcg2 disp_cc_mdss_esc0_clk_src = {
 		.parent_data = disp_cc_parent_data_4,
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_4),
 		.ops = &clk_rcg2_ops,
+	},
 	},
 };
 
@@ -271,7 +273,6 @@ static struct clk_rcg2 disp_cc_mdss_rot_clk_src = {
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_1),
 		.ops = &clk_rcg2_ops,
 	},
-	},
 };
 
 static struct clk_rcg2 disp_cc_mdss_vsync_clk_src = {
@@ -285,6 +286,7 @@ static struct clk_rcg2 disp_cc_mdss_vsync_clk_src = {
 		.parent_data = disp_cc_parent_data_2,
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_2),
 		.ops = &clk_rcg2_ops,
+	},
 	},
 };
 
@@ -305,6 +307,7 @@ static struct clk_rcg2 disp_cc_sleep_clk_src = {
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_5),
 		.ops = &clk_rcg2_ops,
 	},
+	},
 };
 
 static struct clk_rcg2 disp_cc_xo_clk_src = {
@@ -318,7 +321,6 @@ static struct clk_rcg2 disp_cc_xo_clk_src = {
 		.parent_data = disp_cc_parent_data_2,
 		.num_parents = ARRAY_SIZE(disp_cc_parent_data_2),
 		.ops = &clk_rcg2_ops,
-	},
 	},
 };
 
@@ -352,6 +354,7 @@ static struct clk_branch disp_cc_mdss_ahb1_clk = {
 			.flags = CLK_DONT_HOLD_STATE | CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_ahb_clk = {
@@ -369,6 +372,7 @@ static struct clk_branch disp_cc_mdss_ahb_clk = {
 			.flags = CLK_DONT_HOLD_STATE | CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_byte0_clk = {
@@ -386,6 +390,7 @@ static struct clk_branch disp_cc_mdss_byte0_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_byte0_intf_clk = {
@@ -403,6 +408,7 @@ static struct clk_branch disp_cc_mdss_byte0_intf_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_esc0_clk = {
@@ -420,6 +426,7 @@ static struct clk_branch disp_cc_mdss_esc0_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_mdp1_clk = {
@@ -437,6 +444,7 @@ static struct clk_branch disp_cc_mdss_mdp1_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_mdp_clk = {
@@ -454,6 +462,7 @@ static struct clk_branch disp_cc_mdss_mdp_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_mdp_lut1_clk = {
@@ -471,6 +480,7 @@ static struct clk_branch disp_cc_mdss_mdp_lut1_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_mdp_lut_clk = {
@@ -488,6 +498,7 @@ static struct clk_branch disp_cc_mdss_mdp_lut_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_non_gdsc_ahb_clk = {
@@ -505,6 +516,7 @@ static struct clk_branch disp_cc_mdss_non_gdsc_ahb_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_pclk0_clk = {
@@ -522,6 +534,7 @@ static struct clk_branch disp_cc_mdss_pclk0_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_rot1_clk = {
@@ -539,6 +552,7 @@ static struct clk_branch disp_cc_mdss_rot1_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_rot_clk = {
@@ -556,6 +570,7 @@ static struct clk_branch disp_cc_mdss_rot_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_rscc_ahb_clk = {
@@ -573,6 +588,7 @@ static struct clk_branch disp_cc_mdss_rscc_ahb_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_rscc_vsync_clk = {
@@ -590,6 +606,7 @@ static struct clk_branch disp_cc_mdss_rscc_vsync_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_vsync1_clk = {
@@ -607,6 +624,7 @@ static struct clk_branch disp_cc_mdss_vsync1_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_mdss_vsync_clk = {
@@ -624,6 +642,7 @@ static struct clk_branch disp_cc_mdss_vsync_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_branch disp_cc_sleep_clk = {
@@ -641,6 +660,7 @@ static struct clk_branch disp_cc_sleep_clk = {
 			.flags = CLK_SET_RATE_PARENT,
 			.ops = &clk_branch2_ops,
 		},
+	},
 };
 
 static struct clk_regmap *disp_cc_ravelin_clocks[] = {
