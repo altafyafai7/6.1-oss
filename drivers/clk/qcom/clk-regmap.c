@@ -104,3 +104,20 @@ int devm_clk_register_regmap(struct device *dev, struct clk_regmap *rclk)
 	return devm_clk_hw_register(dev, &rclk->hw);
 }
 EXPORT_SYMBOL_GPL(devm_clk_register_regmap);
+
+bool clk_is_regmap_clk(struct clk_hw *hw)
+{
+	return false;
+}
+EXPORT_SYMBOL_GPL(clk_is_regmap_clk);
+
+int clk_runtime_get_regmap(struct clk_regmap *rclk)
+{
+	return 0;
+}
+EXPORT_SYMBOL_GPL(clk_runtime_get_regmap);
+
+void clk_runtime_put_regmap(struct clk_regmap *rclk)
+{
+}
+EXPORT_SYMBOL_GPL(clk_runtime_put_regmap);
