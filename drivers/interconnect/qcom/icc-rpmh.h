@@ -23,6 +23,7 @@ struct qcom_icc_noc_ops;
  * @bcms: list of bcms that maps to the provider
  * @num_bcms: number of @bcms
  * @voter: bcm voter targeted by this provider
+ * @regmap: regmap for QoS configuration
  */
 struct qcom_icc_provider {
 	struct icc_provider provider;
@@ -64,6 +65,9 @@ struct bcm_db {
  * @max_peak: current max aggregate value of all peak bw requests
  * @bcms: list of bcms associated with this logical node
  * @num_bcms: num of @bcms
+ * @regmap: regmap for node-specific configuration
+ * @qosbox: QoS configuration for the node
+ * @noc_ops: NoC operations for the node
  */
 struct qcom_icc_node {
 	const char *name;
@@ -91,12 +95,15 @@ struct qcom_icc_node {
  * @vote_y: aggregated threshold values, represents peak_bw when @type is bw bcm
  * @vote_scale: scaling factor for vote_x and vote_y
  * @enable_mask: optional mask to send as vote instead of vote_x/vote_y
+ * @perf_mode_mask: mask to OR with enable_mask when QCOM_ICC_TAG_PERF_MODE is set
  * @dirty: flag used to indicate whether the bcm needs to be committed
  * @keepalive: flag used to indicate whether a keepalive is required
+ * @keepalive_early: keepalive only prior to sync-state
  * @aux_data: auxiliary data used when calculating threshold values and
  * communicating with RPMh
  * @list: used to link to other bcms when compiling lists for commit
  * @ws_list: used to keep track of bcms that may transition between wake/sleep
+ * @voter_idx: index of the voter associated with this BCM
  * @num_nodes: total number of @num_nodes
  * @nodes: list of qcom_icc_nodes that this BCM encapsulates
  */
@@ -125,11 +132,23 @@ struct qcom_icc_fabric {
 	size_t num_nodes;
 };
 
+/**
+ * struct qcom_icc_desc - Qualcomm specific interconnect descriptor
+ * @nodes: list of logical nodes
+ * @num_nodes: number of @nodes
+ * @bcms: list of Bus Clock Managers
+ * @num_bcms: number of @bcms
+ * @voters: list of voters
+ * @num_voters: number of @voters
+ * @config: regmap configuration
+ */
 struct qcom_icc_desc {
 	struct qcom_icc_node * const *nodes;
 	size_t num_nodes;
 	struct qcom_icc_bcm * const *bcms;
 	size_t num_bcms;
+	char **voters;
+	size_t num_voters;
 	const struct regmap_config *config;
 };
 
@@ -150,5 +169,6 @@ int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev);
 void qcom_icc_pre_aggregate(struct icc_node *node);
 int qcom_icc_rpmh_probe(struct platform_device *pdev);
 int qcom_icc_rpmh_remove(struct platform_device *pdev);
+void qcom_icc_rpmh_sync_state(struct device *dev);
 
 #endif
