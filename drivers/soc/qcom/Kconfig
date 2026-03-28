@@ -234,18 +234,28 @@ config QCOM_APR
 	  ASM, ADM and AFE modules.
 
 config QCOM_ICC_BWMON
-	tristate "QCOM Interconnect Bandwidth Monitor driver"
-	depends on ARCH_QCOM || COMPILE_TEST
-	select PM_OPP
-	select REGMAP_MMIO
-	help
-	  Sets up driver monitoring bandwidth on various interconnects and
-	  based on that voting for interconnect bandwidth, adjusting their
-	  speed to current demand.
-	  Current implementation brings support for BWMON v4, used for example
-	  on SDM845 to measure bandwidth between CPU (gladiator_noc) and Last
-	  Level Cache (memnoc).  Usage of this BWMON allows to remove some of
-	  the fixed bandwidth votes from cpufreq (CPU nodes) thus achieve high
-	  memory throughput even with lower CPU frequencies.
+        tristate "QCOM Interconnect Bandwidth Monitor driver"
+        depends on ARCH_QCOM || COMPILE_TEST
+        select PM_OPP
+        select REGMAP_MMIO
+        help
+          Sets up driver monitoring bandwidth on various interconnects and
+          based on that voting for interconnect bandwidth, adjusting their
+          speed to current demand.
+          Current implementation brings support for BWMON v4, used for example
+          on SDM845 to measure bandwidth between CPU (gladiator_noc) and Last
+          Level Cache (memnoc).  Usage of this BWMON allows to remove some of
+          the fixed bandwidth votes from cpufreq (CPU nodes) thus achieve high
+          memory throughput even with lower CPU frequencies.
+
+config QCOM_PANEL_EVENT_NOTIFIER
+        tristate "panel event notifier"
+        depends on DRM
+        help
+          Enabling this option adds panel event notifier driver.
+          This driver is responsible for notifying clients interested in display
+          panel events such as panel on , panel off, fps change etc.  Clients
+          can use these notifications for power saving or align its operations
+          with display panel power state.
 
 endmenu
