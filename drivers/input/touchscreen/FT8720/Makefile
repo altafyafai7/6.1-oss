@@ -1,6 +1,6 @@
 # Makefile for the focaltech touchscreen drivers.
 
-ccflags-y += -I$(srctree)/$(src) -I$(srctree)/$(src)/include
+ccflags-y += -I$(srctree)/$(src) -I$(srctree)/$(src)/include -I$(srctree)/$(src)/include/firmware
 
 obj-$(CONFIG_TOUCHSCREEN_FT8720) += fts_8720.o
 fts_8720-y := focaltech_core.o focaltech_ex_fun.o focaltech_ex_mode.o \
