@@ -806,7 +806,6 @@ static struct platform_driver gpu_cc_ravelin_driver = {
 		.name = "gpu_cc-ravelin",
 		.of_match_table = gpu_cc_ravelin_match_table,
 		.sync_state = gpu_cc_ravelin_sync_state,
-	},
 };
 
 static int __init gpu_cc_ravelin_init(void)

@@ -763,7 +763,6 @@ static struct platform_driver disp_cc_ravelin_driver = {
 		.name = "disp_cc-ravelin",
 		.of_match_table = disp_cc_ravelin_match_table,
 		.sync_state = disp_cc_ravelin_sync_state,
-	},
 };
 
 static int __init disp_cc_ravelin_init(void)

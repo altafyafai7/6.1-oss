@@ -1674,7 +1674,6 @@ static struct platform_driver cam_cc_ravelin_driver = {
 		.of_match_table = cam_cc_ravelin_match_table,
 		.sync_state = cam_cc_ravelin_sync_state,
 		.pm = &cam_cc_ravelin_pm_ops,
-	},
 };
 
 static int __init cam_cc_ravelin_init(void)
