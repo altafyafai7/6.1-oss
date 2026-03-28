@@ -396,7 +396,6 @@ static int32_t nvt_read_ram_and_save_file(uint32_t addr, uint16_t len, char *nam
 	uint8_t *fbufp = NULL;
 	int32_t ret = 0;
 	struct file *fp = NULL;
-	mm_segment_t org_fs;
 
 	sprintf(file, "%s/dump_%s.bin", NVT_DUMP_PARTITION_PATH, name);
 	NVT_LOG("Dump [%s] from 0x%08X to 0x%08X\n", file, addr, addr+len);
@@ -408,8 +407,6 @@ static int32_t nvt_read_ram_and_save_file(uint32_t addr, uint16_t len, char *nam
 		goto alloc_buf_fail;
 	}
 
-	org_fs = get_fs();
-	set_fs(KERNEL_DS);
 	fp = filp_open(file, O_RDWR | O_CREAT, 0644);
 	if (fp == NULL || IS_ERR(fp)) {
 		ret = -ENOMEM;
@@ -425,7 +422,7 @@ static int32_t nvt_read_ram_and_save_file(uint32_t addr, uint16_t len, char *nam
 	CTP_SPI_READ(ts->client, fbufp, len+1);
 
 	/* Write to file */
-	ret = vfs_write(fp, (char __user *)fbufp+1, len, &file_offset);
+	ret = kernel_write(fp, fbufp+1, len, &file_offset);
 	if (ret != len) {
 		NVT_ERR("write file failed\n");
 		goto open_file_fail;
@@ -434,7 +431,6 @@ static int32_t nvt_read_ram_and_save_file(uint32_t addr, uint16_t len, char *nam
 	}
 
 open_file_fail:
-	set_fs(org_fs);
 	if (!IS_ERR_OR_NULL(fp)) {
 		filp_close(fp, NULL);
 		fp = NULL;

@@ -1223,7 +1223,6 @@ void show_data_mc_sc(int *data)
     struct file *pfile = NULL;
     char filepath[FILE_NAME_LENGTH] = { 0 };
     loff_t pos;
-    mm_segment_t old_fs;
 
     FTS_TEST_FUNC_ENTER();
     memset(filepath, 0, sizeof(filepath));
@@ -1237,12 +1236,9 @@ void show_data_mc_sc(int *data)
         return -EIO;
     }
 
-    old_fs = get_fs();
-    set_fs(KERNEL_DS);
     pos = 0;
     //vfs_write(pfile, data_buf, len, &pos);
     filp_close(pfile, NULL);
-    set_fs(old_fs);
 
     FTS_TEST_FUNC_EXIT();
     return 0;

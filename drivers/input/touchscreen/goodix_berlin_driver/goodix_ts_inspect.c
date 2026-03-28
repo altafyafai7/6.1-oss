@@ -2040,15 +2040,11 @@ static ssize_t fs_write(const void* buf, size_t size, struct file* fp)
 #else
 static ssize_t fs_write(const void* buf, size_t size, struct file* fp)
 {
-	mm_segment_t old_fs;
 	loff_t pos;
 	ssize_t len;
 
 	pos = fp->f_pos;
-	old_fs = get_fs();
-	set_fs(KERNEL_DS);
-	len = vfs_write(fp, buf, size, &pos);
-	set_fs(old_fs);
+	len = kernel_write(fp, buf, size, &pos);
 	fp->f_pos = pos;
 
 	return len;
