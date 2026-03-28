@@ -760,8 +760,6 @@ static const struct qcom_cc_desc gpu_cc_ravelin_desc = {
 	.num_clks = ARRAY_SIZE(gpu_cc_ravelin_clocks),
 	.resets = gpu_cc_ravelin_resets,
 	.num_resets = ARRAY_SIZE(gpu_cc_ravelin_resets),
-	.clk_regulators = gpu_cc_ravelin_regulators,
-	.num_clk_regulators = ARRAY_SIZE(gpu_cc_ravelin_regulators),
 };
 
 static const struct of_device_id gpu_cc_ravelin_match_table[] = {
@@ -797,7 +795,6 @@ static int gpu_cc_ravelin_probe(struct platform_device *pdev)
 
 static void gpu_cc_ravelin_sync_state(struct device *dev)
 {
-	qcom_cc_sync_state(dev, &gpu_cc_ravelin_desc);
 }
 
 static struct platform_driver gpu_cc_ravelin_driver = {
@@ -806,6 +803,7 @@ static struct platform_driver gpu_cc_ravelin_driver = {
 		.name = "gpu_cc-ravelin",
 		.of_match_table = gpu_cc_ravelin_match_table,
 		.sync_state = gpu_cc_ravelin_sync_state,
+	},
 };
 
 static int __init gpu_cc_ravelin_init(void)

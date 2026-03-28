@@ -1611,8 +1611,6 @@ static struct qcom_cc_desc cam_cc_ravelin_desc = {
 	.num_clks = ARRAY_SIZE(cam_cc_ravelin_clocks),
 	.resets = cam_cc_ravelin_resets,
 	.num_resets = ARRAY_SIZE(cam_cc_ravelin_resets),
-	.clk_regulators = cam_cc_ravelin_regulators,
-	.num_clk_regulators = ARRAY_SIZE(cam_cc_ravelin_regulators),
 };
 
 static const struct of_device_id cam_cc_ravelin_match_table[] = {
@@ -1658,7 +1656,6 @@ static int cam_cc_ravelin_probe(struct platform_device *pdev)
 
 static void cam_cc_ravelin_sync_state(struct device *dev)
 {
-	qcom_cc_sync_state(dev, &cam_cc_ravelin_desc);
 }
 
 static const struct dev_pm_ops cam_cc_ravelin_pm_ops = {
@@ -1673,6 +1670,7 @@ static struct platform_driver cam_cc_ravelin_driver = {
 		.name = "cam_cc-ravelin",
 		.of_match_table = cam_cc_ravelin_match_table,
 		.sync_state = cam_cc_ravelin_sync_state,
+	},
 		.pm = &cam_cc_ravelin_pm_ops,
 };
 

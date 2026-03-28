@@ -1040,7 +1040,7 @@ static struct clk_branch gcc_aggre_ufs_phy_axi_hw_ctl_clk = {
 			},
 			.num_parents = 1,
 			.flags = CLK_SET_RATE_PARENT,
-			.ops = &clk_branch2_hw_ctl_ops,
+			.ops = &clk_branch2_ops,
 		},
 	},
 };
@@ -2165,7 +2165,7 @@ static struct clk_branch gcc_ufs_phy_axi_hw_ctl_clk = {
 			},
 			.num_parents = 1,
 			.flags = CLK_SET_RATE_PARENT,
-			.ops = &clk_branch2_hw_ctl_ops,
+			.ops = &clk_branch2_ops,
 		},
 	},
 };
@@ -2205,7 +2205,7 @@ static struct clk_branch gcc_ufs_phy_ice_core_hw_ctl_clk = {
 			},
 			.num_parents = 1,
 			.flags = CLK_SET_RATE_PARENT,
-			.ops = &clk_branch2_hw_ctl_ops,
+			.ops = &clk_branch2_ops,
 		},
 	},
 };
@@ -2245,7 +2245,7 @@ static struct clk_branch gcc_ufs_phy_phy_aux_hw_ctl_clk = {
 			},
 			.num_parents = 1,
 			.flags = CLK_SET_RATE_PARENT,
-			.ops = &clk_branch2_hw_ctl_ops,
+			.ops = &clk_branch2_ops,
 		},
 	},
 };
@@ -2339,7 +2339,7 @@ static struct clk_branch gcc_ufs_phy_unipro_core_hw_ctl_clk = {
 			},
 			.num_parents = 1,
 			.flags = CLK_SET_RATE_PARENT,
-			.ops = &clk_branch2_hw_ctl_ops,
+			.ops = &clk_branch2_ops,
 		},
 	},
 };
@@ -2746,8 +2746,6 @@ static const struct qcom_cc_desc gcc_ravelin_desc = {
 	.num_clks = ARRAY_SIZE(gcc_ravelin_clocks),
 	.resets = gcc_ravelin_resets,
 	.num_resets = ARRAY_SIZE(gcc_ravelin_resets),
-	.clk_regulators = gcc_ravelin_regulators,
-	.num_clk_regulators = ARRAY_SIZE(gcc_ravelin_regulators),
 };
 
 static const struct of_device_id gcc_ravelin_match_table[] = {
@@ -2805,7 +2803,6 @@ static int gcc_ravelin_probe(struct platform_device *pdev)
 
 static void gcc_ravelin_sync_state(struct device *dev)
 {
-	qcom_cc_sync_state(dev, &gcc_ravelin_desc);
 }
 
 static struct platform_driver gcc_ravelin_driver = {
@@ -2814,6 +2811,7 @@ static struct platform_driver gcc_ravelin_driver = {
 		.name = "gcc-ravelin",
 		.of_match_table = gcc_ravelin_match_table,
 		.sync_state = gcc_ravelin_sync_state,
+	},
 };
 
 static int __init gcc_ravelin_init(void)
