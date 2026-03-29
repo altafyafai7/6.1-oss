@@ -361,12 +361,25 @@ void ufshcd_scsi_block_requests(struct ufs_hba *hba)
 		scsi_block_requests(hba->host);
 }
 
+static enum ufs_trace_str_t str_to_str_t(const char *str)
+{
+	if (!strcmp(str, "send")) return UFS_CMD_SEND;
+	if (!strcmp(str, "complete")) return UFS_CMD_COMP;
+	if (!strcmp(str, "query_send")) return UFS_QUERY_SEND;
+	if (!strcmp(str, "query_complete")) return UFS_QUERY_COMP;
+	if (!strcmp(str, "query_complete_err")) return UFS_QUERY_ERR;
+	if (!strcmp(str, "tm_send")) return UFS_TM_SEND;
+	if (!strcmp(str, "tm_complete")) return UFS_TM_COMP;
+	if (!strcmp(str, "tm_complete_err")) return UFS_TM_ERR;
+	return UFS_CMD_SEND;
+}
+
 static void ufshcd_add_cmd_upiu_trace(struct ufs_hba *hba, unsigned int tag,
 		const char *str)
 {
 	struct utp_upiu_req *rq = hba->lrb[tag].ucd_req_ptr;
 
-	trace_ufshcd_upiu(dev_name(hba->dev), str, &rq->header, &rq->sc.cdb);
+	trace_ufshcd_upiu(dev_name(hba->dev), str_to_str_t(str), &rq->header, &rq->sc.cdb, UFS_TSF_CDB);
 }
 
 static void ufshcd_add_query_upiu_trace(struct ufs_hba *hba, unsigned int tag,
@@ -374,7 +387,7 @@ static void ufshcd_add_query_upiu_trace(struct ufs_hba *hba, unsigned int tag,
 {
 	struct utp_upiu_req *rq = hba->lrb[tag].ucd_req_ptr;
 
-	trace_ufshcd_upiu(dev_name(hba->dev), str, &rq->header, &rq->qr);
+	trace_ufshcd_upiu(dev_name(hba->dev), str_to_str_t(str), &rq->header, &rq->qr, UFS_TSF_OSF);
 }
 
 static void ufshcd_add_tm_upiu_trace(struct ufs_hba *hba, unsigned int tag,
@@ -382,8 +395,8 @@ static void ufshcd_add_tm_upiu_trace(struct ufs_hba *hba, unsigned int tag,
 {
 	struct utp_task_req_desc *descp = &hba->utmrdl_base_addr[tag];
 
-	trace_ufshcd_upiu(dev_name(hba->dev), str, &descp->req_header,
-			&descp->input_param1);
+	trace_ufshcd_upiu(dev_name(hba->dev), str_to_str_t(str), &descp->req_header,
+			&descp->input_param1, UFS_TSF_TM_INPUT);
 }
 
 static void ufshcd_add_uic_command_trace(struct ufs_hba *hba,
@@ -400,7 +413,7 @@ static void ufshcd_add_uic_command_trace(struct ufs_hba *hba,
 	else
 		cmd = ufshcd_readl(hba, REG_UIC_COMMAND);
 
-	trace_ufshcd_uic_command(dev_name(hba->dev), str, cmd,
+	trace_ufshcd_uic_command(dev_name(hba->dev), str_to_str_t(str), cmd,
 				 ufshcd_readl(hba, REG_UIC_COMMAND_ARG_1),
 				 ufshcd_readl(hba, REG_UIC_COMMAND_ARG_2),
 				 ufshcd_readl(hba, REG_UIC_COMMAND_ARG_3));
@@ -432,24 +445,24 @@ static void ufshcd_add_command_trace(struct ufs_hba *hba,
 			 * Currently we only fully trace read(10) and write(10)
 			 * commands
 			 */
-			if (cmd->request && cmd->request->bio)
-				lba = cmd->request->bio->bi_iter.bi_sector;
+			if (scsi_cmd_to_rq(cmd) && scsi_cmd_to_rq(cmd)->bio)
+				lba = scsi_cmd_to_rq(cmd)->bio->bi_iter.bi_sector;
 			transfer_len = be32_to_cpu(
 				lrbp->ucd_req_ptr->sc.exp_data_transfer_len);
 			if (opcode == WRITE_10)
 				group_id = lrbp->cmd->cmnd[6];
 		} else if (opcode == UNMAP) {
-			if (cmd->request) {
+			if (scsi_cmd_to_rq(cmd)) {
 				lba = scsi_get_lba(cmd);
-				transfer_len = blk_rq_bytes(cmd->request);
+				transfer_len = blk_rq_bytes(scsi_cmd_to_rq(cmd));
 			}
 		}
 	}
 
 	intr = ufshcd_readl(hba, REG_INTERRUPT_STATUS);
 	doorbell = ufshcd_readl(hba, REG_UTP_TRANSFER_REQ_DOOR_BELL);
-	trace_ufshcd_command(dev_name(hba->dev), str, tag,
-			doorbell, transfer_len, intr, lba, opcode, group_id);
+	trace_ufshcd_command(dev_name(hba->dev), str_to_str_t(str), tag,
+			doorbell, 0, transfer_len, intr, (u64)lba, opcode, group_id);
 }
 
 static void ufshcd_print_clk_freqs(struct ufs_hba *hba)
@@ -2102,7 +2115,7 @@ static void ufshcd_update_monitor(struct ufs_hba *hba, struct ufshcd_lrb *lrbp)
 
 	spin_lock_irqsave(hba->host->host_lock, flags);
 	if (dir >= 0 && hba->monitor.nr_queued[dir] > 0) {
-		struct request *req = lrbp->cmd->request;
+		struct request *req = scsi_cmd_to_rq(lrbp->cmd);
 		struct ufs_hba_monitor *m = &hba->monitor;
 		ktime_t now, inc, lat;
 
@@ -2734,11 +2747,11 @@ static int ufshcd_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *cmd)
 
 	hba = shost_priv(host);
 
-	tag = cmd->request->tag;
+	tag = scsi_cmd_to_rq(cmd)->tag;
 	if (!ufshcd_valid_tag(hba, tag)) {
 		dev_err(hba->dev,
 			"%s: invalid command tag %d: cmd=0x%p, cmd->request=0x%p",
-			__func__, tag, cmd, cmd->request);
+			__func__, tag, cmd, scsi_cmd_to_rq(cmd));
 		BUG();
 	}
 
@@ -2801,9 +2814,9 @@ static int ufshcd_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *cmd)
 	lrbp->lun = ufshcd_scsi_to_upiu_lun(cmd->device->lun);
 	lrbp->intr_cmd = !ufshcd_is_intr_aggr_allowed(hba) ? true : false;
 
-	ufshcd_prepare_lrbp_crypto(cmd->request, lrbp);
+	ufshcd_prepare_lrbp_crypto(scsi_cmd_to_rq(cmd), lrbp);
 
-	trace_android_vh_ufs_prepare_command(hba, cmd->request, lrbp, &err);
+	trace_android_vh_ufs_prepare_command(hba, scsi_cmd_to_rq(cmd), lrbp, &err);
 	if (err) {
 		lrbp->cmd = NULL;
 		ufshcd_release(hba);
@@ -7220,12 +7233,12 @@ static int ufshcd_abort(struct scsi_cmnd *cmd)
 
 	host = cmd->device->host;
 	hba = shost_priv(host);
-	tag = cmd->request->tag;
+	tag = scsi_cmd_to_rq(cmd)->tag;
 	lrbp = &hba->lrb[tag];
 	if (!ufshcd_valid_tag(hba, tag)) {
 		dev_err(hba->dev,
 			"%s: invalid command tag %d: cmd=0x%p, cmd->request=0x%p",
-			__func__, tag, cmd, cmd->request);
+			__func__, tag, cmd, scsi_cmd_to_rq(cmd));
 		BUG();
 	}
 

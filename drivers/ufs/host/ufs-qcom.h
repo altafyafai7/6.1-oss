@@ -176,6 +176,44 @@ struct ufs_qcom_testbus {
 
 struct gpio_desc;
 
+/* Host UIC error code PHY adapter layer */
+enum ufshcd_ec_pa {
+	UFS_EC_PA_LANE_0,
+	UFS_EC_PA_LANE_1,
+	UFS_EC_PA_LANE_2,
+	UFS_EC_PA_LANE_3,
+	UFS_EC_PA_LINE_RESET,
+	UFS_EC_PA_MAX,
+};
+
+/* Host UIC error code data link layer */
+enum ufshcd_ec_dl {
+	UFS_EC_DL_NAC_RECEIVED,
+	UFS_EC_DL_TCx_REPLAY_TIMER_EXPIRED,
+	UFS_EC_DL_AFCx_REQUEST_TIMER_EXPIRED,
+	UFS_EC_DL_FCx_PROTECT_TIMER_EXPIRED,
+	UFS_EC_DL_CRC_ERROR,
+	UFS_EC_DL_RX_BUFFER_OVERFLOW,
+	UFS_EC_DL_MAX_FRAME_LENGTH_EXCEEDED,
+	UFS_EC_DL_WRONG_SEQUENCE_NUMBER,
+	UFS_EC_DL_AFC_FRAME_SYNTAX_ERROR,
+	UFS_EC_DL_NAC_FRAME_SYNTAX_ERROR,
+	UFS_EC_DL_EOF_SYNTAX_ERROR,
+	UFS_EC_DL_FRAME_SYNTAX_ERROR,
+	UFS_EC_DL_BAD_CTRL_SYMBOL_TYPE,
+	UFS_EC_DL_PA_INIT_ERROR,
+	UFS_EC_DL_PA_ERROR_IND_RECEIVED,
+	UFS_EC_DL_MAX,
+};
+
+struct ufs_uic_stats {
+	u32 pa_err_cnt_total;
+	u32 pa_err_cnt[UFS_EC_PA_MAX];
+	u32 dl_err_cnt_total;
+	u32 dl_err_cnt[UFS_EC_DL_MAX];
+	u32 dme_err_cnt;
+};
+
 struct ufs_qcom_host {
 	/*
 	 * Set this capability if host controller supports the QUniPro mode
@@ -194,6 +232,7 @@ struct ufs_qcom_host {
 
 	struct phy *generic_phy;
 	struct ufs_hba *hba;
+	struct ufs_uic_stats ufs_stats;
 	struct ufs_pa_layer_attr dev_req_params;
 	struct clk *rx_l0_sync_clk;
 	struct clk *tx_l0_sync_clk;

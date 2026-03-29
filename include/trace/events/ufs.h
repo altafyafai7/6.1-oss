@@ -6,11 +6,12 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM ufs
 
+#include <ufs/ufs.h>
+
 #if !defined(_TRACE_UFS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_UFS_H
 
 #include <linux/tracepoint.h>
-#include <ufs/ufs.h>
 
 #define str_opcode(opcode)						\
 	__print_symbolic(opcode,					\
