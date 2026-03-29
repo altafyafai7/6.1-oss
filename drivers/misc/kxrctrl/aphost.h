@@ -32,6 +32,7 @@
 #include <linux/bitops.h>
 #include <linux/errno.h>
 #include <linux/dma-buf.h>
+#include <linux/iosys-map.h>
 #include <linux/of.h>
 #include <linux/of_gpio.h>
 #include <linux/of_device.h>
@@ -159,6 +160,7 @@ struct js_spi_client {
 	bool suspend;
 	wait_queue_head_t  wait_queue;
 	void   *vaddr;
+	struct iosys_map js_map;
 	size_t vsize;
 	struct dma_buf *js_buf;
 	spinlock_t smem_lock;

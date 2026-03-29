@@ -103,7 +103,8 @@ static ssize_t jsmem_store(struct device *dev,
 			goto __end;
 
 		d_packet_set_instance(NULL);
-		dma_buf_vunmap(gspi_client->js_buf, gspi_client->vaddr);
+		dma_buf_vunmap(gspi_client->js_buf, &gspi_client->js_map);
+		iosys_map_clear(&gspi_client->js_map);
 		dma_buf_end_cpu_access(gspi_client->js_buf, DMA_BIDIRECTIONAL);
 		dma_buf_put(gspi_client->js_buf);
 		gspi_client->vaddr = NULL;
@@ -128,9 +129,9 @@ static ssize_t jsmem_store(struct device *dev,
 		}
 
 		gspi_client->vsize = gspi_client->js_buf->size;
-		gspi_client->vaddr = dma_buf_vmap(gspi_client->js_buf);
+		ret = dma_buf_vmap(gspi_client->js_buf, &gspi_client->js_map);
 
-		if (IS_ERR_OR_NULL(gspi_client->vaddr)) {
+		if (ret) {
 			dma_buf_end_cpu_access(gspi_client->js_buf,
 						DMA_BIDIRECTIONAL);
 			dma_buf_put(gspi_client->js_buf);
@@ -139,6 +140,7 @@ static ssize_t jsmem_store(struct device *dev,
 							  gspi_client->memfd);
 			goto __end;
 		}
+		gspi_client->vaddr = gspi_client->js_map.vaddr;
 
 		inbuf = (cp_buffer_t *)gspi_client->vaddr;
 		d_packet_set_instance(inbuf);
@@ -861,7 +863,7 @@ static int js_spi_driver_probe(struct spi_device *spi)
 	return js_spi_setup(spi);
 }
 
-static int js_spi_driver_remove(struct spi_device *spi)
+static void js_spi_driver_remove(struct spi_device *spi)
 {
 	struct js_spi_client *spi_client = NULL;
 
@@ -870,10 +872,13 @@ static int js_spi_driver_remove(struct spi_device *spi)
 
 	spi_client = dev_get_drvdata(&spi->dev);
 	if (!IS_ERR_OR_NULL(spi_client->vaddr)) {
+		dma_buf_vunmap(spi_client->js_buf, &spi_client->js_map);
+		iosys_map_clear(&spi_client->js_map);
 		dma_buf_end_cpu_access(spi_client->js_buf,
 				DMA_BIDIRECTIONAL);
 		dma_buf_put(spi_client->js_buf);
 		spi_client->js_buf = NULL;
+		spi_client->vaddr = NULL;
 	}
 
 	if (gspi_client->v1p8)
@@ -896,7 +901,6 @@ static int js_spi_driver_remove(struct spi_device *spi)
 
 	kfree(spi_client);
 	gspi_client = NULL;
-	return 0;
 }
 
 static const struct of_device_id js_dt_match[] = {
