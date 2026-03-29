@@ -177,6 +177,7 @@ struct ufs_qcom_testbus {
 struct gpio_desc;
 
 /* Host UIC error code PHY adapter layer */
+#ifndef UFS_EC_PA_MAX
 enum ufshcd_ec_pa {
 	UFS_EC_PA_LANE_0,
 	UFS_EC_PA_LANE_1,
@@ -185,8 +186,10 @@ enum ufshcd_ec_pa {
 	UFS_EC_PA_LINE_RESET,
 	UFS_EC_PA_MAX,
 };
+#endif
 
 /* Host UIC error code data link layer */
+#ifndef UFS_EC_DL_MAX
 enum ufshcd_ec_dl {
 	UFS_EC_DL_NAC_RECEIVED,
 	UFS_EC_DL_TCx_REPLAY_TIMER_EXPIRED,
@@ -205,6 +208,7 @@ enum ufshcd_ec_dl {
 	UFS_EC_DL_PA_ERROR_IND_RECEIVED,
 	UFS_EC_DL_MAX,
 };
+#endif
 
 struct ufs_uic_stats {
 	u32 pa_err_cnt_total;
