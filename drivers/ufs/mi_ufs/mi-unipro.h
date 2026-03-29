@@ -256,11 +256,10 @@ enum ufs_unipro_ver {
 	UFS_UNIPRO_VER_1_61 = 4, /* UniPro version 1.61 */
 	UFS_UNIPRO_VER_1_8  = 5, /* UniPro version 1.8 */
 	UFS_UNIPRO_VER_MAX  = 6, /* UniPro unsupported version */
-};
-#endif
 	/* UniPro version field mask in PA_LOCALVERINFO */
 	UFS_UNIPRO_VER_MASK = 0xF,
 };
+#endif
 
 /*
  * Data Link Layer Attributes
