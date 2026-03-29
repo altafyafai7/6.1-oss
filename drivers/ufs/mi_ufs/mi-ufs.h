@@ -42,11 +42,6 @@ enum ufs_desc_def_size {
 };
 #endif
 
-struct ufs_query_res {
-	u8 response;
-	u32 value;
-};
-
 #define UFS_VREG_VCC_MIN_UV	   2700000 /* uV */
 #define UFS_VREG_VCC_MAX_UV	   3600000 /* uV */
 #define UFS_VREG_VCC_1P8_MIN_UV    1700000 /* uV */
@@ -55,28 +50,5 @@ struct ufs_query_res {
 #define UFS_VREG_VCCQ_MAX_UV	   1260000 /* uV */
 #define UFS_VREG_VCCQ2_MIN_UV	   1700000 /* uV */
 #define UFS_VREG_VCCQ2_MAX_UV	   1950000 /* uV */
-
-/*
- * This enum is used in string mapping in include/trace/events/ufs.h.
- */
-#ifndef _UFS_TRACE_STR_T_DEFINED
-#define _UFS_TRACE_STR_T_DEFINED
-enum ufs_trace_str_t {
-	UFS_CMD_SEND, UFS_CMD_COMP, UFS_DEV_COMP,
-	UFS_QUERY_SEND, UFS_QUERY_COMP, UFS_QUERY_ERR,
-	UFS_TM_SEND, UFS_TM_COMP, UFS_TM_ERR
-};
-#endif
-
-/*
- * Transaction Specific Fields (TSF) type in the UPIU package, this enum is
- * used in include/trace/events/ufs.h for UFS command trace.
- */
-#ifndef _UFS_TRACE_TSF_T_DEFINED
-#define _UFS_TRACE_TSF_T_DEFINED
-enum ufs_trace_tsf_t {
-	UFS_TSF_CDB, UFS_TSF_OSF, UFS_TSF_TM_INPUT, UFS_TSF_TM_OUTPUT
-};
-#endif
 
 #endif /* _MI_UFS_H */

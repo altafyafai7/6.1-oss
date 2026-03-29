@@ -7674,13 +7674,13 @@ static void ufshcd_wb_probe(struct ufs_hba *hba, u8 *desc_buf)
 	 * a max of 1 lun would have wb buffer configured.
 	 * Now only shared buffer mode is supported.
 	 */
-	dev_info->b_wb_buffer_type =
+	dev_info->wb_buffer_type =
 		desc_buf[DEVICE_DESC_PARAM_WB_TYPE];
 
 	dev_info->b_presrv_uspc_en =
 		desc_buf[DEVICE_DESC_PARAM_WB_PRESRV_USRSPC_EN];
 
-	if (dev_info->b_wb_buffer_type == WB_BUF_MODE_SHARED) {
+	if (dev_info->wb_buffer_type == WB_BUF_MODE_SHARED) {
 		dev_info->d_wb_alloc_units =
 		get_unaligned_be32(desc_buf +
 				   DEVICE_DESC_PARAM_WB_SHARED_ALLOC_UNITS);

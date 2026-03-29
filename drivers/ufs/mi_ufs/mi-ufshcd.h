@@ -1141,7 +1141,7 @@ static inline bool ufshcd_keep_autobkops_enabled_except_suspend(
 
 static inline u8 ufshcd_wb_get_query_index(struct ufs_hba *hba)
 {
-	if (hba->dev_info.b_wb_buffer_type == WB_BUF_MODE_LU_DEDICATED)
+	if (hba->dev_info.wb_buffer_type == WB_BUF_MODE_LU_DEDICATED)
 		return hba->dev_info.wb_dedicated_lu;
 	return 0;
 }
