@@ -87,6 +87,8 @@ enum ufs_event_type {
 };
 
 /* Host UIC error code PHY adapter layer */
+#ifndef _UFS_EC_PA_DEFINED
+#define _UFS_EC_PA_DEFINED
 enum ufshcd_ec_pa {
 	UFS_EC_PA_LANE_0,
 	UFS_EC_PA_LANE_1,
@@ -95,8 +97,11 @@ enum ufshcd_ec_pa {
 	UFS_EC_PA_LINE_RESET,
 	UFS_EC_PA_MAX,
 };
+#endif
 
 /* Host UIC error code data link layer */
+#ifndef _UFS_EC_DL_DEFINED
+#define _UFS_EC_DL_DEFINED
 enum ufshcd_ec_dl {
 	UFS_EC_DL_NAC_RECEIVED,
 	UFS_EC_DL_TCx_REPLAY_TIMER_EXPIRED,
@@ -115,6 +120,7 @@ enum ufshcd_ec_dl {
 	UFS_EC_DL_PA_ERROR_IND_RECEIVED,
 	UFS_EC_DL_MAX,
 };
+#endif
 
 /**
  * struct uic_command - UIC command structure

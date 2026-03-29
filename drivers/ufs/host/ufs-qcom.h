@@ -177,7 +177,8 @@ struct ufs_qcom_testbus {
 struct gpio_desc;
 
 /* Host UIC error code PHY adapter layer */
-#ifndef UFS_EC_PA_MAX
+#ifndef _UFS_EC_PA_DEFINED
+#define _UFS_EC_PA_DEFINED
 enum ufshcd_ec_pa {
 	UFS_EC_PA_LANE_0,
 	UFS_EC_PA_LANE_1,
@@ -189,7 +190,8 @@ enum ufshcd_ec_pa {
 #endif
 
 /* Host UIC error code data link layer */
-#ifndef UFS_EC_DL_MAX
+#ifndef _UFS_EC_DL_DEFINED
+#define _UFS_EC_DL_DEFINED
 enum ufshcd_ec_dl {
 	UFS_EC_DL_NAC_RECEIVED,
 	UFS_EC_DL_TCx_REPLAY_TIMER_EXPIRED,
