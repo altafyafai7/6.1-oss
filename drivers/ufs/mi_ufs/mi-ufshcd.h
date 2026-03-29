@@ -9,8 +9,8 @@
  *	Vinayak Holikatti <h.vinayak@samsung.com>
  */
 
-#ifndef _UFSHCD_H
-#define _UFSHCD_H
+#ifndef _MI_UFSHCD_H
+#define _MI_UFSHCD_H
 
 #include <linux/module.h>
 #include <linux/kernel.h>

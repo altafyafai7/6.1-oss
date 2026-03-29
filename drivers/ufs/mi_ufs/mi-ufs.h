@@ -8,8 +8,8 @@
  *	Vinayak Holikatti <h.vinayak@samsung.com>
  */
 
-#ifndef _UFS_H
-#define _UFS_H
+#ifndef _MI_UFS_H
+#define _MI_UFS_H
 
 #include <linux/mutex.h>
 #include <linux/types.h>

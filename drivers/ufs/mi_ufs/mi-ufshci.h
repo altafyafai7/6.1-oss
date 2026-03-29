@@ -8,8 +8,8 @@
  *	Vinayak Holikatti <h.vinayak@samsung.com>
  */
 
-#ifndef _UFSHCI_H
-#define _UFSHCI_H
+#ifndef _MI_UFSHCI_H
+#define _MI_UFSHCI_H
 
 enum {
 	TASK_REQ_UPIU_SIZE_DWORDS	= 8,

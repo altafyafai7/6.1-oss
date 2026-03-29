@@ -5,8 +5,8 @@
  * Copyright (C) 2013 Samsung Electronics Co., Ltd.
  */
 
-#ifndef _UNIPRO_H_
-#define _UNIPRO_H_
+#ifndef _MI_UNIPRO_H_
+#define _MI_UNIPRO_H_
 
 /*
  * M-TX Configuration Attributes
