@@ -79,25 +79,6 @@
 #define ufshcd_is_ufs_dev_poweroff(h) \
 	((h)->curr_dev_pwr_mode == UFS_POWERDOWN_PWR_MODE)
 
-struct ufs_hba_monitor {
-	unsigned long chunk_size;
-
-	unsigned long nr_sec_rw[2];
-	ktime_t total_busy[2];
-
-	unsigned long nr_req[2];
-	/* latencies*/
-	ktime_t lat_sum[2];
-	ktime_t lat_max[2];
-	ktime_t lat_min[2];
-
-	u32 nr_queued[2];
-	ktime_t busy_start_ts[2];
-
-	ktime_t enabled_ts;
-	bool enabled;
-};
-
 /*
 * customer debug interface
 */
