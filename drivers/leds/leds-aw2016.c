@@ -617,7 +617,7 @@ free_led_arry:
 	return ret;
 }
 
-static int aw2016_led_remove(struct i2c_client *client)
+static void aw2016_led_remove(struct i2c_client *client)
 {
 	struct aw2016_led *led_array = i2c_get_clientdata(client);
 	int i, parsed_leds = led_array->num_leds;
@@ -634,7 +634,6 @@ static int aw2016_led_remove(struct i2c_client *client)
 	mutex_destroy(&led_array->lock);
 	devm_kfree(&client->dev, led_array);
 	led_array = NULL;
-	return 0;
 }
 
 static void aw2016_led_shutdown(struct i2c_client *client)

@@ -506,7 +506,7 @@ static int ktd3136_probe(struct i2c_client *client,
 
 	return 0;
 }
-static int ktd3136_remove(struct i2c_client *client)
+static void ktd3136_remove(struct i2c_client *client)
 {
 	struct ktd3136_chip *chip = i2c_get_clientdata(client);
 
@@ -514,8 +514,6 @@ static int ktd3136_remove(struct i2c_client *client)
 	gpio_free(chip->hwen_gpio);
 
 	ktd_node_deinit();
-
-	return 0;
 }
 static const struct i2c_device_id ktd3136_id[] = {
 	{KTD_I2C_NAME, 0},

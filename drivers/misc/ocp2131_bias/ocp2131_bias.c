@@ -155,12 +155,11 @@ static int ocp2131_bias_probe(struct i2c_client *client, const struct i2c_device
 	//ocp2131_write_reg(ocp, OCP2131_Mtp_Reg, OCP2131_Mtp_save);
 	return 0;
 }
-static int ocp2131_bias_remove(struct i2c_client *client)
+static void ocp2131_bias_remove(struct i2c_client *client)
 {
 	struct ocp2131 *ocp = i2c_get_clientdata(client);
 	mutex_destroy(&ocp->i2c_rw_lock);
 	pr_info("Enter ocp2131_bias_remove\n");
-	return 0;
 }
 /*****************************************************************************
  * * i2c driver configuration
