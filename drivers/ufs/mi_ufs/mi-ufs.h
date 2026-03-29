@@ -96,19 +96,25 @@ enum {
 #endif
 
 /* UPIU Read/Write flags */
+#ifndef _UFS_UPIU_CMD_FLAGS_DEFINED
+#define _UFS_UPIU_CMD_FLAGS_DEFINED
 enum {
 	UPIU_CMD_FLAGS_NONE	= 0x00,
 	UPIU_CMD_FLAGS_WRITE	= 0x20,
 	UPIU_CMD_FLAGS_READ	= 0x40,
 };
+#endif
 
 /* UPIU Task Attributes */
+#ifndef _UFS_UPIU_TASK_ATTRS_DEFINED
+#define _UFS_UPIU_TASK_ATTRS_DEFINED
 enum {
 	UPIU_TASK_ATTR_SIMPLE	= 0x00,
 	UPIU_TASK_ATTR_ORDERED	= 0x01,
 	UPIU_TASK_ATTR_HEADQ	= 0x02,
 	UPIU_TASK_ATTR_ACA	= 0x03,
 };
+#endif
 
 /* UPIU Query request function */
 enum {
@@ -224,6 +230,8 @@ enum unit_desc_param {
 };
 
 /* Device descriptor parameters offsets in bytes*/
+#ifndef _UFS_DEVICE_DESC_PARAM_DEFINED
+#define _UFS_DEVICE_DESC_PARAM_DEFINED
 enum device_desc_param {
 	DEVICE_DESC_PARAM_LEN			= 0x0,
 	DEVICE_DESC_PARAM_TYPE			= 0x1,
@@ -267,16 +275,22 @@ enum device_desc_param {
 	DEVICE_DESC_PARAM_WB_TYPE		= 0x54,
 	DEVICE_DESC_PARAM_WB_SHARED_ALLOC_UNITS = 0x55,
 };
+#endif
 
 /* Interconnect descriptor parameters offsets in bytes*/
+#ifndef _UFS_INTERCONNECT_DESC_PARAM_DEFINED
+#define _UFS_INTERCONNECT_DESC_PARAM_DEFINED
 enum interconnect_desc_param {
 	INTERCONNECT_DESC_PARAM_LEN		= 0x0,
 	INTERCONNECT_DESC_PARAM_TYPE		= 0x1,
 	INTERCONNECT_DESC_PARAM_UNIPRO_VER	= 0x2,
 	INTERCONNECT_DESC_PARAM_MPHY_VER	= 0x4,
 };
+#endif
 
 /* Geometry descriptor parameters offsets in bytes*/
+#ifndef _UFS_GEOMETRY_DESC_PARAM_DEFINED
+#define _UFS_GEOMETRY_DESC_PARAM_DEFINED
 enum geometry_desc_param {
 	GEOMETRY_DESC_PARAM_LEN			= 0x0,
 	GEOMETRY_DESC_PARAM_TYPE		= 0x1,
@@ -320,8 +334,11 @@ enum geometry_desc_param {
 	GEOMETRY_DESC_PARAM_WB_SUP_RED_TYPE	= 0x55,
 	GEOMETRY_DESC_PARAM_WB_SUP_WB_TYPE	= 0x56,
 };
+#endif
 
 /* Health descriptor parameters offsets in bytes*/
+#ifndef _UFS_HEALTH_DESC_PARAM_DEFINED
+#define _UFS_HEALTH_DESC_PARAM_DEFINED
 enum health_desc_param {
 	HEALTH_DESC_PARAM_LEN			= 0x0,
 	HEALTH_DESC_PARAM_TYPE			= 0x1,
@@ -329,12 +346,16 @@ enum health_desc_param {
 	HEALTH_DESC_PARAM_LIFE_TIME_EST_A	= 0x3,
 	HEALTH_DESC_PARAM_LIFE_TIME_EST_B	= 0x4,
 };
+#endif
 
 /* WriteBooster buffer mode */
+#ifndef _UFS_WB_BUF_MODE_DEFINED
+#define _UFS_WB_BUF_MODE_DEFINED
 enum {
 	WB_BUF_MODE_LU_DEDICATED	= 0x0,
 	WB_BUF_MODE_SHARED		= 0x1,
 };
+#endif
 
 /*
  * Logical Unit Write Protect

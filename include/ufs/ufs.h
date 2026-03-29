@@ -107,27 +107,38 @@ enum {
 #endif
 
 /* UPIU Read/Write flags */
+#ifndef _UFS_UPIU_CMD_FLAGS_DEFINED
+#define _UFS_UPIU_CMD_FLAGS_DEFINED
 enum {
 	UPIU_CMD_FLAGS_NONE	= 0x00,
 	UPIU_CMD_FLAGS_WRITE	= 0x20,
 	UPIU_CMD_FLAGS_READ	= 0x40,
 };
+#endif
 
 /* UPIU Task Attributes */
+#ifndef _UFS_UPIU_TASK_ATTRS_DEFINED
+#define _UFS_UPIU_TASK_ATTRS_DEFINED
 enum {
 	UPIU_TASK_ATTR_SIMPLE	= 0x00,
 	UPIU_TASK_ATTR_ORDERED	= 0x01,
 	UPIU_TASK_ATTR_HEADQ	= 0x02,
 	UPIU_TASK_ATTR_ACA	= 0x03,
 };
+#endif
 
 /* UPIU Query request function */
+#ifndef _UFS_UPIU_QUERY_FUNCS_DEFINED
+#define _UFS_UPIU_QUERY_FUNCS_DEFINED
 enum {
 	UPIU_QUERY_FUNC_STANDARD_READ_REQUEST           = 0x01,
 	UPIU_QUERY_FUNC_STANDARD_WRITE_REQUEST          = 0x81,
 };
+#endif
 
 /* Flag idn for Query Requests*/
+#ifndef _UFS_FLAG_IDN_DEFINED
+#define _UFS_FLAG_IDN_DEFINED
 enum flag_idn {
 	QUERY_FLAG_IDN_FDEVICEINIT			= 0x01,
 	QUERY_FLAG_IDN_PERMANENT_WPE			= 0x02,
@@ -146,8 +157,11 @@ enum flag_idn {
 	QUERY_FLAG_IDN_HPB_RESET                        = 0x11,
 	QUERY_FLAG_IDN_HPB_EN				= 0x12,
 };
+#endif
 
 /* Attribute idn for Query requests */
+#ifndef _UFS_ATTR_IDN_DEFINED
+#define _UFS_ATTR_IDN_DEFINED
 enum attr_idn {
 	QUERY_ATTR_IDN_BOOT_LU_EN		= 0x00,
 	QUERY_ATTR_IDN_MAX_HPB_SINGLE_CMD	= 0x01,
@@ -182,8 +196,11 @@ enum attr_idn {
 	QUERY_ATTR_IDN_CURR_WB_BUFF_SIZE        = 0x1F,
 	QUERY_ATTR_IDN_EXT_IID_EN		= 0x2A,
 };
+#endif
 
 /* Descriptor idn for Query requests */
+#ifndef _UFS_DESC_IDN_DEFINED
+#define _UFS_DESC_IDN_DEFINED
 enum desc_idn {
 	QUERY_DESC_IDN_DEVICE		= 0x0,
 	QUERY_DESC_IDN_CONFIGURATION	= 0x1,
@@ -197,13 +214,19 @@ enum desc_idn {
 	QUERY_DESC_IDN_HEALTH           = 0x9,
 	QUERY_DESC_IDN_MAX,
 };
+#endif
 
+#ifndef _UFS_DESC_HEADER_OFFSET_DEFINED
+#define _UFS_DESC_HEADER_OFFSET_DEFINED
 enum desc_header_offset {
 	QUERY_DESC_LENGTH_OFFSET	= 0x00,
 	QUERY_DESC_DESC_TYPE_OFFSET	= 0x01,
 };
+#endif
 
 /* Unit descriptor parameters offsets in bytes*/
+#ifndef _UFS_UNIT_DESC_PARAM_DEFINED
+#define _UFS_UNIT_DESC_PARAM_DEFINED
 enum unit_desc_param {
 	UNIT_DESC_PARAM_LEN			= 0x0,
 	UNIT_DESC_PARAM_TYPE			= 0x1,
@@ -227,8 +250,11 @@ enum unit_desc_param {
 	UNIT_DESC_PARAM_HPB_NUM_PIN_RGNS	= 0x27,
 	UNIT_DESC_PARAM_WB_BUF_ALLOC_UNITS	= 0x29,
 };
+#endif
 
 /* RPMB Unit descriptor parameters offsets in bytes*/
+#ifndef _UFS_RPMB_UNIT_DESC_PARAM_DEFINED
+#define _UFS_RPMB_UNIT_DESC_PARAM_DEFINED
 enum rpmb_unit_desc_param {
 	RPMB_UNIT_DESC_PARAM_LEN		= 0x0,
 	RPMB_UNIT_DESC_PARAM_TYPE		= 0x1,
@@ -249,8 +275,11 @@ enum rpmb_unit_desc_param {
 	RPMB_UNIT_DESC_PARAM_PROVISIONING_TYPE	= 0x17,
 	RPMB_UNIT_DESC_PARAM_PHY_MEM_RSRC_CNT	= 0x18,
 };
+#endif
 
 /* Device descriptor parameters offsets in bytes*/
+#ifndef _UFS_DEVICE_DESC_PARAM_DEFINED
+#define _UFS_DEVICE_DESC_PARAM_DEFINED
 enum device_desc_param {
 	DEVICE_DESC_PARAM_LEN			= 0x0,
 	DEVICE_DESC_PARAM_TYPE			= 0x1,
@@ -294,16 +323,22 @@ enum device_desc_param {
 	DEVICE_DESC_PARAM_WB_TYPE		= 0x54,
 	DEVICE_DESC_PARAM_WB_SHARED_ALLOC_UNITS = 0x55,
 };
+#endif
 
 /* Interconnect descriptor parameters offsets in bytes*/
+#ifndef _UFS_INTERCONNECT_DESC_PARAM_DEFINED
+#define _UFS_INTERCONNECT_DESC_PARAM_DEFINED
 enum interconnect_desc_param {
 	INTERCONNECT_DESC_PARAM_LEN		= 0x0,
 	INTERCONNECT_DESC_PARAM_TYPE		= 0x1,
 	INTERCONNECT_DESC_PARAM_UNIPRO_VER	= 0x2,
 	INTERCONNECT_DESC_PARAM_MPHY_VER	= 0x4,
 };
+#endif
 
 /* Geometry descriptor parameters offsets in bytes*/
+#ifndef _UFS_GEOMETRY_DESC_PARAM_DEFINED
+#define _UFS_GEOMETRY_DESC_PARAM_DEFINED
 enum geometry_desc_param {
 	GEOMETRY_DESC_PARAM_LEN			= 0x0,
 	GEOMETRY_DESC_PARAM_TYPE		= 0x1,
@@ -347,8 +382,11 @@ enum geometry_desc_param {
 	GEOMETRY_DESC_PARAM_WB_SUP_RED_TYPE	= 0x55,
 	GEOMETRY_DESC_PARAM_WB_SUP_WB_TYPE	= 0x56,
 };
+#endif
 
 /* Health descriptor parameters offsets in bytes*/
+#ifndef _UFS_HEALTH_DESC_PARAM_DEFINED
+#define _UFS_HEALTH_DESC_PARAM_DEFINED
 enum health_desc_param {
 	HEALTH_DESC_PARAM_LEN			= 0x0,
 	HEALTH_DESC_PARAM_TYPE			= 0x1,
@@ -356,12 +394,16 @@ enum health_desc_param {
 	HEALTH_DESC_PARAM_LIFE_TIME_EST_A	= 0x3,
 	HEALTH_DESC_PARAM_LIFE_TIME_EST_B	= 0x4,
 };
+#endif
 
 /* WriteBooster buffer mode */
+#ifndef _UFS_WB_BUF_MODE_DEFINED
+#define _UFS_WB_BUF_MODE_DEFINED
 enum {
 	WB_BUF_MODE_LU_DEDICATED	= 0x0,
 	WB_BUF_MODE_SHARED		= 0x1,
 };
+#endif
 
 /*
  * Logical Unit Write Protect
