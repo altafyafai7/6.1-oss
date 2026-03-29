@@ -906,7 +906,7 @@ error_hw:
 #if defined(USE_SPI_BUS)
 static void gf_remove(struct spi_device *spi)
 #elif defined(USE_PLATFORM_BUS)
-static void gf_remove(struct platform_device *pdev)
+static int gf_remove(struct platform_device *pdev)
 #endif
 {
 	struct gf_dev *gf_dev = &gf;
@@ -933,6 +933,10 @@ static void gf_remove(struct platform_device *pdev)
 	xiaomi_panel_notifier_unregister_client(&gf_dev->notifier);
 #endif
 	mutex_unlock(&device_list_lock);
+
+#if defined(USE_PLATFORM_BUS)
+	return 0;
+#endif
 }
 
 static struct of_device_id gx_match_table[] = {

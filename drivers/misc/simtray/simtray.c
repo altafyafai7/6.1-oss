@@ -50,9 +50,10 @@ static int simtray_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, data);
 	return ret;
 }
-static void simtray_remove(struct platform_device *pdev)
+static int simtray_remove(struct platform_device *pdev)
 {
 	sysfs_remove_file(&pdev->dev.kobj, &dev_attr_status.attr);
+	return 0;
 }
 static const struct of_device_id simtray_of_match[] = {
 	{ .compatible = "xiaomi,simtray-status", },
