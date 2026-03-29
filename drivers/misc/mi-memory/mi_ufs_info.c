@@ -320,50 +320,7 @@ static ssize_t show_hba_show(struct device *dev, struct device_attribute *attr, 
 	count += snprintf((buf + count), PAGE_SIZE, "ufs_event_abort_cnt = 0x%x\n",
 			hba->ufs_stats.event[UFS_EVT_ABORT].cnt);
 
-	/* PA Errors */
-	count += snprintf((buf + count), PAGE_SIZE, "pa_err_cnt_total = %d\n", host->ufs_stats.pa_err_cnt_total);
-	count += snprintf((buf + count), PAGE_SIZE, "pa_lane_0_err_cnt = %d\n", host->ufs_stats.pa_err_cnt[UFS_EC_PA_LANE_0]);
-	count += snprintf((buf + count), PAGE_SIZE, "pa_lane_1_err_cnt = %d\n", host->ufs_stats.pa_err_cnt[UFS_EC_PA_LANE_1]);
-	count += snprintf((buf + count), PAGE_SIZE, "pa_lane_2_err_cnt = %d\n", host->ufs_stats.pa_err_cnt[UFS_EC_PA_LANE_2]);
-	count += snprintf((buf + count), PAGE_SIZE, "pa_lane_3_err_cnt = %d\n", host->ufs_stats.pa_err_cnt[UFS_EC_PA_LANE_3]);
-	count += snprintf((buf + count), PAGE_SIZE, "pa_line_reset_err_cnt = %d\n", host->ufs_stats.pa_err_cnt[UFS_EC_PA_LINE_RESET]);
-
-	/* DL Errors */
-	count += snprintf((buf + count), PAGE_SIZE, "dl_err_cnt_total = %d\n",
-		host->ufs_stats.dl_err_cnt_total);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_nac_received_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_NAC_RECEIVED]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_tcx_replay_timer_expired_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_TCx_REPLAY_TIMER_EXPIRED]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_afcx_request_timer_expired_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_AFCx_REQUEST_TIMER_EXPIRED]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_fcx_protection_timer_expired_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_FCx_PROTECT_TIMER_EXPIRED]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_crc_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_CRC_ERROR]);
-	count += snprintf((buf + count), PAGE_SIZE, "dll_rx_buffer_overflow_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_RX_BUFFER_OVERFLOW]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_max_frame_length_exceeded_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_MAX_FRAME_LENGTH_EXCEEDED]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_wrong_sequence_number_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_WRONG_SEQUENCE_NUMBER]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_afc_frame_syntax_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_AFC_FRAME_SYNTAX_ERROR]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_nac_frame_syntax_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_NAC_FRAME_SYNTAX_ERROR]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_eof_syntax_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_EOF_SYNTAX_ERROR]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_frame_syntax_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_FRAME_SYNTAX_ERROR]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_bad_ctrl_symbol_type_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_BAD_CTRL_SYMBOL_TYPE]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_pa_init_err_cnt = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_PA_INIT_ERROR]);
-	count += snprintf((buf + count), PAGE_SIZE, "dl_pa_error_ind_received = %d\n",
-		host->ufs_stats.dl_err_cnt[UFS_EC_DL_PA_ERROR_IND_RECEIVED]);
-
-	/* DME Errors */
-	count += snprintf((buf + count), PAGE_SIZE, "dme_err_cnt = %d\n", host->ufs_stats.dme_err_cnt);
+	/* PA, DL, and DME Errors removed as they are not available in standard Kernel 6.1 UFS stack */
 
 	return count;
 }
