@@ -198,6 +198,8 @@
 #define DME_LocalAFC0ReqTimeOutVal		0xD043
 
 /* PA power modes */
+#ifndef _UFS_PA_PWR_MODES_DEFINED
+#define _UFS_PA_PWR_MODES_DEFINED
 enum {
 	FAST_MODE	= 1,
 	SLOW_MODE	= 2,
@@ -205,16 +207,22 @@ enum {
 	SLOWAUTO_MODE	= 5,
 	UNCHANGED	= 7,
 };
+#endif
 
 #define PWRMODE_MASK		0xF
 #define PWRMODE_RX_OFFSET	4
 
 /* PA TX/RX Frequency Series */
+#ifndef _UFS_PA_HS_MODES_DEFINED
+#define _UFS_PA_HS_MODES_DEFINED
 enum {
 	PA_HS_MODE_A	= 1,
 	PA_HS_MODE_B	= 2,
 };
+#endif
 
+#ifndef _UFS_PWM_GEAR_TAG_DEFINED
+#define _UFS_PWM_GEAR_TAG_DEFINED
 enum ufs_pwm_gear_tag {
 	UFS_PWM_DONT_CHANGE,	/* Don't change Gear */
 	UFS_PWM_G1,		/* PWM Gear 1 (default for reset) */
@@ -225,7 +233,10 @@ enum ufs_pwm_gear_tag {
 	UFS_PWM_G6,		/* PWM Gear 6 */
 	UFS_PWM_G7,		/* PWM Gear 7 */
 };
+#endif
 
+#ifndef _UFS_HS_GEAR_TAG_DEFINED
+#define _UFS_HS_GEAR_TAG_DEFINED
 enum ufs_hs_gear_tag {
 	UFS_HS_DONT_CHANGE,	/* Don't change Gear */
 	UFS_HS_G1,		/* HS Gear 1 (default for reset) */
@@ -233,7 +244,10 @@ enum ufs_hs_gear_tag {
 	UFS_HS_G3,		/* HS Gear 3 */
 	UFS_HS_G4,		/* HS Gear 4 */
 };
+#endif
 
+#ifndef _UFS_UNIPRO_VER_DEFINED
+#define _UFS_UNIPRO_VER_DEFINED
 enum ufs_unipro_ver {
 	UFS_UNIPRO_VER_RESERVED = 0,
 	UFS_UNIPRO_VER_1_40 = 1, /* UniPro version 1.40 */
@@ -242,6 +256,8 @@ enum ufs_unipro_ver {
 	UFS_UNIPRO_VER_1_61 = 4, /* UniPro version 1.61 */
 	UFS_UNIPRO_VER_1_8  = 5, /* UniPro version 1.8 */
 	UFS_UNIPRO_VER_MAX  = 6, /* UniPro unsupported version */
+};
+#endif
 	/* UniPro version field mask in PA_LOCALVERINFO */
 	UFS_UNIPRO_VER_MASK = 0xF,
 };
