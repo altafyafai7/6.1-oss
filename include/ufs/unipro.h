@@ -321,10 +321,13 @@ enum ufs_unipro_ver {
 #define CSV_N_OFF	(1 << 2)
 #define CPORT_DEF_FLAGS	(CSV_N_OFF | CSD_N_OFF | E2EFC_OFF)
 
-/* CPort connection state */
+/* CPort communication state */
+#ifndef _UFS_CPORT_STATE_DEFINED
+#define _UFS_CPORT_STATE_DEFINED
 enum {
 	CPORT_IDLE = 0,
 	CPORT_CONNECTED,
 };
+#endif
 
 #endif /* _UNIPRO_H_ */

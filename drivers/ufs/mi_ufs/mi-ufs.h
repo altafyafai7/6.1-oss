@@ -45,18 +45,23 @@
 #define UFS_UPIU_MAX_WB_LUN_ID	8
 
 /* Well known logical unit id in LUN field of UPIU */
+#ifndef _UFS_WLUN_DEFINED
+#define _UFS_WLUN_DEFINED
 enum {
 	UFS_UPIU_REPORT_LUNS_WLUN	= 0x81,
 	UFS_UPIU_UFS_DEVICE_WLUN	= 0xD0,
 	UFS_UPIU_BOOT_WLUN		= 0xB0,
 	UFS_UPIU_RPMB_WLUN		= 0xC4,
 };
+#endif
 
 /*
  * UFS Protocol Information Unit related definitions
  */
 
 /* Task management functions */
+#ifndef _UFS_TM_FUNCS_DEFINED
+#define _UFS_TM_FUNCS_DEFINED
 enum {
 	UFS_ABORT_TASK		= 0x01,
 	UFS_ABORT_TASK_SET	= 0x02,
@@ -65,8 +70,11 @@ enum {
 	UFS_QUERY_TASK		= 0x80,
 	UFS_QUERY_TASK_SET	= 0x81,
 };
+#endif
 
 /* UTP UPIU Transaction Codes Initiator to Target */
+#ifndef _UFS_TRANS_CODES_DEFINED
+#define _UFS_TRANS_CODES_DEFINED
 enum {
 	UPIU_TRANSACTION_NOP_OUT	= 0x00,
 	UPIU_TRANSACTION_COMMAND	= 0x01,
@@ -85,6 +93,7 @@ enum {
 	UPIU_TRANSACTION_QUERY_RSP	= 0x36,
 	UPIU_TRANSACTION_REJECT_UPIU	= 0x3F,
 };
+#endif
 
 /* UPIU Read/Write flags */
 enum {
