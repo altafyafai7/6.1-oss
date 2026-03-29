@@ -32,7 +32,7 @@
 #include <linux/regulator/consumer.h>
 #include <linux/bitfield.h>
 #include <linux/devfreq.h>
-#include <linux/keyslot-manager.h>
+#include <linux/blk-crypto-profile.h>
 #include "mi-unipro.h"
 
 #include <asm/irq.h>
@@ -626,7 +626,7 @@ enum ufshcd_quirks {
 	/*
 	 * This quirk needs to be enabled if the host controller supports inline
 	 * encryption, but it needs to initialize the crypto capabilities in a
-	 * nonstandard way and/or it needs to override blk_ksm_ll_ops.  If
+	 * nonstandard way and/or it needs to override blk_ll_ops.  If
 	 * enabled, the standard code won't initialize the blk_keyslot_manager;
 	 * ufs_hba_variant_ops::init() must do it instead.
 	 */
@@ -970,7 +970,7 @@ struct ufs_hba {
 	union ufs_crypto_capabilities crypto_capabilities;
 	union ufs_crypto_cap_entry *crypto_cap_array;
 	u32 crypto_cfg_register;
-	struct blk_keyslot_manager ksm;
+	struct blk_crypto_profile ksm;
 #endif
 #ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs_root;

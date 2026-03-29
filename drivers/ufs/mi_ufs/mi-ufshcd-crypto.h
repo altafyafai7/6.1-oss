@@ -18,7 +18,7 @@ static inline void ufshcd_prepare_lrbp_crypto(struct request *rq,
 		return;
 	}
 
-	lrbp->crypto_key_slot = blk_ksm_get_slot_idx(rq->crypt_keyslot);
+	lrbp->crypto_key_slot = blk_crypto_keyslot_index(rq->crypt_keyslot);
 	lrbp->data_unit_num = rq->crypt_ctx->bc_dun[0];
 }
 
