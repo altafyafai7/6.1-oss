@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
-ccflags-y += -I$(src)/../mi_ufs
-ccflags-y += -I$(src)/../core
+ccflags-y += -I$(srctree)/drivers/ufs/core
+ccflags-y += -I$(srctree)/drivers/ufs/mi_ufs
 
 obj-$(CONFIG_SCSI_UFS_DWC_TC_PCI) += tc-dwc-g210-pci.o ufshcd-dwc.o tc-dwc-g210.o
 obj-$(CONFIG_SCSI_UFS_DWC_TC_PLATFORM) += tc-dwc-g210-pltfrm.o ufshcd-dwc.o tc-dwc-g210.o
