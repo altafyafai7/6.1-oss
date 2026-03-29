@@ -17,7 +17,6 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/efi.h>
-#include <linux/genhd.h>
 #include <linux/rcupdate.h>
 #include <linux/of.h>
 #include <scsi/scsi_device.h>
@@ -27,7 +26,7 @@
 #include "SKhynix_64_128_UFS22_A003.h"
 #include "MICRON_64_UFS22_0203.h"
 #include "mi-ufshcd.h"
-#include "../sd.h"
+#include "../../scsi/sd.h"
 
 typedef unsigned int uint32;
 typedef  int int32;

@@ -15,7 +15,7 @@
 #include <linux/bitfield.h>
 #include <scsi/scsi_cmnd.h>
 
-#include "../../block/blk.h"
+#include "../../../block/blk.h"
 
 int mi_ufs_read_desc(struct ufs_hba *hba,
 		   enum desc_idn desc_id,   int desc_index,  u8 selector,  u8 param_offset,   u8 *param_read_buf,   u8 param_size);

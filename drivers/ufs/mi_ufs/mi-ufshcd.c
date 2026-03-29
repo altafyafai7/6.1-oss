@@ -26,7 +26,7 @@
 #include "ufshpb.h"
 #include <asm/unaligned.h>
 #include <linux/blkdev.h>
-#include "../ufs/ufs-qcom.h"
+#include "../host/ufs-qcom.h"
 #include "mi-ufshcd-add-info.h"
 #define CREATE_TRACE_POINTS
 #include <trace/events/ufs.h>
