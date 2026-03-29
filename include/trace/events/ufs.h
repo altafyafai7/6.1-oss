@@ -10,6 +10,7 @@
 #define _TRACE_UFS_H
 
 #include <linux/tracepoint.h>
+#include <ufs/ufs.h>
 
 #define str_opcode(opcode)						\
 	__print_symbolic(opcode,					\

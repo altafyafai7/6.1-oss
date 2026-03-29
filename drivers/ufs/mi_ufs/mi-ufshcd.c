@@ -28,10 +28,8 @@
 #include <linux/blkdev.h>
 #include "../host/ufs-qcom.h"
 #include "mi-ufshcd-add-info.h"
-#define CREATE_TRACE_POINTS
 #include <trace/events/ufs.h>
 
-#undef CREATE_TRACE_POINTS
 #include <trace/hooks/ufshcd.h>
 
 #define UFSHCD_ENABLE_INTRS	(UTP_TRANSFER_REQ_COMPL |\
