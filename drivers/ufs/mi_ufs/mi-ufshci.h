@@ -45,9 +45,4 @@
 
 #define UTP_REQ_DESC_CRYPTO_ENABLE_CMD	0x00800000
 
-/* To accommodate UFS2.0 required Command type */
-enum {
-	UTP_CMD_TYPE_UFS_STORAGE	= 0x1,
-};
-
 #endif /* _MI_UFSHCI_H */
