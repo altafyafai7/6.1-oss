@@ -10,7 +10,7 @@
 #include <asm/unaligned.h>
 #include "mi_memory_sysfs.h"
 #include "mem_interface.h"
-#include "../../scsi/ufs/ufs-qcom.h"
+#include "../../ufs/host/ufs-qcom.h"
 #include "../../ufs/mi_ufs/mi-ufshcd.h"
 
 #define SCSI_LUN 		0
@@ -388,7 +388,7 @@ static int scsi_hr_inquiry(struct scsi_device *sdev, char *hr_inq, int len)
 	cmd[4] = len & 0xff;
 	cmd[5] = 0;		/* Control byte */
 
-	result = scsi_exec_req(sdev, cmd, DMA_FROM_DEVICE, hr_inq,
+	result = scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, hr_inq,
 				  len, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: get hr_inquiry result error 0x%x\n", result);
@@ -427,7 +427,7 @@ static int scsi_sdr(struct scsi_device *sdev, char *sdr, int len)
 
 	cmd[9] = 0;		/* Control byte */
 
-	result = scsi_exec_req(sdev, cmd, DMA_FROM_DEVICE, sdr,
+	result = scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, sdr,
 				  len, NULL, 30 * HZ, 3, NULL);
 
 	if (result) {
@@ -457,13 +457,13 @@ static int scsi_mhr(struct scsi_device *sdev, char *hr, int len)
 	if (!hr)
 		return -EINVAL;
 
-	result = scsi_exec_req(sdev, write_buffer, DMA_TO_DEVICE, VU,
+	result = scsi_execute_req(sdev, write_buffer, DMA_TO_DEVICE, VU,
 				  0x2c, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: hr write buffer  error 0x%x\n", result);
 		return -EIO;
 	}
-	result = scsi_exec_req(sdev, read_buffer, DMA_FROM_DEVICE, hr,
+	result = scsi_execute_req(sdev, read_buffer, DMA_FROM_DEVICE, hr,
 				  len, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: hr read buffer  error 0x%x\n", result);
@@ -492,7 +492,7 @@ static int scsi_osv(struct scsi_device *sdev, char *osv, int len)
 
 	cmd[15] = 0x1c;
 
-	result = scsi_exec_req(sdev, cmd, DMA_FROM_DEVICE, osv,
+	result = scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, osv,
 				  len, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: get osv result error 0x%x\n", result);
@@ -549,7 +549,7 @@ static int scsi_sk_hr(struct scsi_device *sdev, char *buff, int len)
 		cmd[11] = 0x52; /*for V6 hynix Voyager*/
 	pr_err("%s %d cmd[11]:0x%x\n", __func__, __LINE__, cmd[11]);
 
-	result = scsi_exec_req(sdev, cmd, DMA_FROM_DEVICE, buff,
+	result = scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, buff,
 				  len, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: get skhynix result error 0x%x\n", result);
@@ -572,7 +572,7 @@ static int scsi_ss_set_pwd(struct scsi_device *sdev)
 	cmd[4] = 'r';
 	cmd[5] = 0;
 
-	result = scsi_exec_req(sdev, cmd, DMA_NONE, 0,
+	result = scsi_execute_req(sdev, cmd, DMA_NONE, 0,
 				  0, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: scsi_ss_set_pwd error 0x%x\n", result);
@@ -601,7 +601,7 @@ static int scsi_ss_enter_vendor_mode(struct scsi_device *sdev)
 	cmd[8] = 'r';
 	cmd[9] = 0;
 
-	result = scsi_exec_req(sdev, cmd, DMA_NONE, 0,
+	result = scsi_execute_req(sdev, cmd, DMA_NONE, 0,
 				  0, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: scsi_ss_enter_vendor_mode error 0x%x\n", result);
@@ -617,7 +617,7 @@ static int scsi_ss_exit_vendor_mode(struct scsi_device *sdev)
 	cmd[0] = 0xc0; /*VENDOR_SPECIFIC_CDB;*/
 	cmd[1] = 0x01;
 
-	result = scsi_exec_req(sdev, cmd, DMA_NONE, 0,
+	result = scsi_execute_req(sdev, cmd, DMA_NONE, 0,
 				  0, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: scsi_ss_enter_vendor_mode error 0x%x\n", result);
@@ -643,7 +643,7 @@ static int scsi_ss_nandinfo(struct scsi_device *sdev, char *osv, int len)
 	cmd[15] = 0x4C;
 
 	len = 0x4C;
-	result = scsi_exec_req(sdev, cmd, DMA_FROM_DEVICE, osv,
+	result = scsi_execute_req(sdev, cmd, DMA_FROM_DEVICE, osv,
 				  len, NULL, 30 * HZ, 3, NULL);
 	if (result) {
 		pr_err("ufs: get osv result error 0x%x\n", result);

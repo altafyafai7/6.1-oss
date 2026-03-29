@@ -12,7 +12,6 @@
 #include <linux/bitfield.h>
 #include <scsi/scsi_cmnd.h>
 
-#include "../../../block/blk.h"
 #include "mi-ufshcd.h"
 
 /*implement mi_ufs_query_desc in the future*/

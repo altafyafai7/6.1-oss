@@ -24,7 +24,6 @@
 #include <linux/ktime.h>
 #include <scsi/scsi_cmnd.h>
 
-#include "../../../../block/blk.h"
 
 #define CLD_TRIGGER_WORKER_DELAY_MS_DEFAULT	2000
 #define CLD_TRIGGER_WORKER_DELAY_MS_MIN		100
