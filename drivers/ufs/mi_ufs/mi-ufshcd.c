@@ -33,18 +33,15 @@
 
 #include <trace/hooks/ufshcd.h>
 
-static inline bool ufshcd_has_utrlcnr(struct ufs_hba *hba)
-{
-	return (hba->ufs_version >= mi_ufshci_version(3, 0));
-}
-
 #define UFSHCD_ENABLE_INTRS	(UTP_TRANSFER_REQ_COMPL |\
 				 UTP_TASK_REQ_COMPL |\
 				 UFSHCD_ERROR_MASK)
 /* UIC command timeout, unit: ms */
 #define UIC_CMD_TIMEOUT	500
-/*UIC PWR CTRL command timeout, unit: ms*/
+/* UIC PWR CTRL command timeout, unit: ms*/
 #define UIC_PWR_CTRL_TIMEOUT 5000
+
+static int mi_ufshcd_try_to_abort_task(struct ufs_hba *hba, int tag);
 
 /* NOP OUT retries waiting for NOP IN response */
 #define NOP_OUT_RETRIES    10
@@ -159,6 +156,17 @@ int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 /* UFSHCD error handling flags */
 enum {
 	UFSHCD_EH_IN_PROGRESS = (1 << 0),
+};
+
+/* UFSHCD UIC layer error flags */
+enum {
+	UFSHCD_UIC_DL_PA_INIT_ERROR = (1 << 0), /* Data link layer error */
+	UFSHCD_UIC_DL_NAC_RECEIVED_ERROR = (1 << 1), /* Data link layer error */
+	UFSHCD_UIC_DL_TCx_REPLAY_ERROR = (1 << 2), /* Data link layer error */
+	UFSHCD_UIC_NL_ERROR = (1 << 3), /* Network layer error */
+	UFSHCD_UIC_TL_ERROR = (1 << 4), /* Transport Layer error */
+	UFSHCD_UIC_DME_ERROR = (1 << 5), /* DME error */
+	UFSHCD_UIC_PA_GENERIC_ERROR = (1 << 6), /* Generic PA error */
 };
 
 #define ufshcd_set_eh_in_progress(h) \
@@ -4267,7 +4275,7 @@ out:
 		dev_err(hba->dev,
 			"%s: Changing link power status failed (%d). Scheduling error handler\n", __func__, ret);
 		ufshcd_set_link_broken(hba);
-		ufshcd_schedule_eh_work(hba);
+		mi_ufshcd_schedule_eh_work(hba);
 	}
 out_unlock:
 	spin_unlock_irqrestore(hba->host->host_lock, flags);
@@ -5869,7 +5877,7 @@ static int ufshcd_wb_buf_flush_enable(struct ufs_hba *hba)
 	int ret;
 	u8 index;
 
-	if (!ufshcd_is_wb_allowed(hba) || hba->wb_buf_flush_enabled)
+	if (!ufshcd_is_wb_allowed(hba) || hba->dev_info.wb_buf_flush_enabled)
 		return 0;
 
 	index = ufshcd_wb_get_query_index(hba);
@@ -5880,7 +5888,7 @@ static int ufshcd_wb_buf_flush_enable(struct ufs_hba *hba)
 		dev_err(hba->dev, "%s WB - buf flush enable failed %d\n",
 			__func__, ret);
 	else
-		hba->wb_buf_flush_enabled = true;
+		hba->dev_info.wb_buf_flush_enabled = true;
 
 	dev_dbg(hba->dev, "WB - Flush enabled: %d\n", ret);
 	return ret;
@@ -5891,7 +5899,7 @@ static int ufshcd_wb_buf_flush_disable(struct ufs_hba *hba)
 	int ret;
 	u8 index;
 
-	if (!ufshcd_is_wb_allowed(hba) || !hba->wb_buf_flush_enabled)
+	if (!ufshcd_is_wb_allowed(hba) || !hba->dev_info.wb_buf_flush_enabled)
 		return 0;
 
 	index = ufshcd_wb_get_query_index(hba);
@@ -5902,7 +5910,7 @@ static int ufshcd_wb_buf_flush_disable(struct ufs_hba *hba)
 		dev_warn(hba->dev, "%s: WB - buf flush disable failed %d\n",
 			 __func__, ret);
 	} else {
-		hba->wb_buf_flush_enabled = false;
+		hba->dev_info.wb_buf_flush_enabled = false;
 		dev_dbg(hba->dev, "WB - Flush disabled: %d\n", ret);
 	}
 
@@ -6118,7 +6126,7 @@ static inline bool ufshcd_is_saved_err_fatal(struct ufs_hba *hba)
 }
 
 /* host lock must be held before calling this func */
-static inline void ufshcd_schedule_eh_work(struct ufs_hba *hba)
+static inline void mi_ufshcd_schedule_eh_work(struct ufs_hba *hba)
 {
 	/* handle fatal errors only when link is not in error state */
 	if (hba->ufshcd_state != UFSHCD_STATE_ERROR) {
@@ -6594,7 +6602,7 @@ static irqreturn_t ufshcd_check_errors(struct ufs_hba *hba, u32 intr_status)
 					 "host_regs: ");
 			ufshcd_print_pwr_info(hba);
 		}
-		ufshcd_schedule_eh_work(hba);
+		mi_ufshcd_schedule_eh_work(hba);
 		retval |= IRQ_HANDLED;
 	}
 	/*
@@ -7253,7 +7261,7 @@ static int ufshcd_abort(struct scsi_cmnd *cmd)
 
 		spin_lock_irqsave(host->host_lock, flags);
 		hba->force_reset = true;
-		ufshcd_schedule_eh_work(hba);
+		mi_ufshcd_schedule_eh_work(hba);
 		spin_unlock_irqrestore(host->host_lock, flags);
 		goto release;
 	}
@@ -7397,7 +7405,7 @@ static int ufshcd_eh_host_reset_handler(struct scsi_cmnd *cmd)
 
 	spin_lock_irqsave(hba->host->host_lock, flags);
 	hba->force_reset = true;
-	ufshcd_schedule_eh_work(hba);
+	mi_ufshcd_schedule_eh_work(hba);
 	dev_err(hba->dev, "%s: reset in progress - 1\n", __func__);
 	spin_unlock_irqrestore(hba->host->host_lock, flags);
 
