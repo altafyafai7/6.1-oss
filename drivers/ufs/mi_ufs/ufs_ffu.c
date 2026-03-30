@@ -728,7 +728,12 @@ static int start_ffu(struct scsi_device *sdev)
 
 	hba = shost_priv(sdev->host);
 
-	parse_inquiry = hba->sdev_ufs_device->inquiry + 8;  /*be careful about the inquiry formate*/
+	if (!hba->ufs_device_wlun) {
+		pr_err("[ufs_ffu] ufs_device_wlun is null\n");
+		return -ENODEV;
+	}
+
+	parse_inquiry = hba->ufs_device_wlun->inquiry + 8;  /*be careful about the inquiry formate*/
 
 	memcpy(stdinq.vendor_id, parse_inquiry, INQURIY_VENDOR_ID_SIZE);
 	parse_inquiry += INQURIY_VENDOR_ID_SIZE;
