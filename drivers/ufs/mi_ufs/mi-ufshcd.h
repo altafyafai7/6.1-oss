@@ -104,4 +104,6 @@ int mi_ufshcd_read_desc_param(struct ufs_hba *hba,
 				  u8 *param_read_buf,
 				  u8 param_size);
 
+int ufshcd_runtime_idle(struct ufs_hba *hba);
+
 #endif /* _MI_UFSHCD_H */
