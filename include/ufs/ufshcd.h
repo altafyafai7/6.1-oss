@@ -970,6 +970,8 @@ enum ufshcd_mcq_opr {
  * @uhq: array of supported hardware queues
  * @dev_cmd_queue: Queue for issuing device management commands
  */
+struct ufscld_dev;
+
 struct ufs_hba {
 	void __iomem *mmio_base;
 
@@ -1136,6 +1138,8 @@ struct ufs_hba {
 	struct ufs_hw_queue *uhq;
 	struct ufs_hw_queue *dev_cmd_queue;
 	struct ufshcd_mcq_opr_info_t mcq_opr[OPR_MAX];
+
+	struct ufscld_dev *cld;
 
 	ANDROID_OEM_DATA(1);
 };
@@ -1444,6 +1448,11 @@ void ufshcd_map_desc_id_to_length(struct ufs_hba *hba, enum desc_idn desc_id,
 				  int *desc_len);
 
 int ufshcd_bkops_ctrl(struct ufs_hba *hba, enum bkops_status status);
+
+int ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba,
+					u64 wait_timeout_us);
+void ufshcd_scsi_block_requests(struct ufs_hba *hba);
+void ufshcd_scsi_unblock_requests(struct ufs_hba *hba);
 
 void ufshcd_auto_hibern8_enable(struct ufs_hba *hba);
 void ufshcd_auto_hibern8_update(struct ufs_hba *hba, u32 ahit);

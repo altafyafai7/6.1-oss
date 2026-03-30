@@ -45,11 +45,11 @@ int ufscld_init_ops(struct ufscld_dev *cld)
 	int i = 0;
 	struct ufs_hba *hba = cld->hba;
 
-	memcpy(&stdinq, hba->sdev_ufs_device->inquiry + 8, sizeof(stdinq));
+	memcpy(&stdinq, hba->ufs_device_wlun->inquiry + 8, sizeof(stdinq));
 
 	for (i = 0; i < sizeof(cld_ops_arry)/sizeof(cld_ops_arry[0]); i++) {
 		if (strncmp((char *)stdinq.vendor_id, (char *)cld_ops_arry[i].vendor_id, strlen((char *)cld_ops_arry[i].vendor_id)) == 0) {
-			hba->cld.cld_ops = cld_ops_arry[i].cld_ops;
+			hba->cld->cld_ops = cld_ops_arry[i].cld_ops;
 			cld->vendor_ops = &cld_ops_arry[i];
 			return 0;
 		}
@@ -70,13 +70,14 @@ int ufscld_is_not_present(struct ufscld_dev *cld)
 
 inline int ufscld_get_state(struct ufs_hba *hba)
 {
-	return atomic_read(&hba->cld.cld_state);
-}
+	return atomic_read(&hba->cld->cld_state);
+	}
 
-inline void ufscld_set_state(struct ufs_hba *hba, int state)
-{
-	atomic_set(&hba->cld.cld_state, state);
-}
+	void ufscld_set_state(struct ufs_hba *hba, int state)
+	{
+	atomic_set(&hba->cld->cld_state, state);
+	}
+
 
 
 /*
@@ -324,9 +325,10 @@ static void ufscld_trigger_work_fn(struct work_struct *dwork)
  * this function is called in irq context.
  * so cancel_delayed_work_sync() do not use due to waiting.
  */
-void ufscld_on_idle(struct ufs_hba *hba)
+void ufscld_init(struct ufs_hba *hba)
 {
-	struct ufscld_dev *cld = &hba->cld;
+	struct ufscld_dev *cld = hba->cld;
+
 
 	if (!cld->cld_trigger)
 		return;// cld already done or not triggered.
@@ -392,9 +394,10 @@ void ufscld_init(struct ufs_hba *hba)
 
 }
 
-void ufscld_remove(struct ufs_hba *hba)
+void ufscld_init(struct ufs_hba *hba)
 {
-	struct ufscld_dev *cld = &hba->cld;
+	struct ufscld_dev *cld = hba->cld;
+
 
 	if (!cld)
 		return;
@@ -422,12 +425,13 @@ void ufscld_reset_host(struct ufs_hba *hba)
 	if (!hba)
 		return;
 	ufscld_set_state(hba, CLD_RESET);
-	cancel_delayed_work_sync(&hba->cld.cld_trigger_work);
+	cancel_delayed_work_sync(&hba->cld->cld_trigger_work);
 }
 
-void ufscld_reset(struct ufs_hba *hba)
+void ufscld_init(struct ufs_hba *hba)
 {
-	struct ufscld_dev *cld = &hba->cld;
+	struct ufscld_dev *cld = hba->cld;
+
 
 	if (!cld)
 		return;

@@ -365,17 +365,19 @@ static void ufshcd_configure_wb(struct ufs_hba *hba)
 		ufshcd_wb_toggle_buf_flush(hba, true);
 }
 
-static void ufshcd_scsi_unblock_requests(struct ufs_hba *hba)
+void ufshcd_scsi_unblock_requests(struct ufs_hba *hba)
 {
 	if (atomic_dec_and_test(&hba->scsi_block_reqs_cnt))
 		scsi_unblock_requests(hba->host);
 }
+EXPORT_SYMBOL_GPL(ufshcd_scsi_unblock_requests);
 
-static void ufshcd_scsi_block_requests(struct ufs_hba *hba)
+void ufshcd_scsi_block_requests(struct ufs_hba *hba)
 {
 	if (atomic_inc_return(&hba->scsi_block_reqs_cnt) == 1)
 		scsi_block_requests(hba->host);
 }
+EXPORT_SYMBOL_GPL(ufshcd_scsi_block_requests);
 
 static void ufshcd_add_cmd_upiu_trace(struct ufs_hba *hba, unsigned int tag,
 				      enum ufs_trace_str_t str_t)
@@ -1228,7 +1230,7 @@ static u32 ufshcd_pending_cmds(struct ufs_hba *hba)
  *
  * Return: 0 upon success; -EBUSY upon timeout.
  */
-static int ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba,
+int ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba,
 					u64 wait_timeout_us)
 {
 	unsigned long flags;
@@ -1286,6 +1288,7 @@ out:
 	ufshcd_release(hba);
 	return ret;
 }
+EXPORT_SYMBOL_GPL(ufshcd_wait_for_doorbell_clr);
 
 /**
  * ufshcd_scale_gear - scale up/down UFS gear
