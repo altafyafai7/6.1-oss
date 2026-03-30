@@ -1442,9 +1442,6 @@ int ufshcd_query_flag(struct ufs_hba *hba, enum query_opcode opcode,
 	enum flag_idn idn, u8 index, bool *flag_res);
 void ufshcd_map_desc_id_to_length(struct ufs_hba *hba, enum desc_idn desc_id,
 				  int *desc_len);
-int ufshcd_query_attr(struct ufs_hba *hba, enum query_opcode opcode,
-
-	enum flag_idn idn, u8 index, bool *flag_res);
 
 int ufshcd_bkops_ctrl(struct ufs_hba *hba, enum bkops_status status);
 
