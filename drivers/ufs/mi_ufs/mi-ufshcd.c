@@ -3384,7 +3384,7 @@ int mi_ufshcd_read_desc_param(struct ufs_hba *hba,
 	}
 
 	/* Request for full descriptor */
-	ret = mi_mi_ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
+	ret = mi_ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
 					desc_id, desc_index, 0,
 					desc_buf, &buff_len);
 
@@ -3519,7 +3519,7 @@ int mi_ufshcd_read_desc_param_sel(struct ufs_hba *hba, enum desc_idn desc_id,
 	}
 
 	/* Request for full descriptor */
-	ret = mi_mi_ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
+	ret = mi_ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
 					    desc_id, desc_index, selector,
 					    desc_buf, &buff_len);
 
@@ -6897,7 +6897,7 @@ int ufshcd_exec_raw_upiu_cmd(struct ufs_hba *hba,
 		treq.header.dword_0 = cpu_to_le32(UTP_REQ_DESC_INT_CMD);
 		treq.header.dword_2 = cpu_to_le32(OCS_INVALID_COMMAND_STATUS);
 
-		memcpy(&treq.req_header, req_upiu, sizeof(*req_upiu));
+		memcpy(&treq.upiu_req.req_header, req_upiu, sizeof(*req_upiu));
 
 		err = __ufshcd_issue_tm_cmd(hba, &treq, tm_f);
 		if (err == -ETIMEDOUT)
@@ -6910,7 +6910,7 @@ int ufshcd_exec_raw_upiu_cmd(struct ufs_hba *hba,
 			break;
 		}
 
-		memcpy(rsp_upiu, &treq.rsp_header, sizeof(*rsp_upiu));
+		memcpy(rsp_upiu, &treq.upiu_rsp.rsp_header, sizeof(*rsp_upiu));
 
 		break;
 	default:
@@ -7195,7 +7195,7 @@ static int ufshcd_host_reset_and_restore(struct ufs_hba *hba)
 {
 	int err;
 
-	ufshpb_reset_host(hba);
+	ufscld_reset_host(hba);
 	/*
 	 * Stop the host controller and complete the requests
 	 * cleared by h/w
@@ -7454,7 +7454,7 @@ out:
 static int ufshcd_scsi_add_wlus(struct ufs_hba *hba)
 {
 	int ret = 0;
-	struct scsi_device *sdev_boot;
+	struct scsi_device *sdev_boot, *sdev_rpmb;
 
 	hba->ufs_device_wlun = __scsi_add_device(hba->host, 0, 0,
 		ufshcd_upiu_wlun_to_scsi_wlun(UFS_UPIU_UFS_DEVICE_WLUN), NULL);
@@ -7465,13 +7465,13 @@ static int ufshcd_scsi_add_wlus(struct ufs_hba *hba)
 	}
 	scsi_device_put(hba->ufs_device_wlun);
 
-	hba->sdev_rpmb = __scsi_add_device(hba->host, 0, 0,
+	sdev_rpmb = __scsi_add_device(hba->host, 0, 0,
 		ufshcd_upiu_wlun_to_scsi_wlun(UFS_UPIU_RPMB_WLUN), NULL);
-	if (IS_ERR(hba->sdev_rpmb)) {
-		ret = PTR_ERR(hba->sdev_rpmb);
+	if (IS_ERR(sdev_rpmb)) {
+		ret = PTR_ERR(sdev_rpmb);
 		goto remove_ufs_device_wlun;
 	}
-	scsi_device_put(hba->sdev_rpmb);
+	scsi_device_put(sdev_rpmb);
 
 	sdev_boot = __scsi_add_device(hba->host, 0, 0,
 		ufshcd_upiu_wlun_to_scsi_wlun(UFS_UPIU_BOOT_WLUN), NULL);
@@ -7493,6 +7493,8 @@ static void ufshcd_wb_probe(struct ufs_hba *hba, u8 *desc_buf)
 	u8 lun;
 	u32 d_lu_wb_buf_alloc;
 
+	u32 d_ext_ufs_feature_sup, d_wb_alloc_units;
+
 	if (!ufshcd_is_wb_allowed(hba))
 		return;
 	/*
@@ -7509,11 +7511,11 @@ static void ufshcd_wb_probe(struct ufs_hba *hba, u8 *desc_buf)
 	    DEVICE_DESC_PARAM_EXT_UFS_FEATURE_SUP + 4)
 		goto wb_disabled;
 
-	dev_info->d_ext_ufs_feature_sup =
+	d_ext_ufs_feature_sup =
 		get_unaligned_be32(desc_buf +
 				   DEVICE_DESC_PARAM_EXT_UFS_FEATURE_SUP);
 
-	if (!(dev_info->d_ext_ufs_feature_sup & UFS_DEV_WRITE_BOOSTER_SUP))
+	if (!(d_ext_ufs_feature_sup & UFS_DEV_WRITE_BOOSTER_SUP))
 		goto wb_disabled;
 
 	/*
@@ -7529,10 +7531,10 @@ static void ufshcd_wb_probe(struct ufs_hba *hba, u8 *desc_buf)
 		desc_buf[DEVICE_DESC_PARAM_WB_PRESRV_USRSPC_EN];
 
 	if (dev_info->wb_buffer_type == WB_BUF_MODE_SHARED) {
-		dev_info->d_wb_alloc_units =
+		d_wb_alloc_units =
 		get_unaligned_be32(desc_buf +
 				   DEVICE_DESC_PARAM_WB_SHARED_ALLOC_UNITS);
-		if (!dev_info->d_wb_alloc_units)
+		if (!d_wb_alloc_units)
 			goto wb_disabled;
 	} else {
 		for (lun = 0; lun < UFS_UPIU_MAX_WB_LUN_ID; lun++) {
@@ -7555,24 +7557,6 @@ static void ufshcd_wb_probe(struct ufs_hba *hba, u8 *desc_buf)
 
 wb_disabled:
 	hba->caps &= ~UFSHCD_CAP_WB_EN;
-}
-
-void ufshcd_fixup_dev_quirks(struct ufs_hba *hba, struct ufs_dev_fix *fixups)
-{
-	struct ufs_dev_fix *f;
-	struct ufs_dev_info *dev_info = &hba->dev_info;
-
-	if (!fixups)
-		return;
-
-	for (f = fixups; f->quirk; f++) {
-		if ((f->wmanufacturerid == dev_info->wmanufacturerid ||
-		     f->wmanufacturerid == UFS_ANY_VENDOR) &&
-		     ((dev_info->model &&
-		       STR_PRFX_EQUAL(f->model, dev_info->model)) ||
-		      !strcmp(f->model, UFS_ANY_MODEL)))
-			hba->dev_quirks |= f->quirk;
-	}
 }
 
 static void ufs_fixup_device_setup(struct ufs_hba *hba)
@@ -8106,7 +8090,7 @@ static int ufshcd_probe_hba(struct ufs_hba *hba, bool async)
 	/* Enable Auto-Hibernate if configured */
 	ufshcd_auto_hibern8_enable(hba);
 
-	ufshpb_reset(hba);
+	ufscld_reset(hba);
 
 	trace_android_rvh_ufs_complete_init(hba);
 out:
