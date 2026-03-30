@@ -146,8 +146,7 @@ static bool get_info_of_partition(struct ffu_data *ffudata)
 {
 	int retry = 0;
 	struct scsi_disk *sdkp = NULL;
-	struct hd_struct *part_hd = NULL;
-	struct disk_part_tbl *ptbl = NULL;
+	struct block_device *part_bdev = NULL;
 	struct scsi_device *sdev = ffudata->sdev;
 	int part_number = ffudata->part_info_part_number;
 	int retry_counter = ffudata->part_info_get_retry_counter;
@@ -175,27 +174,10 @@ init_data:
 		goto init_data;
 	}
 
-	if (!sdkp->disk->part_tbl) {
-		pr_err("[ufs_ffu] disk part_tbl is null\n");
-		if(retry >= retry_counter)
-			return false;
-		retry++;
-		msleep(delayms);
-		goto init_data;
-	}
-
-	ptbl = rcu_dereference(sdkp->disk->part_tbl);
-	if(ptbl->len < part_number) {
-		pr_err("[ufs_ffu] ptbl len:%d retry %d\n", ptbl->len, retry);
-		if(retry >= retry_counter)
-			return false;
-
-		retry++;
-		msleep(delayms);
-		goto init_data;
-	}
-
-	if (!ptbl->part[part_number]) {
+	rcu_read_lock();
+	part_bdev = xa_load(&sdkp->disk->part_tbl, part_number);
+	if (!part_bdev) {
+		rcu_read_unlock();
 		pr_err("[ufs_ffu] disk part is null\n");
 		if(retry >= retry_counter)
 			return false;
@@ -204,13 +186,12 @@ init_data:
 		goto init_data;
 	}
 
-	part_hd = rcu_dereference(ptbl->part[part_number]);
-
-	part_info.part_start = part_hd->start_sect * PART_SECTOR_SIZE / PART_BLOCK_SIZE;
-	part_info.part_size = part_hd->nr_sects * PART_SECTOR_SIZE / PART_BLOCK_SIZE;
+	part_info.part_start = part_bdev->bd_start_sect * PART_SECTOR_SIZE / PART_BLOCK_SIZE;
+	part_info.part_size = bdev_nr_sectors(part_bdev) * PART_SECTOR_SIZE / PART_BLOCK_SIZE;
+	rcu_read_unlock();
 
 	pr_warn("[ufs_ffu] partion: %s start %d(block) size %d(block)\n", 
-			ffudata->part_info_part_name, part_info.part_start, part_info.part_size);
+			ffudata->part_info_part_name, (int)part_info.part_start, (int)part_info.part_size);
 
 	return true;
 }
