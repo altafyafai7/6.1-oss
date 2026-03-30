@@ -9140,7 +9140,7 @@ int ufshcd_system_suspend(struct device *dev)
 		 * TODO: If resume takes longer time, we might have optimize
 		 * it in future by not resuming everything if possible.
 		 */
-		ret = ufshcd_runtime_resume(hba);
+		ret = ufshcd_runtime_resume(hba->dev);
 		if (ret)
 			goto out;
 	}
@@ -9159,13 +9159,14 @@ out:
 
 /**
  * ufshcd_system_resume - system resume routine
- * @hba: per adapter instance
+ * @dev: pointer to device handle
  *
  * Returns 0 for success and non-zero for failure
  */
 
-int ufshcd_system_resume(struct ufs_hba *hba)
+int ufshcd_system_resume(struct device *dev)
 {
+	struct ufs_hba *hba = dev_get_drvdata(dev);
 	int ret = 0;
 	ktime_t start = ktime_get();
 
@@ -9189,14 +9190,15 @@ out:
 
 /**
  * ufshcd_runtime_suspend - runtime suspend routine
- * @hba: per adapter instance
+ * @dev: pointer to device handle
  *
  * Check the description of ufshcd_suspend() function for more details.
  *
  * Returns 0 for success and non-zero for failure
  */
-int ufshcd_runtime_suspend(struct ufs_hba *hba)
+int ufshcd_runtime_suspend(struct device *dev)
 {
+	struct ufs_hba *hba = dev_get_drvdata(dev);
 	int ret = 0;
 	ktime_t start = ktime_get();
 
@@ -9213,7 +9215,7 @@ out:
 
 /**
  * ufshcd_runtime_resume - runtime resume routine
- * @hba: per adapter instance
+ * @dev: pointer to device handle
  *
  * This function basically brings the UFS device, UniPro link and controller
  * to active state. Following operations are done in this function:
@@ -9232,8 +9234,9 @@ out:
  *
  * Returns 0 for success and non-zero for failure
  */
-int ufshcd_runtime_resume(struct ufs_hba *hba)
+int ufshcd_runtime_resume(struct device *dev)
 {
+	struct ufs_hba *hba = dev_get_drvdata(dev);
 	int ret = 0;
 	ktime_t start = ktime_get();
 
@@ -9248,7 +9251,7 @@ out:
 	return ret;
 }
 
-int ufshcd_runtime_idle(struct ufs_hba *hba)
+int ufshcd_runtime_idle(struct device *dev)
 {
 	return 0;
 }
@@ -9298,7 +9301,6 @@ void ufshcd_remove(struct ufs_hba *hba)
 	ufs_sysfs_remove_nodes(hba->dev);
 	blk_put_queue(hba->tmf_queue);
 	blk_mq_free_tag_set(&hba->tmf_tag_set);
-	blk_put_queue(hba->cmd_queue);
 	scsi_remove_host(hba->host);
 	/* disable interrupts */
 	ufshcd_disable_intr(hba, hba->intr_mask);
@@ -9452,9 +9454,9 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 
 	host->can_queue = hba->nutrs - UFSHCD_NUM_RESERVED;
 	host->cmd_per_lun = hba->nutrs - UFSHCD_NUM_RESERVED;
-	host->max_id = UFSHCD_MAX_ID;
+	host->max_id = 1;
 	host->max_lun = UFS_MAX_LUNS;
-	host->max_channel = UFSHCD_MAX_CHANNEL;
+	host->max_channel = 0;
 	host->unique_id = host->host_no;
 	host->max_cmd_len = UFS_CDB_SIZE;
 
@@ -9516,12 +9518,6 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 		goto out_disable;
 	}
 
-	hba->cmd_queue = blk_mq_init_queue(&hba->host->tag_set);
-	if (IS_ERR(hba->cmd_queue)) {
-		err = PTR_ERR(hba->cmd_queue);
-		goto out_remove_scsi_host;
-	}
-
 	hba->tmf_tag_set = (struct blk_mq_tag_set) {
 		.nr_hw_queues	= 1,
 		.queue_depth	= hba->nutmrs,
@@ -9530,7 +9526,7 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 	};
 	err = blk_mq_alloc_tag_set(&hba->tmf_tag_set);
 	if (err < 0)
-		goto free_cmd_queue;
+		goto out_remove_scsi_host;
 	hba->tmf_queue = blk_mq_init_queue(&hba->tmf_tag_set);
 	if (IS_ERR(hba->tmf_queue)) {
 		err = PTR_ERR(hba->tmf_queue);
@@ -9599,8 +9595,6 @@ free_tmf_queue:
 	blk_put_queue(hba->tmf_queue);
 free_tmf_tag_set:
 	blk_mq_free_tag_set(&hba->tmf_tag_set);
-free_cmd_queue:
-	blk_put_queue(hba->cmd_queue);
 out_remove_scsi_host:
 	scsi_remove_host(hba->host);
 out_disable:
