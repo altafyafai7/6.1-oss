@@ -56,6 +56,9 @@
 
 #define UFSHCD_DRIVER_VERSION "0.2"
 
+#define REG_UTP_TRANSFER_REQ_LIST_COMPL		0x64
+#define UFSHCD_QUIRK_ALIGN_SG_WITH_PAGE_SIZE	UFSHCD_QUIRK_4KB_DMA_ALIGNMENT
+
 #define ufshcd_is_link_broken(hba) ((hba)->uic_link_state == \
 				   UIC_LINK_BROKEN_STATE)
 #define ufshcd_set_link_off(hba) ((hba)->uic_link_state = UIC_LINK_OFF_STATE)
@@ -103,6 +106,16 @@ int mi_ufshcd_read_desc_param(struct ufs_hba *hba,
 				  int desc_index, u8 param_offset,
 				  u8 *param_read_buf,
 				  u8 param_size);
+
+static inline u32 mi_ufshci_version(u32 major, u32 minor)
+{
+	return (major << 8) + (minor << 4);
+}
+
+static inline bool ufshcd_has_utrlcnr(struct ufs_hba *hba)
+{
+	return (hba->ufs_version >= mi_ufshci_version(3, 0));
+}
 
 int ufshcd_runtime_idle(struct ufs_hba *hba);
 

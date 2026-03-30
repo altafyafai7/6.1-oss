@@ -218,6 +218,12 @@ struct ufs_uic_stats {
 	u32 dl_err_cnt_total;
 	u32 dl_err_cnt[UFS_EC_DL_MAX];
 	u32 dme_err_cnt;
+
+	u32 last_intr_status;
+	u64 last_intr_ts;
+	u32 hibern8_exit_cnt;
+	u64 last_hibern8_exit_tstamp;
+	struct ufs_event_hist event[UFS_EVT_CNT];
 };
 
 struct ufs_qcom_host {
