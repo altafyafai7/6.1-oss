@@ -29,6 +29,7 @@
 #include <linux/blkdev.h>
 #include "../host/ufs-qcom.h"
 #include "mi-ufshcd-add-info.h"
+#include <scsi/scsi_status.h>
 #include <trace/events/ufs.h>
 #include "../core/ufshcd-priv.h"
 
@@ -7859,7 +7860,12 @@ out:
 	return err;
 }
 
-static struct ufs_ref_clk ufs_ref_clk_freqs[] = {
+struct ufs_ref_clk {
+	unsigned long freq_hz;
+	enum ufs_ref_clk_freq val;
+};
+
+static const struct ufs_ref_clk ufs_ref_clk_freqs[] = {
 	{19200000, REF_CLK_FREQ_19_2_MHZ},
 	{26000000, REF_CLK_FREQ_26_MHZ},
 	{38400000, REF_CLK_FREQ_38_4_MHZ},
@@ -8026,7 +8032,7 @@ static int ufshcd_probe_hba(struct ufs_hba *hba, bool async)
 	if (ret)
 		goto out;
 
-	if (hba->quirks & UFSHCD_QUIRK_SKIP_INTERFACE_CONFIGURATION)
+	if (hba->quirks & UFSHCD_QUIRK_SKIP_PH_CONFIGURATION)
 		goto out;
 
 	/* Debug counters initialization */
@@ -8176,8 +8182,8 @@ static struct scsi_host_template ufshcd_driver_template = {
 	.eh_host_reset_handler   = ufshcd_eh_host_reset_handler,
 	.this_id		= -1,
 	.sg_tablesize		= SG_ALL,
-	.cmd_per_lun		= UFSHCD_CMD_PER_LUN,
-	.can_queue		= UFSHCD_CAN_QUEUE,
+	.cmd_per_lun		= 32,
+	.can_queue		= 32,
 	.max_segment_size	= PRDT_DATA_BYTE_COUNT_MAX,
 	.max_host_blocked	= 1,
 	.track_queue_depth	= 1,
@@ -8232,30 +8238,16 @@ static int ufshcd_config_vreg(struct device *dev,
 {
 	int ret = 0;
 	struct regulator *reg;
-	const char *name;
-	int min_uV, uA_load;
+	int uA_load;
 
 	BUG_ON(!vreg);
 
 	reg = vreg->reg;
-	name = vreg->name;
 
 	if (regulator_count_voltages(reg) > 0) {
 		uA_load = on ? vreg->max_uA : 0;
 		ret = ufshcd_config_vreg_load(dev, vreg, uA_load);
-		if (ret)
-			goto out;
-
-		if (vreg->min_uV && vreg->max_uV) {
-			min_uV = on ? vreg->min_uV : 0;
-			ret = regulator_set_voltage(reg, min_uV, vreg->max_uV);
-			if (ret)
-				dev_err(dev,
-					"%s: %s set voltage failed, err=%d\n",
-					__func__, name, ret);
-		}
 	}
-out:
 	return ret;
 }
 
@@ -8332,7 +8324,7 @@ static int ufshcd_setup_hba_vreg(struct ufs_hba *hba, bool on)
 	return ufshcd_toggle_vreg(hba->dev, info->vdd_hba, on);
 }
 
-static int ufshcd_get_vreg(struct device *dev, struct ufs_vreg *vreg)
+int ufshcd_get_vreg(struct device *dev, struct ufs_vreg *vreg)
 {
 	int ret = 0;
 
@@ -8502,9 +8494,20 @@ static int ufshcd_variant_hba_init(struct ufs_hba *hba)
 	if (err)
 		goto out;
 
-	err = ufshcd_vops_setup_regulators(hba, true);
+	err = ufshcd_setup_vreg(hba, true);
 	if (err)
-		ufshcd_vops_exit(hba);
+		goto variant_exit;
+
+	err = ufshcd_setup_hba_vreg(hba, true);
+	if (err)
+		goto disable_vreg;
+
+	return 0;
+
+disable_vreg:
+	ufshcd_setup_vreg(hba, false);
+variant_exit:
+	ufshcd_vops_exit(hba);
 out:
 	if (err)
 		dev_err(hba->dev, "%s: variant %s init failed err %d\n",
@@ -8517,7 +8520,8 @@ static void ufshcd_variant_hba_exit(struct ufs_hba *hba)
 	if (!hba->vops)
 		return;
 
-	ufshcd_vops_setup_regulators(hba, false);
+	ufshcd_setup_hba_vreg(hba, false);
+	ufshcd_setup_vreg(hba, false);
 
 	ufshcd_vops_exit(hba);
 }
@@ -8654,7 +8658,7 @@ static int ufshcd_set_dev_pwr_mode(struct ufs_hba *hba,
 		sdev_printk(KERN_WARNING, sdp,
 			    "START_STOP failed for power mode: %d, result %x\n",
 			    pwr_mode, ret);
-		if (driver_byte(ret) == DRIVER_SENSE)
+		if (scsi_sense_valid(&sshdr))
 			scsi_print_sense_hdr(sdp, NULL, &sshdr);
 	}
 
@@ -8834,8 +8838,8 @@ static int ufshcd_suspend(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 	enum uic_link_state req_link_state;
 
 	hba->pm_op_in_progress = 1;
-	if (!ufshcd_is_shutdown_pm(pm_op)) {
-		pm_lvl = ufshcd_is_runtime_pm(pm_op) ?
+	if (pm_op != UFS_SHUTDOWN_PM) {
+		pm_lvl = (pm_op == UFS_RUNTIME_PM) ?
 			 hba->rpm_lvl : hba->spm_lvl;
 		req_dev_pwr_mode = ufs_get_pm_lvl_to_dev_pwr_mode(pm_lvl);
 		req_link_state = ufs_get_pm_lvl_to_link_pwr_state(pm_lvl);
@@ -8871,7 +8875,7 @@ static int ufshcd_suspend(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 		goto enable_gating;
 	}
 
-	if (ufshcd_is_runtime_pm(pm_op)) {
+	if (pm_op == UFS_RUNTIME_PM) {
 		if (ufshcd_can_autobkops_during_suspend(hba)) {
 			/*
 			 * The device is idle with no requests in the queue,
@@ -8901,8 +8905,8 @@ static int ufshcd_suspend(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 	flush_work(&hba->eeh_work);
 
 	if (req_dev_pwr_mode != hba->curr_dev_pwr_mode) {
-		if ((ufshcd_is_runtime_pm(pm_op) && !hba->auto_bkops_enabled) ||
-		    !ufshcd_is_runtime_pm(pm_op)) {
+		if (((pm_op == UFS_RUNTIME_PM) && !hba->auto_bkops_enabled) ||
+		    (pm_op != UFS_RUNTIME_PM)) {
 			/* ensure that bkops is disabled */
 			ufshcd_disable_auto_bkops(hba);
 		}
@@ -8924,7 +8928,7 @@ disable_clks:
 	 * vendor specific host controller register space call them before the
 	 * host clocks are ON.
 	 */
-	ret = ufshcd_vops_suspend(hba, pm_op);
+	ret = ufshcd_vops_suspend(hba, pm_op, PRE_CHANGE);
 	if (ret)
 		goto set_link_active;
 	/*
@@ -8945,6 +8949,8 @@ disable_clks:
 
 	/* Put the host controller in low power mode if possible */
 	ufshcd_hba_vreg_set_lpm(hba);
+
+	ufshcd_vops_suspend(hba, pm_op, POST_CHANGE);
 	goto out;
 
 set_link_active:
@@ -9078,7 +9084,7 @@ static int ufshcd_resume(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 set_old_link_state:
 	ufshcd_link_state_transition(hba, old_link_state, 0);
 vendor_suspend:
-	ufshcd_vops_suspend(hba, pm_op);
+	ufshcd_vops_suspend(hba, pm_op, POST_CHANGE);
 disable_irq_and_vops_clks:
 	ufshcd_disable_irq(hba);
 	ufshcd_setup_clocks(hba, false);
@@ -9104,8 +9110,9 @@ out:
  *
  * Returns 0 for success and non-zero for failure
  */
-int ufshcd_system_suspend(struct ufs_hba *hba)
+int ufshcd_system_suspend(struct device *dev)
 {
+	struct ufs_hba *hba = dev_get_drvdata(dev);
 	int ret = 0;
 	ktime_t start = ktime_get();
 
