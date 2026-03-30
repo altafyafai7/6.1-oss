@@ -107,8 +107,15 @@ int mi_ufshcd_read_desc_param(struct ufs_hba *hba,
 				  u8 *param_read_buf,
 				  u8 param_size);
 
+int mi_ufshcd_read_desc_param_sel(struct ufs_hba *hba, enum desc_idn desc_id,
+			       int desc_index, u8 selector, u8 param_offset,
+			       u8 *param_read_buf, u8 param_size);
+
 int mi_ufshcd_query_flag(struct ufs_hba *hba, enum query_opcode opcode,
 			enum flag_idn idn, u8 index, bool *flag_res);
+
+int mi_ufshcd_query_flag_sel(struct ufs_hba *hba, enum query_opcode opcode,
+			enum flag_idn idn, u8 index, u8 selector, bool *flag_res);
 
 int mi_ufshcd_query_flag_retry(struct ufs_hba *hba,
 	enum query_opcode opcode, enum flag_idn idn, u8 index, bool *flag_res);

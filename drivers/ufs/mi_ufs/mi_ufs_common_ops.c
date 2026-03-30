@@ -17,7 +17,7 @@
 /*implement mi_ufs_query_desc in the future*/
 int mi_ufs_read_desc(struct ufs_hba *hba, enum desc_idn desc_id,   int desc_index,  u8 selector,  u8 param_offset,   void *param_read_buf,   u32 param_size)
 {
-	return ufshcd_read_desc_param_sel(hba, desc_id, desc_index, selector, param_offset, param_read_buf, param_size);
+	return mi_ufshcd_read_desc_param_sel(hba, desc_id, desc_index, selector, param_offset, param_read_buf, param_size);
 }
 
 
@@ -28,7 +28,7 @@ int mi_ufs_query_flag(struct ufs_hba *hba,
 	int retries;
 
 	for (retries = 0; retries < 3; retries++) {
-		ret = ufshcd_query_flag_sel(hba, opcode, idn, index, selector, flag_res);
+		ret = mi_ufshcd_query_flag_sel(hba, opcode, idn, index, selector, flag_res);
 		if (ret){
 			dev_err(hba->dev,
 				"%s: failed with error %d, retries %d, opcode %d, idn %d\n",
