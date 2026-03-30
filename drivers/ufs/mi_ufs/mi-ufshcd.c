@@ -247,19 +247,19 @@ static void ufshcd_update_uic_error_cnt(struct ufs_hba *hba, u32 id, u32 val)
 	case UFS_EVT_PA_ERR:
 		err_bits = val & UIC_PHY_ADAPTER_LAYER_ERROR_CODE_MASK;
 		for_each_set_bit(ec, &err_bits, UFS_EC_PA_MAX) {
-			host->ufs_stats.pa_err_cnt[ec]++;
-			host->ufs_stats.pa_err_cnt_total++;
+			hba->ufs_stats.pa_err_cnt[ec]++;
+			hba->ufs_stats.pa_err_cnt_total++;
 		}
 		break;
 	case UFS_EVT_DL_ERR:
 		err_bits = val & UIC_DATA_LINK_LAYER_ERROR_CODE_MASK;
 		for_each_set_bit(ec, &err_bits, UFS_EC_DL_MAX) {
-			host->ufs_stats.dl_err_cnt[ec]++;
-			host->ufs_stats.dl_err_cnt_total++;
+			hba->ufs_stats.dl_err_cnt[ec]++;
+			hba->ufs_stats.dl_err_cnt_total++;
 		}
 		break;
 	case UFS_EVT_DME_ERR:
-		host->ufs_stats.dme_err_cnt++;
+		hba->ufs_stats.dme_err_cnt++;
 	default:
 		break;
 	}
@@ -674,14 +674,11 @@ static inline u32 ufshcd_get_intr_mask(struct ufs_hba *hba)
  *
  * Returns UFSHCI version supported by the controller
  */
-static inline u32 ufshcd_get_ufs_version(struct ufs_hba *hba)
+static inline u32 mi_ufshcd_get_ufs_version(struct ufs_hba *hba)
 {
 	u32 ufshci_ver;
 
-	if (hba->quirks & UFSHCD_QUIRK_BROKEN_UFS_HCI_VERSION)
-		ufshci_ver = ufshcd_vops_get_ufs_hci_version(hba);
-	else
-		ufshci_ver = ufshcd_readl(hba, REG_UFS_VERSION);
+	ufshci_ver = ufshcd_readl(hba, REG_UFS_VERSION);
 
 	/*
 	 * UFSHCI v1.x uses a different version scheme, in order
@@ -1365,11 +1362,10 @@ out:
 	return ret;
 }
 
-static bool ufshcd_is_busy(struct request *req, void *priv, bool reserved)
+static bool mi_ufshcd_is_busy(struct request *req, void *priv)
 {
 	int *busy = priv;
 
-	WARN_ON_ONCE(reserved);
 	(*busy)++;
 	return false;
 }
@@ -1377,10 +1373,9 @@ static bool ufshcd_is_busy(struct request *req, void *priv, bool reserved)
 /* Whether or not any tag is in use by a request that is in progress. */
 static bool ufshcd_any_tag_in_use(struct ufs_hba *hba)
 {
-	struct request_queue *q = hba->cmd_queue;
 	int busy = 0;
 
-	blk_mq_tagset_busy_iter(q->tag_set, ufshcd_is_busy, &busy);
+	blk_mq_tagset_busy_iter(hba->host->tag_set, mi_ufshcd_is_busy, &busy);
 	return busy;
 }
 
@@ -2404,10 +2399,7 @@ static int ufshcd_map_sg(struct ufs_hba *hba, struct ufshcd_lrb *lrbp)
 		scsi_for_each_sg(cmd, sg, sg_segments, i) {
 			prd->size =
 				cpu_to_le32(((u32) sg_dma_len(sg))-1);
-			prd->base_addr =
-				cpu_to_le32(lower_32_bits(sg->dma_address));
-			prd->upper_addr =
-				cpu_to_le32(upper_32_bits(sg->dma_address));
+			prd->addr = cpu_to_le64(sg->dma_address);
 			prd->reserved = 0;
 			prd = (void *)prd + hba->sg_entry_size;
 		}
@@ -2669,10 +2661,10 @@ static inline u16 ufshcd_upiu_wlun_to_scsi_wlun(u8 upiu_wlun_id)
 static void ufshcd_init_lrb(struct ufs_hba *hba, struct ufshcd_lrb *lrb, int i)
 {
 	struct utp_transfer_cmd_desc *cmd_descp = (void *)hba->ucdl_base_addr +
-		i * sizeof_utp_transfer_cmd_desc(hba);
+		i * sizeof(struct utp_transfer_cmd_desc);
 	struct utp_transfer_req_desc *utrdlp = hba->utrdl_base_addr;
 	dma_addr_t cmd_desc_element_addr = hba->ucdl_dma_addr +
-		i * sizeof_utp_transfer_cmd_desc(hba);
+		i * sizeof(struct utp_transfer_cmd_desc);
 	u16 response_offset = offsetof(struct utp_transfer_cmd_desc,
 				       response_upiu);
 	u16 prdt_offset = offsetof(struct utp_transfer_cmd_desc, prd_table);
@@ -3831,7 +3823,7 @@ static int ufshcd_memory_alloc(struct ufs_hba *hba)
 	size_t utmrdl_size, utrdl_size, ucdl_size;
 
 	/* Allocate memory for UTP command descriptors */
-	ucdl_size = (sizeof_utp_transfer_cmd_desc(hba) * hba->nutrs);
+	ucdl_size = (sizeof(struct utp_transfer_cmd_desc) * hba->nutrs);
 	hba->ucdl_base_addr = dmam_alloc_coherent(hba->dev,
 						  ucdl_size,
 						  &hba->ucdl_dma_addr,
@@ -3925,7 +3917,7 @@ static void ufshcd_host_memory_configure(struct ufs_hba *hba)
 	prdt_offset =
 		offsetof(struct utp_transfer_cmd_desc, prd_table);
 
-	cmd_desc_size = sizeof_utp_transfer_cmd_desc(hba);
+	cmd_desc_size = sizeof(struct utp_transfer_cmd_desc);
 	cmd_desc_dma_addr = hba->ucdl_dma_addr;
 
 	for (i = 0; i < hba->nutrs; i++) {
@@ -9541,7 +9533,7 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 		goto out_disable;
 
 	/* Get UFS version supported by the controller */
-	hba->ufs_version = ufshcd_get_ufs_version(hba);
+	hba->ufs_version = mi_ufshcd_get_ufs_version(hba);
 
 	if (hba->ufs_version < ufshci_version(1, 0))
 		dev_err(hba->dev, "invalid UFS version 0x%x\n",
