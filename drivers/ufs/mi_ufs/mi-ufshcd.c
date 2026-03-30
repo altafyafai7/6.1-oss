@@ -29,6 +29,7 @@
 #include "../host/ufs-qcom.h"
 #include "mi-ufshcd-add-info.h"
 #include <trace/events/ufs.h>
+#include "../core/ufshcd-priv.h"
 
 #include <trace/hooks/ufshcd.h>
 
@@ -150,6 +151,11 @@ int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 	return 0;
 }
 
+/* UFSHCD error handling flags */
+enum {
+	UFSHCD_EH_IN_PROGRESS = (1 << 0),
+};
+
 #define ufshcd_set_eh_in_progress(h) \
 	((h)->eh_flags |= UFSHCD_EH_IN_PROGRESS)
 #define ufshcd_eh_in_progress(h) \
@@ -185,26 +191,26 @@ ufs_get_desired_pm_lvl_for_dev_link_state(enum ufs_dev_pwr_mode dev_state,
 	return UFS_PM_LVL_0;
 }
 
-static struct ufs_dev_fix ufs_fixups[] = {
+static const struct ufs_dev_quirk ufs_fixups[] = {
 	/* UFS cards deviations table */
-	UFS_FIX(UFS_VENDOR_MICRON, UFS_ANY_MODEL,
-		UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM |
-		UFS_DEVICE_QUIRK_SWAP_L2P_ENTRY_FOR_HPB_READ),
-	UFS_FIX(UFS_VENDOR_SAMSUNG, UFS_ANY_MODEL,
-		UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM |
-		UFS_DEVICE_QUIRK_HOST_PA_TACTIVATE |
-		UFS_DEVICE_QUIRK_RECOVERY_FROM_DL_NAC_ERRORS),
-	UFS_FIX(UFS_VENDOR_SKHYNIX, UFS_ANY_MODEL,
-		UFS_DEVICE_QUIRK_HOST_PA_SAVECONFIGTIME),
-	UFS_FIX(UFS_VENDOR_SKHYNIX, "hB8aL1" /*H28U62301AMR*/,
-		UFS_DEVICE_QUIRK_HOST_VS_DEBUGSAVECONFIGTIME),
-	UFS_FIX(UFS_VENDOR_TOSHIBA, UFS_ANY_MODEL,
-		UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM),
-	UFS_FIX(UFS_VENDOR_TOSHIBA, "THGLF2G9C8KBADG",
-		UFS_DEVICE_QUIRK_PA_TACTIVATE),
-	UFS_FIX(UFS_VENDOR_TOSHIBA, "THGLF2G9D8KBADG",
-		UFS_DEVICE_QUIRK_PA_TACTIVATE),
-	END_FIX
+	{ .wmanufacturerid = UFS_VENDOR_MICRON, .model = UFS_ANY_MODEL,
+	  .quirk = UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM |
+		   UFS_DEVICE_QUIRK_SWAP_L2P_ENTRY_FOR_HPB_READ },
+	{ .wmanufacturerid = UFS_VENDOR_SAMSUNG, .model = UFS_ANY_MODEL,
+	  .quirk = UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM |
+		   UFS_DEVICE_QUIRK_HOST_PA_TACTIVATE |
+		   UFS_DEVICE_QUIRK_RECOVERY_FROM_DL_NAC_ERRORS },
+	{ .wmanufacturerid = UFS_VENDOR_SKHYNIX, .model = UFS_ANY_MODEL,
+	  .quirk = UFS_DEVICE_QUIRK_HOST_PA_SAVECONFIGTIME },
+	{ .wmanufacturerid = UFS_VENDOR_SKHYNIX, .model = "hB8aL1" /*H28U62301AMR*/,
+	  .quirk = UFS_DEVICE_QUIRK_HOST_VS_DEBUGSAVECONFIGTIME },
+	{ .wmanufacturerid = UFS_VENDOR_TOSHIBA, .model = UFS_ANY_MODEL,
+	  .quirk = UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM },
+	{ .wmanufacturerid = UFS_VENDOR_TOSHIBA, .model = "THGLF2G9C8KBADG",
+	  .quirk = UFS_DEVICE_QUIRK_PA_TACTIVATE },
+	{ .wmanufacturerid = UFS_VENDOR_TOSHIBA, .model = "THGLF2G9D8KBADG",
+	  .quirk = UFS_DEVICE_QUIRK_PA_TACTIVATE },
+	{}
 };
 
 static irqreturn_t ufshcd_tmc_handler(struct ufs_hba *hba);
@@ -247,19 +253,19 @@ static void ufshcd_update_uic_error_cnt(struct ufs_hba *hba, u32 id, u32 val)
 	case UFS_EVT_PA_ERR:
 		err_bits = val & UIC_PHY_ADAPTER_LAYER_ERROR_CODE_MASK;
 		for_each_set_bit(ec, &err_bits, UFS_EC_PA_MAX) {
-			hba->ufs_stats.pa_err_cnt[ec]++;
-			hba->ufs_stats.pa_err_cnt_total++;
+			host->ufs_stats.pa_err_cnt[ec]++;
+			host->ufs_stats.pa_err_cnt_total++;
 		}
 		break;
 	case UFS_EVT_DL_ERR:
 		err_bits = val & UIC_DATA_LINK_LAYER_ERROR_CODE_MASK;
 		for_each_set_bit(ec, &err_bits, UFS_EC_DL_MAX) {
-			hba->ufs_stats.dl_err_cnt[ec]++;
-			hba->ufs_stats.dl_err_cnt_total++;
+			host->ufs_stats.dl_err_cnt[ec]++;
+			host->ufs_stats.dl_err_cnt_total++;
 		}
 		break;
 	case UFS_EVT_DME_ERR:
-		hba->ufs_stats.dme_err_cnt++;
+		host->ufs_stats.dme_err_cnt++;
 	default:
 		break;
 	}
@@ -448,7 +454,7 @@ static void ufshcd_print_evt(struct ufs_hba *hba, u32 id,
 	if (id >= UFS_EVT_CNT)
 		return;
 
-	e = &hba->ufs_stats.event[id];
+	e = &host->ufs_stats.event[id];
 
 	for (i = 0; i < UFS_EVENT_HIST_LENGTH; i++) {
 		int p = (i + e->pos) % UFS_EVENT_HIST_LENGTH;
@@ -563,11 +569,11 @@ static void ufshcd_print_host_state(struct ufs_hba *hba)
 	dev_err(hba->dev, "Clk gate=%d\n", hba->clk_gating.state);
 	dev_err(hba->dev,
 		"last_hibern8_exit_tstamp at %lld us, hibern8_exit_cnt=%d\n",
-		ktime_to_us(hba->ufs_stats.last_hibern8_exit_tstamp),
-		hba->ufs_stats.hibern8_exit_cnt);
+		ktime_to_us(host->ufs_stats.last_hibern8_exit_tstamp),
+		host->ufs_stats.hibern8_exit_cnt);
 	dev_err(hba->dev, "last intr at %lld us, last intr status=0x%x\n",
-		ktime_to_us(hba->ufs_stats.last_intr_ts),
-		hba->ufs_stats.last_intr_status);
+		ktime_to_us(host->ufs_stats.last_intr_ts),
+		host->ufs_stats.last_intr_status);
 	dev_err(hba->dev, "error handling flags=0x%x, req. abort count=%d\n",
 		hba->eh_flags, hba->req_abort_count);
 	dev_err(hba->dev, "hba->ufs_version=0x%x, Host capabilities=0x%x, caps=0x%x\n",
@@ -1375,7 +1381,7 @@ static bool ufshcd_any_tag_in_use(struct ufs_hba *hba)
 {
 	int busy = 0;
 
-	blk_mq_tagset_busy_iter(hba->host->tag_set, mi_ufshcd_is_busy, &busy);
+	blk_mq_tagset_busy_iter(&hba->host->tag_set, mi_ufshcd_is_busy, &busy);
 	return busy;
 }
 
@@ -2134,14 +2140,14 @@ void ufshcd_send_command(struct ufs_hba *hba, unsigned int task_tag)
 static inline void ufshcd_copy_sense_data(struct ufshcd_lrb *lrbp)
 {
 	int len;
-	if (lrbp->sense_buffer &&
+	if (lrbp->cmd && lrbp->cmd->sense_buffer &&
 	    ufshcd_get_rsp_upiu_data_seg_len(lrbp->ucd_rsp_ptr)) {
 		int len_to_copy;
 
 		len = be16_to_cpu(lrbp->ucd_rsp_ptr->sr.sense_data_len);
 		len_to_copy = min_t(int, UFS_SENSE_SIZE, len);
 
-		memcpy(lrbp->sense_buffer, lrbp->ucd_rsp_ptr->sr.sense_data,
+		memcpy(lrbp->cmd->sense_buffer, lrbp->ucd_rsp_ptr->sr.sense_data,
 		       len_to_copy);
 	}
 }
@@ -2858,7 +2864,7 @@ ufshcd_dev_cmd_completion(struct ufs_hba *hba, struct ufshcd_lrb *lrbp)
 	int resp;
 	int err = 0;
 
-	hba->ufs_stats.last_hibern8_exit_tstamp = ktime_set(0, 0);
+	host->ufs_stats.last_hibern8_exit_tstamp = ktime_set(0, 0);
 	resp = ufshcd_get_req_rsp(lrbp->ucd_rsp_ptr);
 
 	switch (resp) {
@@ -4373,8 +4379,8 @@ int ufshcd_uic_hibern8_exit(struct ufs_hba *hba)
 	} else {
 		ufshcd_vops_hibern8_notify(hba, UIC_CMD_DME_HIBER_EXIT,
 								POST_CHANGE);
-		hba->ufs_stats.last_hibern8_exit_tstamp = ktime_get();
-		hba->ufs_stats.hibern8_exit_cnt++;
+		host->ufs_stats.last_hibern8_exit_tstamp = ktime_get();
+		host->ufs_stats.hibern8_exit_cnt++;
 	}
 
 	return ret;
@@ -4865,7 +4871,7 @@ void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val)
 	if (id >= UFS_EVT_CNT)
 		return;
 
-	e = &hba->ufs_stats.event[id];
+	e = &host->ufs_stats.event[id];
 	e->val[e->pos] = val;
 	e->tstamp[e->pos] = ktime_get();
 	e->cnt += 1;
@@ -5270,7 +5276,7 @@ ufshcd_transfer_rsp_status(struct ufs_hba *hba, struct ufshcd_lrb *lrbp)
 	switch (ocs) {
 	case OCS_SUCCESS:
 		result = ufshcd_get_req_rsp(lrbp->ucd_rsp_ptr);
-		hba->ufs_stats.last_hibern8_exit_tstamp = ktime_set(0, 0);
+		host->ufs_stats.last_hibern8_exit_tstamp = ktime_set(0, 0);
 		switch (result) {
 		case UPIU_TRANSACTION_RESPONSE:
 			/*
@@ -6674,8 +6680,8 @@ static irqreturn_t ufshcd_intr(int irq, void *__hba)
 	int retries = hba->nutrs;
 
 	intr_status = ufshcd_readl(hba, REG_INTERRUPT_STATUS);
-	hba->ufs_stats.last_intr_status = intr_status;
-	hba->ufs_stats.last_intr_ts = ktime_get();
+	host->ufs_stats.last_intr_status = intr_status;
+	host->ufs_stats.last_intr_ts = ktime_get();
 
 	/*
 	 * There could be max of hba->nutrs reqs in flight and in worst case
@@ -6699,7 +6705,7 @@ static irqreturn_t ufshcd_intr(int irq, void *__hba)
 		dev_err(hba->dev, "%s: Unhandled interrupt 0x%08x (0x%08x, 0x%08x)\n",
 					__func__,
 					intr_status,
-					hba->ufs_stats.last_intr_status,
+					host->ufs_stats.last_intr_status,
 					enabled_intr_status);
 		ufshcd_dump_regs(hba, 0, UFSHCI_REG_SPACE_SIZE, "host_regs: ");
 	}
@@ -7934,8 +7940,8 @@ static void ufshcd_tune_unipro_params(struct ufs_hba *hba)
 
 static void ufshcd_clear_dbg_ufs_stats(struct ufs_hba *hba)
 {
-	hba->ufs_stats.hibern8_exit_cnt = 0;
-	hba->ufs_stats.last_hibern8_exit_tstamp = ktime_set(0, 0);
+	host->ufs_stats.hibern8_exit_cnt = 0;
+	host->ufs_stats.last_hibern8_exit_tstamp = ktime_set(0, 0);
 	hba->req_abort_count = 0;
 }
 
