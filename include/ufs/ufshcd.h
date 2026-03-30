@@ -1073,6 +1073,7 @@ struct ufs_hba {
 
 	/* Keeps information of the UFS device connected to this host */
 	struct ufs_dev_info dev_info;
+	u16 desc_size[QUERY_DESC_IDN_MAX];
 	bool auto_bkops_enabled;
 	struct ufs_vreg_info vreg_info;
 	struct list_head clk_list_head;
