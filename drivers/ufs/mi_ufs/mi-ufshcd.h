@@ -107,6 +107,17 @@ int mi_ufshcd_read_desc_param(struct ufs_hba *hba,
 				  u8 *param_read_buf,
 				  u8 param_size);
 
+int mi_ufshcd_query_flag(struct ufs_hba *hba, enum query_opcode opcode,
+			enum flag_idn idn, u8 index, bool *flag_res);
+
+int mi_ufshcd_query_flag_retry(struct ufs_hba *hba,
+	enum query_opcode opcode, enum flag_idn idn, u8 index, bool *flag_res);
+
+u8 mi_ufshcd_wb_get_query_index(struct ufs_hba *hba);
+
+int mi_ufshcd_read_string_desc(struct ufs_hba *hba, u8 desc_index,
+			    u8 **buf, bool ascii);
+
 static inline u32 mi_ufshci_version(u32 major, u32 minor)
 {
 	return (major << 8) + (minor << 4);

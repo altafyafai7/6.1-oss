@@ -838,7 +838,7 @@ static ssize_t _name##_show(struct device *dev,				\
 	if (!desc_buf)                                                  \
 		return -ENOMEM;                                         \
 	pm_runtime_get_sync(hba->dev);					\
-	ret = ufshcd_query_descriptor_retry(hba,			\
+	ret = mi_ufshcd_query_descriptor_retry(hba,			\
 		UPIU_QUERY_OPCODE_READ_DESC, QUERY_DESC_IDN_DEVICE,	\
 		0, 0, desc_buf, &desc_len);				\
 	if (ret) {							\
@@ -848,7 +848,7 @@ static ssize_t _name##_show(struct device *dev,				\
 	index = desc_buf[DEVICE_DESC_PARAM##_pname];			\
 	kfree(desc_buf);						\
 	desc_buf = NULL;						\
-	ret = ufshcd_read_string_desc(hba, index, &desc_buf,		\
+	ret = mi_ufshcd_read_string_desc(hba, index, &desc_buf,		\
 				      SD_ASCII_STD);			\
 	if (ret < 0)							\
 		goto out;						\
@@ -895,9 +895,9 @@ static ssize_t _name##_show(struct device *dev,				\
 	int ret;							\
 	struct ufs_hba *hba = dev_get_drvdata(dev);			\
 	if (ufshcd_is_wb_flags(QUERY_FLAG_IDN##_uname))			\
-		index = ufshcd_wb_get_query_index(hba);			\
+		index = mi_ufshcd_wb_get_query_index(hba);			\
 	pm_runtime_get_sync(hba->dev);					\
-	ret = ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,	\
+	ret = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,	\
 		QUERY_FLAG_IDN##_uname, index, &flag);			\
 	pm_runtime_put_sync(hba->dev);					\
 	if (ret)							\
@@ -963,9 +963,9 @@ static ssize_t enable_tw_show(struct device *dev, struct device_attribute *attr,
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	pm_runtime_get_sync(hba->dev);
 	if (ufshcd_is_wb_flags(QUERY_FLAG_IDN_WB_EN))
-		index = ufshcd_wb_get_query_index(hba);
+		index = mi_ufshcd_wb_get_query_index(hba);
 
-	ret = ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
+	ret = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
 				QUERY_FLAG_IDN_WB_EN, index, &flag);
 
 	if (ret) {
@@ -1002,9 +1002,9 @@ static ssize_t enable_flush_en_show(struct device *dev,
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	pm_runtime_get_sync(hba->dev);
 	if (ufshcd_is_wb_flags(QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN))
-		index = ufshcd_wb_get_query_index(hba);
+		index = mi_ufshcd_wb_get_query_index(hba);
 
-	ret = ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
+	ret = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
 				QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN, index, &flag);
 
 	if (ret) {
@@ -1041,9 +1041,9 @@ static ssize_t enable_autoflush_in_h8_show(struct device *dev,
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	pm_runtime_get_sync(hba->dev);
 	if (ufshcd_is_wb_flags(QUERY_FLAG_IDN_WB_BUFF_FLUSH_DURING_HIBERN8))
-		index = ufshcd_wb_get_query_index(hba);
+		index = mi_ufshcd_wb_get_query_index(hba);
 
-	ret = ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
+	ret = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
 				QUERY_FLAG_IDN_WB_BUFF_FLUSH_DURING_HIBERN8,
 				index, &flag);
 
@@ -1101,7 +1101,7 @@ static ssize_t _name##_show(struct device *dev,				\
 	int ret;							\
 	u8 index = 0;							\
 	if (ufshcd_is_wb_attrs(QUERY_ATTR_IDN##_uname))			\
-		index = ufshcd_wb_get_query_index(hba);			\
+		index = mi_ufshcd_wb_get_query_index(hba);			\
 	pm_runtime_get_sync(hba->dev);					\
 	ret = ufshcd_query_attr(hba, UPIU_QUERY_OPCODE_READ_ATTR,	\
 		QUERY_ATTR_IDN##_uname, index, 0, &value);		\

@@ -16,6 +16,7 @@
 #include <linux/bitfield.h>
 #include <linux/blk-pm.h>
 #include <linux/blkdev.h>
+#include <linux/blk-mq.h>
 #include "mi-ufshcd.h"
 #include "mi_ufs_quirks.h"
 #include "mi-unipro.h"
@@ -42,6 +43,7 @@
 #define UIC_PWR_CTRL_TIMEOUT 5000
 
 static int mi_ufshcd_try_to_abort_task(struct ufs_hba *hba, int tag);
+static inline void mi_ufshcd_schedule_eh_work(struct ufs_hba *hba);
 
 /* NOP OUT retries waiting for NOP IN response */
 #define NOP_OUT_RETRIES    10
@@ -3014,14 +3016,14 @@ static inline void ufshcd_init_query(struct ufs_hba *hba,
 	(*request)->upiu_req.selector = selector;
 }
 
-int ufshcd_query_flag_retry(struct ufs_hba *hba,
+int mi_ufshcd_query_flag_retry(struct ufs_hba *hba,
 	enum query_opcode opcode, enum flag_idn idn, u8 index, bool *flag_res)
 {
 	int ret;
 	int retries;
 
 	for (retries = 0; retries < QUERY_REQ_RETRIES; retries++) {
-		ret = ufshcd_query_flag(hba, opcode, idn, index, flag_res);
+		ret = mi_ufshcd_query_flag(hba, opcode, idn, index, flag_res);
 		if (ret)
 			dev_dbg(hba->dev,
 				"%s: failed with error %d, retries %d\n",
@@ -3038,7 +3040,7 @@ int ufshcd_query_flag_retry(struct ufs_hba *hba,
 }
 
 /**
- * ufshcd_query_flag() - API function for sending flag query requests
+ * mi_ufshcd_query_flag() - API function for sending flag query requests
  * @hba: per-adapter instance
  * @opcode: flag query to perform
  * @idn: flag idn to access
@@ -3047,7 +3049,7 @@ int ufshcd_query_flag_retry(struct ufs_hba *hba,
  *
  * Returns 0 for success, non-zero in case of failure
  */
-int ufshcd_query_flag(struct ufs_hba *hba, enum query_opcode opcode,
+int mi_ufshcd_query_flag(struct ufs_hba *hba, enum query_opcode opcode,
 			enum flag_idn idn, u8 index, bool *flag_res)
 {
 	struct ufs_query_req *request = NULL;
@@ -3205,7 +3207,7 @@ int ufshcd_query_attr_retry(struct ufs_hba *hba,
 	return ret;
 }
 
-static int __ufshcd_query_descriptor(struct ufs_hba *hba,
+static int __mi_ufshcd_query_descriptor(struct ufs_hba *hba,
 			enum query_opcode opcode, enum desc_idn idn, u8 index,
 			u8 selector, u8 *desc_buf, int *buf_len)
 {
@@ -3291,7 +3293,7 @@ int mi_ufshcd_query_descriptor_retry(struct ufs_hba *hba,
 	int retries;
 
 	for (retries = QUERY_REQ_RETRIES; retries > 0; retries--) {
-		err = __ufshcd_query_descriptor(hba, opcode, idn, index,
+		err = __mi_ufshcd_query_descriptor(hba, opcode, idn, index,
 						selector, desc_buf, buf_len);
 		if (!err || err == -EINVAL)
 			break;
@@ -3300,39 +3302,6 @@ int mi_ufshcd_query_descriptor_retry(struct ufs_hba *hba,
 	return err;
 }
 EXPORT_SYMBOL_GPL(mi_ufshcd_query_descriptor_retry);
-
-/**
- * ufshcd_query_descriptor_retry - API function for sending descriptor requests
- * @hba: per-adapter instance
- * @opcode: attribute opcode
- * @idn: attribute idn to access
- * @index: index field
- * @selector: selector field
- * @desc_buf: the buffer that contains the descriptor
- * @buf_len: length parameter passed to the device
- *
- * Returns 0 for success, non-zero in case of failure.
- * The buf_len parameter will contain, on return, the length parameter
- * received on the response.
- */
-int ufshcd_query_descriptor_retry(struct ufs_hba *hba,
-				  enum query_opcode opcode,
-				  enum desc_idn idn, u8 index,
-				  u8 selector,
-				  u8 *desc_buf, int *buf_len)
-{
-	int err;
-	int retries;
-
-	for (retries = QUERY_REQ_RETRIES; retries > 0; retries--) {
-		err = __ufshcd_query_descriptor(hba, opcode, idn, index,
-						selector, desc_buf, buf_len);
-		if (!err || err == -EINVAL)
-			break;
-	}
-
-	return err;
-}
 
 /**
  * ufshcd_map_desc_id_to_length - map descriptor IDN to its length
@@ -3415,7 +3384,7 @@ int mi_ufshcd_read_desc_param(struct ufs_hba *hba,
 	}
 
 	/* Request for full descriptor */
-	ret = ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
+	ret = mi_mi_ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
 					desc_id, desc_index, 0,
 					desc_buf, &buff_len);
 
@@ -3453,94 +3422,7 @@ out:
 }
 EXPORT_SYMBOL_GPL(mi_ufshcd_read_desc_param);
 
-/**
- * ufshcd_read_desc_param - read the specified descriptor parameter
- * @hba: Pointer to adapter instance
- * @desc_id: descriptor idn value
- * @desc_index: descriptor index
- * @param_offset: offset of the parameter to read
- * @param_read_buf: pointer to buffer where parameter would be read
- * @param_size: sizeof(param_read_buf)
- *
- * Return 0 in case of success, non-zero otherwise
- */
-int ufshcd_read_desc_param(struct ufs_hba *hba,
-			   enum desc_idn desc_id,
-			   int desc_index,
-			   u8 param_offset,
-			   u8 *param_read_buf,
-			   u8 param_size)
-{
-	int ret;
-	u8 *desc_buf;
-	int buff_len;
-	bool is_kmalloc = true;
-
-	/* Safety check */
-	if (desc_id >= QUERY_DESC_IDN_MAX || !param_size)
-		return -EINVAL;
-
-	/* Get the length of descriptor */
-	ufshcd_map_desc_id_to_length(hba, desc_id, &buff_len);
-	if (!buff_len) {
-		dev_err(hba->dev, "%s: Failed to get desc length\n", __func__);
-		return -EINVAL;
-	}
-
-	if (param_offset >= buff_len) {
-		dev_err(hba->dev, "%s: Invalid offset 0x%x in descriptor IDN 0x%x, length 0x%x\n",
-			__func__, param_offset, desc_id, buff_len);
-		return -EINVAL;
-	}
-
-	/* Check whether we need temp memory */
-	if (param_offset != 0 || param_size < buff_len) {
-		desc_buf = kzalloc(buff_len, GFP_KERNEL);
-		if (!desc_buf)
-			return -ENOMEM;
-	} else {
-		desc_buf = param_read_buf;
-		is_kmalloc = false;
-	}
-
-	/* Request for full descriptor */
-	ret = ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
-					desc_id, desc_index, 0,
-					desc_buf, &buff_len);
-
-	if (ret) {
-		dev_err(hba->dev, "%s: Failed reading descriptor. desc_id %d, desc_index %d, param_offset %d, ret %d\n",
-			__func__, desc_id, desc_index, param_offset, ret);
-		goto out;
-	}
-
-	/* Sanity check */
-	if (desc_buf[QUERY_DESC_DESC_TYPE_OFFSET] != desc_id) {
-		dev_err(hba->dev, "%s: invalid desc_id %d in descriptor header\n",
-			__func__, desc_buf[QUERY_DESC_DESC_TYPE_OFFSET]);
-		ret = -EINVAL;
-		goto out;
-	}
-
-	/* Update descriptor length */
-	buff_len = desc_buf[QUERY_DESC_LENGTH_OFFSET];
-	ufshcd_update_desc_length(hba, desc_id, desc_index, buff_len);
-
-	if (is_kmalloc) {
-		/* Make sure we don't copy more data than available */
-		if (param_offset >= buff_len)
-			ret = -EINVAL;
-		else
-			memcpy(param_read_buf, &desc_buf[param_offset],
-			       min_t(u32, param_size, buff_len - param_offset));
-	}
-out:
-	if (is_kmalloc)
-		kfree(desc_buf);
-	return ret;
-}
-
-int ufshcd_query_flag_sel(struct ufs_hba *hba, enum query_opcode opcode,
+int mi_ufshcd_query_flag_sel(struct ufs_hba *hba, enum query_opcode opcode,
 			  enum flag_idn idn, u8 index, u8 selector,
 			  bool *flag_res)
 {
@@ -3601,7 +3483,7 @@ out_unlock:
 	return err;
 }
 
-int ufshcd_read_desc_param_sel(struct ufs_hba *hba, enum desc_idn desc_id,
+int mi_ufshcd_read_desc_param_sel(struct ufs_hba *hba, enum desc_idn desc_id,
 			       int desc_index, u8 selector, u8 param_offset,
 			       u8 *param_read_buf, u8 param_size)
 {
@@ -3637,7 +3519,7 @@ int ufshcd_read_desc_param_sel(struct ufs_hba *hba, enum desc_idn desc_id,
 	}
 
 	/* Request for full descriptor */
-	ret = ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
+	ret = mi_mi_ufshcd_query_descriptor_retry(hba, UPIU_QUERY_OPCODE_READ_DESC,
 					    desc_id, desc_index, selector,
 					    desc_buf, &buff_len);
 
@@ -3688,7 +3570,7 @@ static inline char ufshcd_remove_non_printable(u8 ch)
 }
 
 /**
- * ufshcd_read_string_desc - read string descriptor
+ * mi_ufshcd_read_string_desc - read string descriptor
  * @hba: pointer to adapter instance
  * @desc_index: descriptor index
  * @buf: pointer to buffer where descriptor would be read,
@@ -3701,7 +3583,7 @@ static inline char ufshcd_remove_non_printable(u8 ch)
  * *      -ENOMEM: on allocation failure
  * *      -EINVAL: on a wrong parameter
  */
-int ufshcd_read_string_desc(struct ufs_hba *hba, u8 desc_index,
+int mi_ufshcd_read_string_desc(struct ufs_hba *hba, u8 desc_index,
 			    u8 **buf, bool ascii)
 {
 	struct uc_string_id *uc_str;
@@ -3715,7 +3597,7 @@ int ufshcd_read_string_desc(struct ufs_hba *hba, u8 desc_index,
 	if (!uc_str)
 		return -ENOMEM;
 
-	ret = ufshcd_read_desc_param(hba, QUERY_DESC_IDN_STRING, desc_index, 0,
+	ret = mi_ufshcd_read_desc_param(hba, QUERY_DESC_IDN_STRING, desc_index, 0,
 				     (u8 *)uc_str, QUERY_DESC_MAX_SIZE);
 	if (ret < 0) {
 		dev_err(hba->dev, "Reading String Desc failed after %d retries. err = %d\n",
@@ -3793,7 +3675,7 @@ static inline int ufshcd_read_unit_desc_param(struct ufs_hba *hba,
 	if (!ufs_is_valid_unit_desc_lun(&hba->dev_info, lun))
 		return -EOPNOTSUPP;
 
-	return ufshcd_read_desc_param(hba, QUERY_DESC_IDN_UNIT, lun,
+	return mi_ufshcd_read_desc_param(hba, QUERY_DESC_IDN_UNIT, lun,
 				      param_offset, param_read_buf, param_size);
 }
 
@@ -4633,7 +4515,7 @@ static int ufshcd_complete_dev_init(struct ufs_hba *hba)
 	bool flag_res = true;
 	ktime_t timeout;
 
-	err = ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_SET_FLAG,
+	err = mi_ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_SET_FLAG,
 		QUERY_FLAG_IDN_FDEVICEINIT, 0, NULL);
 	if (err) {
 		dev_err(hba->dev,
@@ -4645,7 +4527,7 @@ static int ufshcd_complete_dev_init(struct ufs_hba *hba)
 	/* Poll fDeviceInit flag to be cleared */
 	timeout = ktime_add_ms(ktime_get(), FDEVICEINIT_COMPL_TIMEOUT);
 	do {
-		err = ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
+		err = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
 					QUERY_FLAG_IDN_FDEVICEINIT, 0, &flag_res);
 		if (!flag_res)
 			break;
@@ -5619,7 +5501,7 @@ static int ufshcd_enable_auto_bkops(struct ufs_hba *hba)
 	if (hba->auto_bkops_enabled)
 		goto out;
 
-	err = ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_SET_FLAG,
+	err = mi_ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_SET_FLAG,
 			QUERY_FLAG_IDN_BKOPS_EN, 0, NULL);
 	if (err) {
 		dev_err(hba->dev, "%s: failed to enable bkops %d\n",
@@ -5669,7 +5551,7 @@ static int ufshcd_disable_auto_bkops(struct ufs_hba *hba)
 		goto out;
 	}
 
-	err = ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_CLEAR_FLAG,
+	err = mi_ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_CLEAR_FLAG,
 			QUERY_FLAG_IDN_BKOPS_EN, 0, NULL);
 	if (err) {
 		dev_err(hba->dev, "%s: failed to disable bkops %d\n",
@@ -5831,8 +5713,8 @@ int ufshcd_wb_ctrl(struct ufs_hba *hba, bool enable)
 	else
 		opcode = UPIU_QUERY_OPCODE_CLEAR_FLAG;
 
-	index = ufshcd_wb_get_query_index(hba);
-	ret = ufshcd_query_flag_retry(hba, opcode,
+	index = mi_ufshcd_wb_get_query_index(hba);
+	ret = mi_ufshcd_query_flag_retry(hba, opcode,
 				      QUERY_FLAG_IDN_WB_EN, index, NULL);
 	if (ret) {
 		dev_err(hba->dev, "%s write booster %s failed %d\n",
@@ -5857,8 +5739,8 @@ int ufshcd_wb_toggle_flush_during_h8(struct ufs_hba *hba, bool set)
 	else
 		val = UPIU_QUERY_OPCODE_CLEAR_FLAG;
 
-	index = ufshcd_wb_get_query_index(hba);
-	return ufshcd_query_flag_retry(hba, val,
+	index = mi_ufshcd_wb_get_query_index(hba);
+	return mi_ufshcd_query_flag_retry(hba, val,
 				QUERY_FLAG_IDN_WB_BUFF_FLUSH_DURING_HIBERN8,
 				index, NULL);
 }
@@ -5880,8 +5762,8 @@ static int ufshcd_wb_buf_flush_enable(struct ufs_hba *hba)
 	if (!ufshcd_is_wb_allowed(hba) || hba->dev_info.wb_buf_flush_enabled)
 		return 0;
 
-	index = ufshcd_wb_get_query_index(hba);
-	ret = ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_SET_FLAG,
+	index = mi_ufshcd_wb_get_query_index(hba);
+	ret = mi_ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_SET_FLAG,
 				      QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN,
 				      index, NULL);
 	if (ret)
@@ -5902,8 +5784,8 @@ static int ufshcd_wb_buf_flush_disable(struct ufs_hba *hba)
 	if (!ufshcd_is_wb_allowed(hba) || !hba->dev_info.wb_buf_flush_enabled)
 		return 0;
 
-	index = ufshcd_wb_get_query_index(hba);
-	ret = ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_CLEAR_FLAG,
+	index = mi_ufshcd_wb_get_query_index(hba);
+	ret = mi_ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_CLEAR_FLAG,
 				      QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN,
 				      index, NULL);
 	if (ret) {
@@ -5924,7 +5806,7 @@ static bool ufshcd_wb_presrv_usrspc_keep_vcc_on(struct ufs_hba *hba,
 	int ret;
 	u8 index;
 
-	index = ufshcd_wb_get_query_index(hba);
+	index = mi_ufshcd_wb_get_query_index(hba);
 	ret = ufshcd_query_attr_retry(hba, UPIU_QUERY_OPCODE_READ_ATTR,
 					      QUERY_ATTR_IDN_CURR_WB_BUFF_SIZE,
 					      index, 0, &cur_buf);
@@ -5965,7 +5847,7 @@ static bool ufshcd_wb_need_flush(struct ufs_hba *hba)
 	 * buffer (dCurrentWriteBoosterBufferSize). There's no point in
 	 * keeping vcc on when current buffer is empty.
 	 */
-	index = ufshcd_wb_get_query_index(hba);
+	index = mi_ufshcd_wb_get_query_index(hba);
 	ret = ufshcd_query_attr_retry(hba, UPIU_QUERY_OPCODE_READ_ATTR,
 				      QUERY_ATTR_IDN_AVAIL_WB_BUFF_SIZE,
 				      index, 0, &avail_buf);
@@ -6759,9 +6641,9 @@ static int __ufshcd_issue_tm_cmd(struct ufs_hba *hba,
 	int task_tag, err;
 
 	/*
-	 * blk_get_request() is used here only to get a free tag.
+	 * blk_mq_alloc_request() is used here only to get a free tag.
 	 */
-	req = blk_get_request(q, REQ_OP_DRV_OUT, 0);
+	req = blk_mq_alloc_request(q, REQ_OP_DRV_OUT, 0);
 	if (IS_ERR(req))
 		return PTR_ERR(req);
 
@@ -6772,7 +6654,7 @@ static int __ufshcd_issue_tm_cmd(struct ufs_hba *hba,
 
 	task_tag = req->tag;
 	tmf_rqs[req->tag] = req;
-	treq->req_header.dword_0 |= cpu_to_be32(task_tag);
+	treq->upiu_req.req_header.dword_0 |= cpu_to_be32(task_tag);
 
 	memcpy(hba->utmrdl_base_addr + task_tag, treq, sizeof(*treq));
 	ufshcd_vops_setup_task_mgmt(hba, task_tag, tm_function);
@@ -6815,7 +6697,7 @@ static int __ufshcd_issue_tm_cmd(struct ufs_hba *hba,
 	spin_unlock_irqrestore(hba->host->host_lock, flags);
 
 	ufshcd_release(hba);
-	blk_put_request(req);
+	blk_mq_free_request(req);
 
 	return err;
 }
@@ -6841,16 +6723,16 @@ static int ufshcd_issue_tm_cmd(struct ufs_hba *hba, int lun_id, int task_id,
 	treq.header.dword_2 = cpu_to_le32(OCS_INVALID_COMMAND_STATUS);
 
 	/* Configure task request UPIU */
-	treq.req_header.dword_0 = cpu_to_be32(lun_id << 8) |
+	treq.upiu_req.req_header.dword_0 = cpu_to_be32(lun_id << 8) |
 				  cpu_to_be32(UPIU_TRANSACTION_TASK_REQ << 24);
-	treq.req_header.dword_1 = cpu_to_be32(tm_function << 16);
+	treq.upiu_req.req_header.dword_1 = cpu_to_be32(tm_function << 16);
 
 	/*
 	 * The host shall provide the same value for LUN field in the basic
 	 * header and for Input Parameter.
 	 */
-	treq.input_param1 = cpu_to_be32(lun_id);
-	treq.input_param2 = cpu_to_be32(task_id);
+	treq.upiu_req.input_param1 = cpu_to_be32(lun_id);
+	treq.upiu_req.input_param2 = cpu_to_be32(task_id);
 
 	err = __ufshcd_issue_tm_cmd(hba, &treq, tm_function);
 	if (err == -ETIMEDOUT)
@@ -6861,7 +6743,7 @@ static int ufshcd_issue_tm_cmd(struct ufs_hba *hba, int lun_id, int task_id,
 		dev_err(hba->dev, "%s: failed, ocs = 0x%x\n",
 				__func__, ocs_value);
 	else if (tm_response)
-		*tm_response = be32_to_cpu(treq.output_param1) &
+		*tm_response = be32_to_cpu(treq.upiu_rsp.output_param1) &
 				MASK_TM_SERVICE_RESP;
 	return err;
 }
@@ -7518,7 +7400,7 @@ static void ufshcd_set_active_icc_lvl(struct ufs_hba *hba)
 	if (!desc_buf)
 		return;
 
-	ret = ufshcd_read_desc_param(hba, QUERY_DESC_IDN_POWER, 0, 0,
+	ret = mi_ufshcd_read_desc_param(hba, QUERY_DESC_IDN_POWER, 0, 0,
 				     desc_buf, buff_len);
 	if (ret) {
 		dev_err(hba->dev,
@@ -7716,7 +7598,7 @@ static int ufs_get_device_desc(struct ufs_hba *hba)
 		goto out;
 	}
 
-	err = ufshcd_read_desc_param(hba, QUERY_DESC_IDN_DEVICE, 0, 0, desc_buf,
+	err = mi_ufshcd_read_desc_param(hba, QUERY_DESC_IDN_DEVICE, 0, 0, desc_buf,
 				     hba->desc_size[QUERY_DESC_IDN_DEVICE]);
 	if (err) {
 		dev_err(hba->dev, "%s: Failed reading Device Desc. err = %d\n",
@@ -7745,7 +7627,7 @@ static int ufs_get_device_desc(struct ufs_hba *hba)
 		ufshpb_get_dev_info(hba, desc_buf);
 
 		if (!ufshpb_is_legacy(hba))
-			err = ufshcd_query_flag_retry(hba,
+			err = mi_ufshcd_query_flag_retry(hba,
 						      UPIU_QUERY_OPCODE_READ_FLAG,
 						      QUERY_FLAG_IDN_HPB_EN, 0,
 						      &hpb_en);
@@ -7754,7 +7636,7 @@ static int ufs_get_device_desc(struct ufs_hba *hba)
 			dev_info->hpb_enabled = true;
 	}
 
-	err = ufshcd_read_string_desc(hba, model_index,
+	err = mi_ufshcd_read_string_desc(hba, model_index,
 				      &dev_info->model, SD_ASCII_STD);
 	if (err < 0) {
 		dev_err(hba->dev, "%s: Failed reading Product Name. err = %d\n",
@@ -7767,7 +7649,7 @@ static int ufs_get_device_desc(struct ufs_hba *hba)
 	ufshcd_wb_probe(hba, desc_buf);
 
 	/*
-	 * ufshcd_read_string_desc returns size of the string
+	 * mi_ufshcd_read_string_desc returns size of the string
 	 * reset the error value
 	 */
 	err = 0;
@@ -7971,7 +7853,7 @@ static int ufshcd_device_geo_params_init(struct ufs_hba *hba)
 		goto out;
 	}
 
-	err = ufshcd_read_desc_param(hba, QUERY_DESC_IDN_GEOMETRY, 0, 0,
+	err = mi_ufshcd_read_desc_param(hba, QUERY_DESC_IDN_GEOMETRY, 0, 0,
 				     desc_buf, buff_len);
 	if (err) {
 		dev_err(hba->dev, "%s: Failed reading Geometry Desc. err = %d\n",
@@ -8090,7 +7972,7 @@ static int ufshcd_device_params_init(struct ufs_hba *hba)
 
 	ufshcd_get_ref_clk_gating_wait(hba);
 
-	if (!ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_READ_FLAG,
+	if (!mi_ufshcd_query_flag_retry(hba, UPIU_QUERY_OPCODE_READ_FLAG,
 			QUERY_FLAG_IDN_PWR_ON_WPE, 0, &flag))
 		hba->dev_info.f_power_on_wp_en = flag;
 
