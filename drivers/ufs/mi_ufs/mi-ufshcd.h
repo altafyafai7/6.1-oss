@@ -106,4 +106,8 @@ int mi_ufshcd_read_desc_param(struct ufs_hba *hba,
 
 int ufshcd_runtime_idle(struct ufs_hba *hba);
 
+int ufshcd_wb_ctrl(struct ufs_hba *hba, bool enable);
+int ufshcd_wb_toggle_flush_during_h8(struct ufs_hba *hba, bool set);
+void ufshcd_wb_toggle_flush(struct ufs_hba *hba, bool enable);
+
 #endif /* _MI_UFSHCD_H */

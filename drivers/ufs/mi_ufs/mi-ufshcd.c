@@ -150,54 +150,12 @@ int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 	return 0;
 }
 
-enum {
-	UFSHCD_MAX_CHANNEL	= 0,
-	UFSHCD_MAX_ID		= 1,
-	UFSHCD_NUM_RESERVED	= 1,
-	UFSHCD_CMD_PER_LUN	= 32 - UFSHCD_NUM_RESERVED,
-	UFSHCD_CAN_QUEUE	= 32 - UFSHCD_NUM_RESERVED,
-};
-
-/* UFSHCD states */
-enum {
-	UFSHCD_STATE_RESET,
-	UFSHCD_STATE_ERROR,
-	UFSHCD_STATE_OPERATIONAL,
-	UFSHCD_STATE_EH_SCHEDULED_FATAL,
-	UFSHCD_STATE_EH_SCHEDULED_NON_FATAL,
-};
-
-/* UFSHCD error handling flags */
-enum {
-	UFSHCD_EH_IN_PROGRESS = (1 << 0),
-};
-
-/* UFSHCD UIC layer error flags */
-enum {
-	UFSHCD_UIC_DL_PA_INIT_ERROR = (1 << 0), /* Data link layer error */
-	UFSHCD_UIC_DL_NAC_RECEIVED_ERROR = (1 << 1), /* Data link layer error */
-	UFSHCD_UIC_DL_TCx_REPLAY_ERROR = (1 << 2), /* Data link layer error */
-	UFSHCD_UIC_NL_ERROR = (1 << 3), /* Network layer error */
-	UFSHCD_UIC_TL_ERROR = (1 << 4), /* Transport Layer error */
-	UFSHCD_UIC_DME_ERROR = (1 << 5), /* DME error */
-	UFSHCD_UIC_PA_GENERIC_ERROR = (1 << 6), /* Generic PA error */
-};
-
 #define ufshcd_set_eh_in_progress(h) \
 	((h)->eh_flags |= UFSHCD_EH_IN_PROGRESS)
 #define ufshcd_eh_in_progress(h) \
 	((h)->eh_flags & UFSHCD_EH_IN_PROGRESS)
 #define ufshcd_clear_eh_in_progress(h) \
 	((h)->eh_flags &= ~UFSHCD_EH_IN_PROGRESS)
-
-struct ufs_pm_lvl_states ufs_pm_lvl_states[] = {
-	{UFS_ACTIVE_PWR_MODE, UIC_LINK_ACTIVE_STATE},
-	{UFS_ACTIVE_PWR_MODE, UIC_LINK_HIBERN8_STATE},
-	{UFS_SLEEP_PWR_MODE, UIC_LINK_ACTIVE_STATE},
-	{UFS_SLEEP_PWR_MODE, UIC_LINK_HIBERN8_STATE},
-	{UFS_POWERDOWN_PWR_MODE, UIC_LINK_HIBERN8_STATE},
-	{UFS_POWERDOWN_PWR_MODE, UIC_LINK_OFF_STATE},
-};
 
 static inline enum ufs_dev_pwr_mode
 ufs_get_pm_lvl_to_dev_pwr_mode(enum ufs_pm_level lvl)
@@ -266,7 +224,6 @@ static int ufshcd_scale_clks(struct ufs_hba *hba, bool scale_up);
 static irqreturn_t ufshcd_intr(int irq, void *__hba);
 static int ufshcd_change_power_mode(struct ufs_hba *hba,
 			     struct ufs_pa_layer_attr *pwr_mode);
-static void ufshcd_schedule_eh_work(struct ufs_hba *hba);
 static int ufshcd_setup_hba_vreg(struct ufs_hba *hba, bool on);
 static int ufshcd_setup_vreg(struct ufs_hba *hba, bool on);
 static inline int ufshcd_config_vreg_hpm(struct ufs_hba *hba,
@@ -346,7 +303,7 @@ static inline void ufshcd_wb_config(struct ufs_hba *hba)
 		dev_err(hba->dev, "%s: En WB flush during H8: failed: %d\n",
 			__func__, ret);
 	if (!(hba->quirks & UFSHCI_QUIRK_SKIP_MANUAL_WB_FLUSH_CTRL))
-		ufshcd_wb_toggle_flush(hba, true);
+		ufshcd_wb_toggle_buf_flush(hba, true);
 }
 
 void ufshcd_scsi_unblock_requests(struct ufs_hba *hba)
@@ -395,8 +352,8 @@ static void ufshcd_add_tm_upiu_trace(struct ufs_hba *hba, unsigned int tag,
 {
 	struct utp_task_req_desc *descp = &hba->utmrdl_base_addr[tag];
 
-	trace_ufshcd_upiu(dev_name(hba->dev), str_to_str_t(str), &descp->req_header,
-			&descp->input_param1, UFS_TSF_TM_INPUT);
+	trace_ufshcd_upiu(dev_name(hba->dev), str_to_str_t(str), &descp->upiu_req.req_header,
+			&descp->upiu_req.input_param1, UFS_TSF_TM_INPUT);
 }
 
 static void ufshcd_add_uic_command_trace(struct ufs_hba *hba,
@@ -590,7 +547,7 @@ static void ufshcd_print_tmrs(struct ufs_hba *hba, unsigned long bitmap)
 
 static void ufshcd_print_host_state(struct ufs_hba *hba)
 {
-	struct scsi_device *sdev_ufs = hba->sdev_ufs_device;
+	struct scsi_device *sdev_ufs = hba->ufs_device_wlun;
 
 	dev_err(hba->dev, "UFS Host state=%d\n", hba->ufshcd_state);
 	dev_err(hba->dev, "outstanding reqs=0x%lx tasks=0x%lx\n",
@@ -5255,7 +5212,7 @@ static void ufshcd_slave_destroy(struct scsi_device *sdev)
 		unsigned long flags;
 
 		spin_lock_irqsave(hba->host->host_lock, flags);
-		hba->sdev_ufs_device = NULL;
+		hba->ufs_device_wlun = NULL;
 		spin_unlock_irqrestore(hba->host->host_lock, flags);
 	}
 }
@@ -7608,20 +7565,20 @@ static int ufshcd_scsi_add_wlus(struct ufs_hba *hba)
 	int ret = 0;
 	struct scsi_device *sdev_boot;
 
-	hba->sdev_ufs_device = __scsi_add_device(hba->host, 0, 0,
+	hba->ufs_device_wlun = __scsi_add_device(hba->host, 0, 0,
 		ufshcd_upiu_wlun_to_scsi_wlun(UFS_UPIU_UFS_DEVICE_WLUN), NULL);
-	if (IS_ERR(hba->sdev_ufs_device)) {
-		ret = PTR_ERR(hba->sdev_ufs_device);
-		hba->sdev_ufs_device = NULL;
+	if (IS_ERR(hba->ufs_device_wlun)) {
+		ret = PTR_ERR(hba->ufs_device_wlun);
+		hba->ufs_device_wlun = NULL;
 		goto out;
 	}
-	scsi_device_put(hba->sdev_ufs_device);
+	scsi_device_put(hba->ufs_device_wlun);
 
 	hba->sdev_rpmb = __scsi_add_device(hba->host, 0, 0,
 		ufshcd_upiu_wlun_to_scsi_wlun(UFS_UPIU_RPMB_WLUN), NULL);
 	if (IS_ERR(hba->sdev_rpmb)) {
 		ret = PTR_ERR(hba->sdev_rpmb);
-		goto remove_sdev_ufs_device;
+		goto remove_ufs_device_wlun;
 	}
 	scsi_device_put(hba->sdev_rpmb);
 
@@ -7633,8 +7590,8 @@ static int ufshcd_scsi_add_wlus(struct ufs_hba *hba)
 		scsi_device_put(sdev_boot);
 	goto out;
 
-remove_sdev_ufs_device:
-	scsi_remove_device(hba->sdev_ufs_device);
+remove_ufs_device_wlun:
+	scsi_remove_device(hba->ufs_device_wlun);
 out:
 	return ret;
 }
@@ -8778,7 +8735,7 @@ static int ufshcd_set_dev_pwr_mode(struct ufs_hba *hba,
 	int ret, retries;
 
 	spin_lock_irqsave(hba->host->host_lock, flags);
-	sdp = hba->sdev_ufs_device;
+	sdp = hba->ufs_device_wlun;
 	if (sdp) {
 		ret = scsi_device_get(sdp);
 		if (!ret && !scsi_device_online(sdp)) {
