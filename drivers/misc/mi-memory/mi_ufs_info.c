@@ -489,7 +489,7 @@ static int scsi_sk_hr(struct scsi_device *sdev, char *buff, int len)
 		return -1;
 	}
 	hba = shost_priv(sdev->host);
-	parse_inquiry = hba->sdev_ufs_device->inquiry + 8;  /*be careful about the inquiry formate*/
+	parse_inquiry = hba->ufs_device_wlun->inquiry + 8;  /*be careful about the inquiry formate*/
 	parse_inquiry += VENDOR_ID_SIZE;
 	memcpy(product_id, parse_inquiry, PRODUCT_ID_SIZE);
 	pr_err("%s %d proc_name: %s. len: 0x%x\n", __func__, __LINE__, product_id, strlen(product_id));
