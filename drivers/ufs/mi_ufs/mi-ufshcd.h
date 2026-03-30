@@ -128,7 +128,7 @@ static inline bool ufshcd_has_utrlcnr(struct ufs_hba *hba)
 	return (hba->ufs_version >= mi_ufshci_version(3, 0));
 }
 
-int ufshcd_runtime_idle(struct ufs_hba *hba);
+int ufshcd_runtime_idle(struct device *dev);
 
 int ufshcd_wb_ctrl(struct ufs_hba *hba, bool enable);
 int ufshcd_wb_toggle_flush_during_h8(struct ufs_hba *hba, bool set);
