@@ -68,6 +68,7 @@ void ufshcd_scsi_unblock_requests(struct ufs_hba *hba);
 #include "cld/mi_cld.h"
 #endif
 
+#define UFSHCD "ufshcd"
 #define UFSHCD_DRIVER_VERSION "0.2"
 
 #define REG_UTP_TRANSFER_REQ_LIST_COMPL		0x64

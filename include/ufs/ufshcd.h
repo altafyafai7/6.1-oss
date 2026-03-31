@@ -184,10 +184,12 @@ struct ufs_clk_info {
 };
 
 #define UFS_EVENT_HIST_SIZE 8
+#define UFS_EVENT_HIST_LENGTH UFS_EVENT_HIST_SIZE
 struct ufs_event_hist {
-	u32 pos;
-	u32 v[UFS_EVENT_HIST_SIZE];
-	u64 t[UFS_EVENT_HIST_SIZE];
+	int pos;
+	u32 val[UFS_EVENT_HIST_LENGTH];
+	u64 tstamp[UFS_EVENT_HIST_LENGTH];
+	unsigned long long cnt;
 };
 
 enum ufs_event_type {
@@ -202,9 +204,14 @@ enum ufs_event_type {
 	UFS_EVT_AUTO_HIBERN8_ERR,
 	UFS_EVT_PA_ERR,
 	UFS_EVT_DL_ERR,
+	UFS_EVT_NL_ERR,
+	UFS_EVT_TL_ERR,
 	UFS_EVT_DME_SET_GET_ERR,
 	UFS_EVT_MAX_ERR_REINIT,
 	UFS_EVT_DEV_LOSS,
+	UFS_EVT_DEV_RESET,
+	UFS_EVT_HOST_RESET,
+	UFS_EVT_ABORT,
 
 	UFS_EVT_CNT
 };
