@@ -14,6 +14,7 @@
 #define MPHY_TX_FSM_STATE       0x41
 #define TX_FSM_HIBERN8          0x1
 #define HBRN8_POLL_TOUT_MS      100
+#define DEFAULT_CLK_RATE_HZ     1000000
 
 #define UFS_QCOM_LIMIT_HS_RATE		PA_HS_MODE_B
 
@@ -46,6 +47,9 @@ enum {
 #define QUNIPRO_G4_SEL		BIT(0)
 #define QUNIPRO_SEL		0x1
 
+/* bit definitions for REG_UFS_CFG1 register */
+#define UFS_REG_TEST_BUS_EN	BIT(30)
+
 /* bit definitions for REG_UFS_CFG2 register */
 #define UAWM_HW_CGC_EN		(1 << 0)
 #define UARM_HW_CGC_EN		(1 << 1)
@@ -61,8 +65,28 @@ enum {
 				 DFC_HW_CGC_EN | TRLUT_HW_CGC_EN |\
 				 TMRLUT_HW_CGC_EN | OCSC_HW_CGC_EN)
 
+/* QUniPro Vendor specific attributes */
+#define PA_VS_CONFIG_REG1	0x9000
+#define DME_VS_CORE_CLK_CTRL	0xD002
+
+/* bit and mask definitions for DME_VS_CORE_CLK_CTRL attribute */
+#define DME_VS_CORE_CLK_CTRL_CORE_CLK_DIV_EN_BIT		BIT(8)
+#define DME_VS_CORE_CLK_CTRL_MAX_CORE_CLK_1US_CYCLES_MASK	0xFF
+
 #define UFS_CNTLR_2_x_x_VEN_REGS_OFFSET(x)	(0x000 + x)
 #define UFS_CNTLR_3_x_x_VEN_REGS_OFFSET(x)	(0x400 + x)
+
+/* bit offset */
+enum {
+	OFFSET_UFS_PHY_SOFT_RESET           = 1,
+	OFFSET_CLK_NS_REG                   = 10,
+};
+
+/* bit masks */
+enum {
+	MASK_UFS_PHY_SOFT_RESET             = 0x2,
+	MASK_CLK_NS_REG                     = 0xFFFC00,
+};
 
 /* Host controller hardware version: major.minor.step */
 struct ufs_hw_version {
@@ -196,6 +220,31 @@ static inline bool ufs_qcom_cap_qunipro(struct ufs_qcom_host *host)
 		return true;
 	else
 		return false;
+}
+
+static inline void
+ufs_qcom_get_controller_revision(struct ufs_hba *hba,
+				 u8 *major, u16 *minor, u16 *step)
+{
+	u32 ver = ufshcd_readl(hba, REG_UFS_HW_VERSION);
+
+	*major = (ver & 0xF0000000) >> 28;
+	*minor = (ver & 0x0FFF0000) >> 16;
+	*step = (ver & 0x0000FFFF);
+}
+
+static inline void ufs_qcom_assert_reset(struct ufs_hba *hba)
+{
+	ufshcd_rmwl(hba, MASK_UFS_PHY_SOFT_RESET,
+			1 << OFFSET_UFS_PHY_SOFT_RESET, REG_UFS_CFG1);
+	mb();
+}
+
+static inline void ufs_qcom_deassert_reset(struct ufs_hba *hba)
+{
+	ufshcd_rmwl(hba, MASK_UFS_PHY_SOFT_RESET,
+			0 << OFFSET_UFS_PHY_SOFT_RESET, REG_UFS_CFG1);
+	mb();
 }
 
 /* ufs-qcom-ice.c */
