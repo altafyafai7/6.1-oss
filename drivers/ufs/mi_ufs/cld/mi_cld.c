@@ -325,7 +325,7 @@ static void ufscld_trigger_work_fn(struct work_struct *dwork)
  * this function is called in irq context.
  * so cancel_delayed_work_sync() do not use due to waiting.
  */
-void ufscld_init(struct ufs_hba *hba)
+void ufscld_on_idle(struct ufs_hba *hba)
 {
 	struct ufscld_dev *cld = hba->cld;
 
@@ -354,7 +354,7 @@ void ufscld_init(struct ufs_hba *hba)
 {
 	struct ufscld_dev *cld;
 	int ret = 0;
-	cld = &hba->cld;
+	cld = hba->cld;
 	cld->hba = hba;
 
 	cld->cld_trigger = false;
@@ -394,7 +394,7 @@ void ufscld_init(struct ufs_hba *hba)
 
 }
 
-void ufscld_init(struct ufs_hba *hba)
+void ufscld_remove(struct ufs_hba *hba)
 {
 	struct ufscld_dev *cld = hba->cld;
 
@@ -428,7 +428,7 @@ void ufscld_reset_host(struct ufs_hba *hba)
 	cancel_delayed_work_sync(&hba->cld->cld_trigger_work);
 }
 
-void ufscld_init(struct ufs_hba *hba)
+void ufscld_reset(struct ufs_hba *hba)
 {
 	struct ufscld_dev *cld = hba->cld;
 
