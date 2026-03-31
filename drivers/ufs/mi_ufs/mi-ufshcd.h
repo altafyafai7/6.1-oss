@@ -177,11 +177,11 @@ int mi_ufshcd_system_resume(struct device *dev);
 int mi_ufshcd_get_vreg(struct device *dev, struct ufs_vreg *vreg);
 void mi_ufshcd_parse_dev_ref_clk_freq(struct ufs_hba *hba, struct clk *refclk);
 int mi_ufshcd_exec_raw_upiu_cmd(struct ufs_hba *hba,
-			    struct utp_upiu_req *upiu_req,
-			    struct utp_upiu_rsp *upiu_rsp,
-			    int msg_type,
-			    u8 *desc_buff, int *buff_len,
-			    enum query_opcode query_opcode);
+			     struct utp_upiu_req *req_upiu,
+			     struct utp_upiu_req *rsp_upiu,
+			     int msgcode,
+			     u8 *desc_buff, int *buff_len,
+			     enum query_opcode desc_op);
 int mi_ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba,
 					u64 wait_timeout_us);
 
