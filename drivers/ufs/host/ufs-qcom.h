@@ -42,6 +42,8 @@ enum {
 	 * added in HW Version 3.0.0
 	 */
 	UFS_AH8_CFG				= 0xFC,
+
+	REG_UFS_CFG3                        = 0x100,
 };
 
 /* QCOM UFS host controller vendor specific debug registers */
@@ -285,5 +287,8 @@ static inline int ufs_qcom_ice_resume(struct ufs_qcom_host *host) { return 0; }
 static inline void ufs_qcom_ice_disable(struct ufs_qcom_host *host) { }
 #define ufs_qcom_ice_program_key NULL
 #endif /* CONFIG_SCSI_UFS_CRYPTO */
+
+#define MAX_SUPP_MAC		0x3
+#define UFS_MEM_CQIS_VS		0x8
 
 #endif /* _UFS_QCOM_H_ */
