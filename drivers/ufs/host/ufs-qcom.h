@@ -44,10 +44,30 @@ enum {
 	UFS_AH8_CFG				= 0xFC,
 };
 
+/* QCOM UFS host controller vendor specific debug registers */
+enum {
+	UFS_DBG_RD_REG_UAWM			= 0x100,
+	UFS_DBG_RD_REG_UARM			= 0x200,
+	UFS_DBG_RD_REG_TXUC			= 0x300,
+	UFS_DBG_RD_REG_RXUC			= 0x400,
+	UFS_DBG_RD_REG_DFC			= 0x500,
+	UFS_DBG_RD_REG_TRLUT			= 0x600,
+	UFS_DBG_RD_REG_TMRLUT			= 0x700,
+	UFS_UFS_DBG_RD_REG_OCSC			= 0x800,
+
+	UFS_UFS_DBG_RD_DESC_RAM			= 0x1500,
+	UFS_UFS_DBG_RD_PRDT_RAM			= 0x1700,
+	UFS_UFS_DBG_RD_RESP_RAM			= 0x1800,
+	UFS_UFS_DBG_RD_EDTL_RAM			= 0x1900,
+};
+
 #define QUNIPRO_G4_SEL		BIT(0)
 #define QUNIPRO_SEL		0x1
 
 /* bit definitions for REG_UFS_CFG1 register */
+#define UTP_DBG_RAMS_EN		0x20000
+#define TEST_BUS_EN		BIT(18)
+#define TEST_BUS_SEL		GENMASK(22, 19)
 #define UFS_REG_TEST_BUS_EN	BIT(30)
 
 /* bit definitions for REG_UFS_CFG2 register */
@@ -64,6 +84,9 @@ enum {
 				 TXUC_HW_CGC_EN | RXUC_HW_CGC_EN |\
 				 DFC_HW_CGC_EN | TRLUT_HW_CGC_EN |\
 				 TMRLUT_HW_CGC_EN | OCSC_HW_CGC_EN)
+
+/* bit definition for UFS_UFS_TEST_BUS_CTRL_n */
+#define TEST_BUS_SUB_SEL_MASK	0x1F
 
 /* QUniPro Vendor specific attributes */
 #define PA_VS_CONFIG_REG1	0x9000
@@ -146,8 +169,8 @@ struct ufs_uic_stats {
 };
 
 struct ufs_qcom_testbus {
-	u8 select_id;
-	u8 config;
+	u8 select_major;
+	u8 select_minor;
 };
 
 struct ufs_qcom_host {
