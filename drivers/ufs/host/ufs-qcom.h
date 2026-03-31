@@ -4,10 +4,62 @@
 #include <linux/reset-controller.h>
 #include <linux/reset.h>
 #include <ufs/ufshcd.h>
+#include <ufs/unipro.h>
 #include "../mi_ufs/mi-ufs.h"
 
+#define MAX_UFS_QCOM_HOSTS	2
 #define MAX_QS 16
 #define MAX_LUNS 32
+
+#define MPHY_TX_FSM_STATE       0x41
+#define TX_FSM_HIBERN8          0x1
+#define HBRN8_POLL_TOUT_MS      100
+
+#define UFS_QCOM_LIMIT_HS_RATE		PA_HS_MODE_B
+
+/* QCOM UFS host controller vendor specific registers */
+enum {
+	REG_UFS_SYS1CLK_1US                 = 0xC0,
+	REG_UFS_TX_SYMBOL_CLK_NS_US         = 0xC4,
+	REG_UFS_LOCAL_PORT_ID_REG           = 0xC8,
+	REG_UFS_PA_ERR_CODE                 = 0xCC,
+	REG_UFS_RETRY_TIMER_REG             = 0xD0,
+	REG_UFS_CFG0                        = 0xD4,
+	REG_UFS_PA_LINK_STARTUP_TIMER       = 0xD8,
+	REG_UFS_CFG1                        = 0xDC,
+	REG_UFS_CFG2                        = 0xE0,
+	REG_UFS_HW_VERSION                  = 0xE4,
+
+	UFS_TEST_BUS				= 0xE8,
+	UFS_TEST_BUS_CTRL_0			= 0xEC,
+	UFS_TEST_BUS_CTRL_1			= 0xF0,
+	UFS_TEST_BUS_CTRL_2			= 0xF4,
+	UFS_UNIPRO_CFG				= 0xF8,
+
+	/*
+	 * QCOM UFS host controller vendor specific registers
+	 * added in HW Version 3.0.0
+	 */
+	UFS_AH8_CFG				= 0xFC,
+};
+
+#define QUNIPRO_G4_SEL		BIT(0)
+#define QUNIPRO_SEL		0x1
+
+/* bit definitions for REG_UFS_CFG2 register */
+#define UAWM_HW_CGC_EN		(1 << 0)
+#define UARM_HW_CGC_EN		(1 << 1)
+#define TXUC_HW_CGC_EN		(1 << 2)
+#define RXUC_HW_CGC_EN		(1 << 3)
+#define DFC_HW_CGC_EN		(1 << 4)
+#define TRLUT_HW_CGC_EN		(1 << 5)
+#define TMRLUT_HW_CGC_EN	(1 << 6)
+#define OCSC_HW_CGC_EN		(1 << 7)
+
+#define REG_UFS_CFG2_CGC_EN_ALL (UAWM_HW_CGC_EN | UARM_HW_CGC_EN |\
+				 TXUC_HW_CGC_EN | RXUC_HW_CGC_EN |\
+				 DFC_HW_CGC_EN | TRLUT_HW_CGC_EN |\
+				 TMRLUT_HW_CGC_EN | OCSC_HW_CGC_EN)
 
 #define UFS_CNTLR_2_x_x_VEN_REGS_OFFSET(x)	(0x000 + x)
 #define UFS_CNTLR_3_x_x_VEN_REGS_OFFSET(x)	(0x400 + x)
@@ -137,5 +189,29 @@ ufs_qcom_get_debug_reg_offset(struct ufs_qcom_host *host, u32 reg)
 #define ufs_qcom_is_link_hibern8(hba) ufshcd_is_link_hibern8(hba)
 
 int ufs_qcom_testbus_config(struct ufs_qcom_host *host);
+
+static inline bool ufs_qcom_cap_qunipro(struct ufs_qcom_host *host)
+{
+	if (host->caps & UFS_QCOM_CAP_QUNIPRO)
+		return true;
+	else
+		return false;
+}
+
+/* ufs-qcom-ice.c */
+#ifdef CONFIG_SCSI_UFS_CRYPTO
+int ufs_qcom_ice_init(struct ufs_qcom_host *host);
+int ufs_qcom_ice_enable(struct ufs_qcom_host *host);
+int ufs_qcom_ice_resume(struct ufs_qcom_host *host);
+int ufs_qcom_ice_program_key(struct ufs_hba *hba,
+			     const union ufs_crypto_cfg_entry *cfg, int slot);
+void ufs_qcom_ice_disable(struct ufs_qcom_host *host);
+#else
+static inline int ufs_qcom_ice_init(struct ufs_qcom_host *host) { return 0; }
+static inline int ufs_qcom_ice_enable(struct ufs_qcom_host *host) { return 0; }
+static inline int ufs_qcom_ice_resume(struct ufs_qcom_host *host) { return 0; }
+static inline void ufs_qcom_ice_disable(struct ufs_qcom_host *host) { }
+#define ufs_qcom_ice_program_key NULL
+#endif /* CONFIG_SCSI_UFS_CRYPTO */
 
 #endif /* _UFS_QCOM_H_ */
