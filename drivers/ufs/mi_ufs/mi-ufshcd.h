@@ -125,6 +125,9 @@ int mi_ufshcd_read_desc_param_sel(struct ufs_hba *hba, enum desc_idn desc_id,
 			       int desc_index, u8 selector, u8 param_offset,
 			       u8 *param_read_buf, u8 param_size);
 
+void mi_ufshcd_map_desc_id_to_length(struct ufs_hba *hba, enum desc_idn desc_id,
+				  int *desc_len);
+
 int mi_ufshcd_query_flag(struct ufs_hba *hba, enum query_opcode opcode,
 			enum flag_idn idn, u8 index, bool *flag_res);
 
