@@ -896,7 +896,7 @@ static ssize_t _name##_show(struct device *dev,				\
 	int ret;							\
 	struct ufs_hba *hba = dev_get_drvdata(dev);			\
 	if (ufshcd_is_wb_flags(QUERY_FLAG_IDN##_uname))			\
-		index = mi_ufshcd_wb_get_query_index(hba);			\
+		index = ufshcd_wb_get_query_index(hba);			\
 	pm_runtime_get_sync(hba->dev);					\
 	ret = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,	\
 		QUERY_FLAG_IDN##_uname, index, &flag);			\
@@ -964,7 +964,7 @@ static ssize_t enable_tw_show(struct device *dev, struct device_attribute *attr,
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	pm_runtime_get_sync(hba->dev);
 	if (ufshcd_is_wb_flags(QUERY_FLAG_IDN_WB_EN))
-		index = mi_ufshcd_wb_get_query_index(hba);
+		index = ufshcd_wb_get_query_index(hba);
 
 	ret = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
 				QUERY_FLAG_IDN_WB_EN, index, &flag);
@@ -1003,7 +1003,7 @@ static ssize_t enable_flush_en_show(struct device *dev,
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	pm_runtime_get_sync(hba->dev);
 	if (ufshcd_is_wb_flags(QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN))
-		index = mi_ufshcd_wb_get_query_index(hba);
+		index = ufshcd_wb_get_query_index(hba);
 
 	ret = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
 				QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN, index, &flag);
@@ -1042,7 +1042,7 @@ static ssize_t enable_autoflush_in_h8_show(struct device *dev,
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	pm_runtime_get_sync(hba->dev);
 	if (ufshcd_is_wb_flags(QUERY_FLAG_IDN_WB_BUFF_FLUSH_DURING_HIBERN8))
-		index = mi_ufshcd_wb_get_query_index(hba);
+		index = ufshcd_wb_get_query_index(hba);
 
 	ret = mi_ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG,
 				QUERY_FLAG_IDN_WB_BUFF_FLUSH_DURING_HIBERN8,
@@ -1102,7 +1102,7 @@ static ssize_t _name##_show(struct device *dev,				\
 	int ret;							\
 	u8 index = 0;							\
 	if (ufshcd_is_wb_attrs(QUERY_ATTR_IDN##_uname))			\
-		index = mi_ufshcd_wb_get_query_index(hba);			\
+		index = ufshcd_wb_get_query_index(hba);			\
 	pm_runtime_get_sync(hba->dev);					\
 	ret = ufshcd_query_attr(hba, UPIU_QUERY_OPCODE_READ_ATTR,	\
 		QUERY_ATTR_IDN##_uname, index, 0, &value);		\

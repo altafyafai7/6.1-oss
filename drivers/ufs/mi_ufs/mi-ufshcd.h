@@ -129,8 +129,6 @@ int mi_ufshcd_dme_set_attr(struct ufs_hba *hba, u32 attr_sel,
 int mi_ufshcd_dme_get_attr(struct ufs_hba *hba, u32 attr_sel,
 			u32 *mib_val, u8 peer);
 
-u8 mi_ufshcd_wb_get_query_index(struct ufs_hba *hba);
-
 int mi_ufshcd_read_string_desc(struct ufs_hba *hba, u8 desc_index,
 			    u8 **buf, bool ascii);
 

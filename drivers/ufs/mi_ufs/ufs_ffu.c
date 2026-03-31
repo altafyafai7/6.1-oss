@@ -125,12 +125,10 @@ struct ufsffu_sysfs_entry {
 #endif
 static partinfo part_info = { 0 };
 
-extern int ufs_ffu_reboot_reason_reboot(void *ptr);
-
-#if IS_ENABLED(CONFIG_FACTORY_BUILD) && IS_ENABLED(CONFIG_UFS_FFU_CTRL)
-static int ufsffu_create_sysfs(struct ffu_data *ffudata);
-static inline void ufsffu_remove_sysfs(struct ffu_data *ffudata);
-#endif
+int __attribute__((weak)) ufs_ffu_reboot_reason_reboot(void *ptr)
+{
+	return 0;
+}
 
 static void ufs_ffu_reboot(void *ptr)
 {

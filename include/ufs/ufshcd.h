@@ -1139,9 +1139,10 @@ struct ufs_hba {
 	struct ufs_hw_queue *dev_cmd_queue;
 	struct ufshcd_mcq_opr_info_t mcq_opr[OPR_MAX];
 
-	struct ufscld_dev *cld;
-
-	ANDROID_OEM_DATA(1);
+	union {
+		struct ufscld_dev *cld;
+		ANDROID_OEM_DATA(1);
+	};
 };
 
 /**
