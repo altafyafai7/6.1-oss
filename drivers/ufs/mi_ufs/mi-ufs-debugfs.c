@@ -6,16 +6,16 @@
 #include "mi-ufs-debugfs.h"
 #include "mi-ufshcd.h"
 
-static struct dentry *ufs_debugfs_root;
+static struct dentry *mi_ufs_debugfs_root;
 
-void __init ufs_debugfs_init(void)
+void __init mi_ufs_debugfs_init(void)
 {
-	ufs_debugfs_root = debugfs_create_dir("ufshcd", NULL);
+	mi_ufs_debugfs_root = debugfs_create_dir("ufshcd", NULL);
 }
 
-void __exit ufs_debugfs_exit(void)
+void __exit mi_ufs_debugfs_exit(void)
 {
-	debugfs_remove_recursive(ufs_debugfs_root);
+	debugfs_remove_recursive(mi_ufs_debugfs_root);
 }
 
 static int ufs_debugfs_stats_show(struct seq_file *s, void *data)
@@ -44,13 +44,13 @@ static int ufs_debugfs_stats_show(struct seq_file *s, void *data)
 }
 DEFINE_SHOW_ATTRIBUTE(ufs_debugfs_stats);
 
-void ufs_debugfs_hba_init(struct ufs_hba *hba)
+void mi_ufs_debugfs_hba_init(struct ufs_hba *hba)
 {
-	hba->debugfs_root = debugfs_create_dir(dev_name(hba->dev), ufs_debugfs_root);
+	hba->debugfs_root = debugfs_create_dir(dev_name(hba->dev), mi_ufs_debugfs_root);
 	debugfs_create_file("stats", 0400, hba->debugfs_root, hba, &ufs_debugfs_stats_fops);
 }
 
-void ufs_debugfs_hba_exit(struct ufs_hba *hba)
+void mi_ufs_debugfs_hba_exit(struct ufs_hba *hba)
 {
 	debugfs_remove_recursive(hba->debugfs_root);
 }

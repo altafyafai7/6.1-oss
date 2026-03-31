@@ -25,12 +25,12 @@ struct ufs_dev_params {
 	u32 desired_working_mode;
 };
 
-int ufshcd_get_pwr_dev_param(struct ufs_dev_params *dev_param,
+int mi_ufshcd_get_pwr_dev_param(struct ufs_dev_params *dev_param,
 			     struct ufs_pa_layer_attr *dev_max,
 			     struct ufs_pa_layer_attr *agreed_pwr);
-int ufshcd_pltfrm_init(struct platform_device *pdev,
+int mi_ufshcd_pltfrm_init(struct platform_device *pdev,
 		       const struct ufs_hba_variant_ops *vops);
-void ufshcd_pltfrm_shutdown(struct platform_device *pdev);
+void mi_ufshcd_pltfrm_shutdown(struct platform_device *pdev);
 
 #ifdef CONFIG_PM
 

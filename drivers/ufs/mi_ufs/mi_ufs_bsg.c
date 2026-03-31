@@ -162,12 +162,12 @@ out:
 }
 
 /**
- * ufs_bsg_remove - detach and remove the added ufs-bsg node
+ * mi_ufs_bsg_remove - detach and remove the added ufs-bsg node
  * @hba: per adapter object
  *
  * Should be called when unloading the driver.
  */
-void ufs_bsg_remove(struct ufs_hba *hba)
+void mi_ufs_bsg_remove(struct ufs_hba *hba)
 {
 	struct device *bsg_dev = &hba->bsg_dev;
 
@@ -186,12 +186,12 @@ static inline void ufs_bsg_node_release(struct device *dev)
 }
 
 /**
- * ufs_bsg_probe - Add ufs bsg device node
+ * mi_ufs_bsg_probe - Add ufs bsg device node
  * @hba: per adapter object
  *
  * Called during initial loading of the driver, and before scsi_scan_host.
  */
-int ufs_bsg_probe(struct ufs_hba *hba)
+int mi_ufs_bsg_probe(struct ufs_hba *hba)
 {
 	struct device *bsg_dev = &hba->bsg_dev;
 	struct Scsi_Host *shost = hba->host;

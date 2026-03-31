@@ -232,7 +232,7 @@ int ufshcd_pltfrm_runtime_idle(struct device *dev)
 
 #endif /* CONFIG_PM */
 
-void ufshcd_pltfrm_shutdown(struct platform_device *pdev)
+void mi_ufshcd_pltfrm_shutdown(struct platform_device *pdev)
 {
 	ufshcd_shutdown((struct ufs_hba *)platform_get_drvdata(pdev));
 }
@@ -253,7 +253,7 @@ static void ufshcd_init_lanes_per_dir(struct ufs_hba *hba)
 }
 
 /**
- * ufshcd_get_pwr_dev_param - get finally agreed attributes for
+ * mi_ufshcd_get_pwr_dev_param - get finally agreed attributes for
  *                            power mode change
  * @pltfrm_param: pointer to platform parameters
  * @dev_max: pointer to device attributes
@@ -261,7 +261,7 @@ static void ufshcd_init_lanes_per_dir(struct ufs_hba *hba)
  *
  * Returns 0 on success, non-zero value on failure
  */
-int ufshcd_get_pwr_dev_param(struct ufs_dev_params *pltfrm_param,
+int mi_ufshcd_get_pwr_dev_param(struct ufs_dev_params *pltfrm_param,
 			     struct ufs_pa_layer_attr *dev_max,
 			     struct ufs_pa_layer_attr *agreed_pwr)
 {
@@ -349,13 +349,13 @@ int ufshcd_get_pwr_dev_param(struct ufs_dev_params *pltfrm_param,
 }
 
 /**
- * ufshcd_pltfrm_init - probe routine of the driver
+ * mi_ufshcd_pltfrm_init - probe routine of the driver
  * @pdev: pointer to Platform device handle
  * @vops: pointer to variant ops
  *
  * Returns 0 on success, non-zero value on failure
  */
-int ufshcd_pltfrm_init(struct platform_device *pdev,
+int mi_ufshcd_pltfrm_init(struct platform_device *pdev,
 		       const struct ufs_hba_variant_ops *vops)
 {
 	struct ufs_hba *hba;

@@ -13,11 +13,11 @@
 #include "mi-ufs.h"
 
 #ifdef CONFIG_SCSI_UFS_BSG
-void ufs_bsg_remove(struct ufs_hba *hba);
-int ufs_bsg_probe(struct ufs_hba *hba);
+void mi_ufs_bsg_remove(struct ufs_hba *hba);
+int mi_ufs_bsg_probe(struct ufs_hba *hba);
 #else
-static inline void ufs_bsg_remove(struct ufs_hba *hba) {}
-static inline int ufs_bsg_probe(struct ufs_hba *hba) {return 0; }
+static inline void mi_ufs_bsg_remove(struct ufs_hba *hba) {}
+static inline int mi_ufs_bsg_probe(struct ufs_hba *hba) {return 0; }
 #endif
 
 #endif /* UFS_BSG_H */

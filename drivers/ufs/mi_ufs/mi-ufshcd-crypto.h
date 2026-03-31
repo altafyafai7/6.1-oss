@@ -47,11 +47,11 @@ static inline void ufshcd_crypto_clear_prdt(struct ufs_hba *hba,
 			 hba->sg_entry_size * scsi_sg_count(lrbp->cmd));
 }
 
-bool ufshcd_crypto_enable(struct ufs_hba *hba);
+bool mi_ufshcd_crypto_enable(struct ufs_hba *hba);
 
-int ufshcd_hba_init_crypto_capabilities(struct ufs_hba *hba);
+int mi_ufshcd_hba_init_crypto_capabilities(struct ufs_hba *hba);
 
-void ufshcd_init_crypto(struct ufs_hba *hba);
+void mi_ufshcd_init_crypto(struct ufs_hba *hba);
 
 void ufshcd_crypto_setup_rq_keyslot_manager(struct ufs_hba *hba,
 					    struct request_queue *q);
@@ -68,17 +68,17 @@ ufshcd_prepare_req_desc_hdr_crypto(struct ufshcd_lrb *lrbp, u32 *dword_0,
 static inline void ufshcd_crypto_clear_prdt(struct ufs_hba *hba,
 					    struct ufshcd_lrb *lrbp) { }
 
-static inline bool ufshcd_crypto_enable(struct ufs_hba *hba)
+static inline bool mi_ufshcd_crypto_enable(struct ufs_hba *hba)
 {
 	return false;
 }
 
-static inline int ufshcd_hba_init_crypto_capabilities(struct ufs_hba *hba)
+static inline int mi_ufshcd_hba_init_crypto_capabilities(struct ufs_hba *hba)
 {
 	return 0;
 }
 
-static inline void ufshcd_init_crypto(struct ufs_hba *hba) { }
+static inline void mi_ufshcd_init_crypto(struct ufs_hba *hba) { }
 
 static inline void ufshcd_crypto_setup_rq_keyslot_manager(struct ufs_hba *hba,
 						struct request_queue *q) { }

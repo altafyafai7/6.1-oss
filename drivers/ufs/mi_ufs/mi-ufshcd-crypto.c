@@ -117,7 +117,7 @@ static int ufshcd_crypto_keyslot_evict(struct blk_crypto_profile *ksm,
 	return ufshcd_clear_keyslot(hba, slot);
 }
 
-bool ufshcd_crypto_enable(struct ufs_hba *hba)
+bool mi_ufshcd_crypto_enable(struct ufs_hba *hba)
 {
 	if (!(hba->caps & UFSHCD_CAP_CRYPTO))
 		return false;
@@ -158,13 +158,13 @@ ufshcd_find_blk_crypto_mode(union ufs_crypto_cap_entry cap)
 }
 
 /**
- * ufshcd_hba_init_crypto_capabilities - Read crypto capabilities, init crypto
+ * mi_ufshcd_hba_init_crypto_capabilities - Read crypto capabilities, init crypto
  *					 fields in hba
  * @hba: Per adapter instance
  *
  * Return: 0 if crypto was initialized or is not supported, else a -errno value.
  */
-int ufshcd_hba_init_crypto_capabilities(struct ufs_hba *hba)
+int mi_ufshcd_hba_init_crypto_capabilities(struct ufs_hba *hba)
 {
 	int cap_idx;
 	int err = 0;
@@ -234,10 +234,10 @@ out:
 }
 
 /**
- * ufshcd_init_crypto - Initialize crypto hardware
+ * mi_ufshcd_init_crypto - Initialize crypto hardware
  * @hba: Per adapter instance
  */
-void ufshcd_init_crypto(struct ufs_hba *hba)
+void mi_ufshcd_init_crypto(struct ufs_hba *hba)
 {
 	int slot;
 
