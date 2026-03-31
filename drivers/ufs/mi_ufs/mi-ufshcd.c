@@ -129,7 +129,7 @@ void ufsdbg_set_err_state(char *err_reason)
        dump_stack();
 }
 
-int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
+int mi_ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 		     const char *prefix)
 {
 	u32 *regs;
@@ -327,13 +327,13 @@ static inline void ufshcd_wb_config(struct ufs_hba *hba)
 		ufshcd_wb_toggle_buf_flush(hba, true);
 }
 
-void ufshcd_scsi_unblock_requests(struct ufs_hba *hba)
+void mi_ufshcd_scsi_unblock_requests(struct ufs_hba *hba)
 {
 	if (atomic_dec_and_test(&hba->scsi_block_reqs_cnt))
 		scsi_unblock_requests(hba->host);
 }
 
-void ufshcd_scsi_block_requests(struct ufs_hba *hba)
+void mi_ufshcd_scsi_block_requests(struct ufs_hba *hba)
 {
 	if (atomic_inc_return(&hba->scsi_block_reqs_cnt) == 1)
 		scsi_block_requests(hba->host);
@@ -488,7 +488,7 @@ static void ufshcd_print_evt(struct ufs_hba *hba, u32 id,
 
 static void ufshcd_print_evt_hist(struct ufs_hba *hba)
 {
-	ufshcd_dump_regs(hba, 0, UFSHCI_REG_SPACE_SIZE, "host_regs: ");
+	mi_ufshcd_dump_regs(hba, 0, UFSHCI_REG_SPACE_SIZE, "host_regs: ");
 
 	ufshcd_print_evt(hba, UFS_EVT_PA_ERR, "pa_err");
 	ufshcd_print_evt(hba, UFS_EVT_DL_ERR, "dl_err");
@@ -630,7 +630,7 @@ static void ufshcd_print_pwr_info(struct ufs_hba *hba)
 		 hba->pwr_info.hs_rate);
 }
 
-void ufshcd_delay_us(unsigned long us, unsigned long tolerance)
+void mi_ufshcd_delay_us(unsigned long us, unsigned long tolerance)
 {
 	if (!us)
 		return;
@@ -922,7 +922,7 @@ static inline void ufshcd_hba_start(struct ufs_hba *hba)
 {
 	u32 val = CONTROLLER_ENABLE;
 
-	if (ufshcd_crypto_enable(hba))
+	if (mi_ufshcd_crypto_enable(hba))
 		val |= CRYPTO_GENERAL_ENABLE;
 
 	ufshcd_writel(hba, val, REG_CONTROLLER_ENABLE);
@@ -1206,14 +1206,14 @@ static int ufshcd_clock_scaling_prepare(struct ufs_hba *hba)
 	 * make sure that there are no outstanding requests when
 	 * clock scaling is in progress
 	 */
-	ufshcd_scsi_block_requests(hba);
+	mi_ufshcd_scsi_block_requests(hba);
 	down_write(&hba->clk_scaling_lock);
 
 	if (!hba->clk_scaling.is_allowed ||
 	    ufshcd_wait_for_doorbell_clr(hba, DOORBELL_CLR_TOUT_US)) {
 		ret = -EBUSY;
 		up_write(&hba->clk_scaling_lock);
-		ufshcd_scsi_unblock_requests(hba);
+		mi_ufshcd_scsi_unblock_requests(hba);
 		goto out;
 	}
 
@@ -1230,7 +1230,7 @@ static void ufshcd_clock_scaling_unprepare(struct ufs_hba *hba, bool writelock)
 		up_write(&hba->clk_scaling_lock);
 	else
 		up_read(&hba->clk_scaling_lock);
-	ufshcd_scsi_unblock_requests(hba);
+	mi_ufshcd_scsi_unblock_requests(hba);
 	ufshcd_release(hba);
 }
 
@@ -1682,7 +1682,7 @@ static void ufshcd_ungate_work(struct work_struct *work)
 		hba->clk_gating.is_suspended = false;
 	}
 unblock_reqs:
-	ufshcd_scsi_unblock_requests(hba);
+	mi_ufshcd_scsi_unblock_requests(hba);
 }
 
 /**
@@ -1747,7 +1747,7 @@ start:
 					hba->clk_gating.state);
 		if (queue_work(hba->clk_gating.clk_gating_workq,
 			       &hba->clk_gating.ungate_work))
-			ufshcd_scsi_block_requests(hba);
+			mi_ufshcd_scsi_block_requests(hba);
 		/*
 		 * fall through to check if we should wait for this
 		 * work to be done or not.
@@ -2227,7 +2227,7 @@ static inline int ufshcd_hba_capabilities(struct ufs_hba *hba)
 	ufs_hba_add_info(hba)->reserved_slot = hba->nutrs - 1;
 
 	/* Read crypto capabilities */
-	err = ufshcd_hba_init_crypto_capabilities(hba);
+	err = mi_ufshcd_hba_init_crypto_capabilities(hba);
 	if (err)
 		dev_err(hba->dev, "crypto setup failed\n");
 
@@ -4668,7 +4668,7 @@ start:
 	 * instruction might be read back.
 	 * This delay can be changed based on the controller.
 	 */
-	ufshcd_delay_us(hba->vps->hba_enable_delay_us, 100);
+	mi_ufshcd_delay_us(hba->vps->hba_enable_delay_us, 100);
 
 	/* wait for the host controller to complete initialization */
 	retry_inner = 50;
@@ -5897,7 +5897,7 @@ static void ufshcd_exception_event_handler(struct work_struct *work)
 	hba = container_of(work, struct ufs_hba, eeh_work);
 
 	pm_runtime_get_sync(hba->dev);
-	ufshcd_scsi_block_requests(hba);
+	mi_ufshcd_scsi_block_requests(hba);
 	err = ufshcd_get_ee_status(hba, &status);
 	if (err) {
 		dev_err(hba->dev, "%s: failed to get exception status %d\n",
@@ -5911,7 +5911,7 @@ static void ufshcd_exception_event_handler(struct work_struct *work)
 		ufshcd_bkops_exception_event_handler(hba);
 
 out:
-	ufshcd_scsi_unblock_requests(hba);
+	mi_ufshcd_scsi_unblock_requests(hba);
 	/*
 	 * pm_runtime_get_noresume is called while scheduling
 	 * eeh_work to avoid suspend racing with exception work.
@@ -6071,7 +6071,7 @@ static void ufshcd_err_handling_prepare(struct ufs_hba *hba)
 			ufshcd_suspend_clkscaling(hba);
 		ufshcd_clk_scaling_allow(hba, false);
 	}
-	ufshcd_scsi_block_requests(hba);
+	mi_ufshcd_scsi_block_requests(hba);
 	/* Drain ufshcd_queuecommand() */
 	down_write(&hba->clk_scaling_lock);
 	up_write(&hba->clk_scaling_lock);
@@ -6080,7 +6080,7 @@ static void ufshcd_err_handling_prepare(struct ufs_hba *hba)
 
 static void ufshcd_err_handling_unprepare(struct ufs_hba *hba)
 {
-	ufshcd_scsi_unblock_requests(hba);
+	mi_ufshcd_scsi_unblock_requests(hba);
 	ufshcd_release(hba);
 	if (ufshcd_is_clkscaling_supported(hba))
 		ufshcd_clk_scaling_suspend(hba, false);
@@ -6481,7 +6481,7 @@ static irqreturn_t ufshcd_check_errors(struct ufs_hba *hba, u32 intr_status)
 			dev_err(hba->dev, "%s: saved_err 0x%x saved_uic_err 0x%x\n",
 					__func__, hba->saved_err,
 					hba->saved_uic_err);
-			ufshcd_dump_regs(hba, 0, UFSHCI_REG_SPACE_SIZE,
+			mi_ufshcd_dump_regs(hba, 0, UFSHCI_REG_SPACE_SIZE,
 					 "host_regs: ");
 			ufshcd_print_pwr_info(hba);
 		}
@@ -6603,7 +6603,7 @@ static irqreturn_t ufshcd_intr(int irq, void *__hba)
 					intr_status,
 					host->ufs_stats.last_intr_status,
 					enabled_intr_status);
-		ufshcd_dump_regs(hba, 0, UFSHCI_REG_SPACE_SIZE, "host_regs: ");
+		mi_ufshcd_dump_regs(hba, 0, UFSHCI_REG_SPACE_SIZE, "host_regs: ");
 	}
 
 	return retval;
@@ -8004,7 +8004,7 @@ static int ufshcd_add_lus(struct ufs_hba *hba)
 		ufshcd_init_clk_scaling_sysfs(hba);
 	}
 
-	ufs_bsg_probe(hba);
+	mi_ufs_bsg_probe(hba);
 	ufshpb_init(hba);
 	scsi_scan_host(hba->host);
 	pm_runtime_put_sync(hba->dev);
@@ -8149,8 +8149,8 @@ out:
 }
 
 static const struct attribute_group *ufshcd_driver_groups[] = {
-	&ufs_sysfs_unit_descriptor_group,
-	&ufs_sysfs_lun_attributes_group,
+	&mi_ufs_sysfs_unit_descriptor_group,
+	&mi_ufs_sysfs_lun_attributes_group,
 #ifdef CONFIG_SCSI_UFS_HPB
 	&ufs_sysfs_hpb_stat_group,
 	&ufs_sysfs_hpb_param_group,
@@ -8565,7 +8565,7 @@ static int ufshcd_hba_init(struct ufs_hba *hba)
 	if (err)
 		goto out_disable_vreg;
 
-	ufs_debugfs_hba_init(hba);
+	mi_ufs_debugfs_hba_init(hba);
 
 	hba->is_powered = true;
 	goto out;
@@ -8587,7 +8587,7 @@ static void ufshcd_hba_exit(struct ufs_hba *hba)
 		ufshcd_exit_clk_gating(hba);
 		if (hba->eh_wq)
 			destroy_workqueue(hba->eh_wq);
-		ufs_debugfs_hba_exit(hba);
+		mi_ufs_debugfs_hba_exit(hba);
 		ufshcd_variant_hba_exit(hba);
 		ufshcd_setup_vreg(hba, false);
 		ufshcd_setup_clocks(hba, false);
@@ -9296,9 +9296,9 @@ out:
  */
 void ufshcd_remove(struct ufs_hba *hba)
 {
-	ufs_bsg_remove(hba);
+	mi_ufs_bsg_remove(hba);
 	ufshpb_remove(hba);
-	ufs_sysfs_remove_nodes(hba->dev);
+	mi_ufs_sysfs_remove_nodes(hba->dev);
 	blk_put_queue(hba->tmf_queue);
 	blk_mq_free_tag_set(&hba->tmf_tag_set);
 	scsi_remove_host(hba->host);
@@ -9542,7 +9542,7 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 	/* Reset the attached device */
 	ufshcd_vops_device_reset(hba);
 
-	ufshcd_init_crypto(hba);
+	mi_ufshcd_init_crypto(hba);
 
 	/* Host controller enable */
 	err = ufshcd_hba_enable(hba);
@@ -9586,7 +9586,7 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 	ufshcd_set_ufs_dev_active(hba);
 
 	async_schedule(ufshcd_async_scan, hba);
-	ufs_sysfs_add_nodes(hba);
+	mi_ufs_sysfs_add_nodes(hba);
 
 	device_enable_async_suspend(dev);
 	return 0;
