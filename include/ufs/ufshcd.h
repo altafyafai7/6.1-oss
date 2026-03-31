@@ -1128,7 +1128,6 @@ struct ufs_hba {
 	unsigned int nr_queues[HCTX_MAX_TYPES];
 	bool complete_put;
 	bool ext_iid_sup;
-	bool scsi_host_added;
 	bool mcq_sup;
 	bool mcq_enabled;
 	struct ufshcd_res_info res[RES_MAX];
