@@ -125,7 +125,7 @@ struct ufsffu_sysfs_entry {
 #endif
 static partinfo part_info = { 0 };
 
-int __attribute__((weak)) ufs_ffu_reboot_reason_reboot(void *ptr)
+int ufs_ffu_reboot_reason_reboot(void *ptr)
 {
 	return 0;
 }

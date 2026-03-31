@@ -49,6 +49,20 @@
 #include "mi-ufs.h"
 #include "mi_ufs_quirks.h"
 #include "mi-ufshci.h"
+#include "../host/ufs-qcom.h"
+
+struct ufscld_dev;
+static inline struct ufscld_dev *mi_ufshcd_get_cld(struct ufs_hba *hba)
+{
+	struct ufs_qcom_host *host = (struct ufs_qcom_host *)ufshcd_get_variant(hba);
+
+	return host ? host->cld : NULL;
+}
+
+/* Core UFS functions exported for mi_ufs */
+int ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba, u64 wait_timeout_us);
+void ufshcd_scsi_block_requests(struct ufs_hba *hba);
+void ufshcd_scsi_unblock_requests(struct ufs_hba *hba);
 
 #if defined(CONFIG_CLD)
 #include "cld/mi_cld.h"
@@ -193,10 +207,10 @@ static inline bool ufshcd_has_utrlcnr(struct ufs_hba *hba)
 	return (hba->ufs_version >= mi_ufshci_version(3, 0));
 }
 
-int ufshcd_runtime_idle(struct device *dev);
+int mi_ufshcd_runtime_idle(struct device *dev);
 
-int ufshcd_wb_ctrl(struct ufs_hba *hba, bool enable);
-int ufshcd_wb_toggle_flush_during_h8(struct ufs_hba *hba, bool set);
+int mi_ufshcd_wb_ctrl(struct ufs_hba *hba, bool enable);
+int mi_ufshcd_wb_toggle_flush_during_h8(struct ufs_hba *hba, bool set);
 void ufshcd_wb_toggle_flush(struct ufs_hba *hba, bool enable);
 
 #endif /* _MI_UFSHCD_H */

@@ -15,7 +15,7 @@ static int ufs_bsg_get_query_desc_size(struct ufs_hba *hba, int *desc_len,
 	if (desc_size <= 0)
 		return -EINVAL;
 
-	ufshcd_map_desc_id_to_length(hba, desc_id, desc_len);
+	mi_ufshcd_map_desc_id_to_length(hba, desc_id, desc_len);
 	if (!*desc_len)
 		return -EINVAL;
 

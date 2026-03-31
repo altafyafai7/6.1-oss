@@ -227,7 +227,7 @@ int ufshcd_pltfrm_runtime_resume(struct device *dev)
 
 int ufshcd_pltfrm_runtime_idle(struct device *dev)
 {
-	return ufshcd_runtime_idle(dev_get_drvdata(dev));
+	return mi_ufshcd_runtime_idle(dev_get_drvdata(dev));
 }
 
 #endif /* CONFIG_PM */

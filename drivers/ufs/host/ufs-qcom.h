@@ -271,6 +271,8 @@ struct ufs_qcom_host {
 
 	int esi_base;
 	bool esi_enabled;
+
+	struct ufscld_dev *cld;
 };
 
 static inline u32

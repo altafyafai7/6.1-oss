@@ -942,12 +942,12 @@ static const struct attribute_group ufs_sysfs_flags_group = {
 };
 
 #ifdef CONFIG_UFS_WB
-int __attribute__((weak)) ufshcd_wb_ctrl(struct ufs_hba *hba, bool enable)
+int __attribute__((weak)) mi_ufshcd_wb_ctrl(struct ufs_hba *hba, bool enable)
 {
 	return 0;
 }
 int __attribute__((weak))
-ufshcd_wb_toggle_flush_during_h8(struct ufs_hba *hba, bool set)
+mi_ufshcd_wb_toggle_flush_during_h8(struct ufs_hba *hba, bool set)
 {
 	return 0;
 }
@@ -987,7 +987,7 @@ static ssize_t enable_tw_store(struct device *dev,
 	if (kstrtouint(buf, 0, &value))
 		return -EINVAL;
 
-	if (ufshcd_wb_ctrl(hba, (bool)value))
+	if (mi_ufshcd_wb_ctrl(hba, (bool)value))
 		return -EINVAL;
 
 	return count;
@@ -1066,7 +1066,7 @@ static ssize_t enable_autoflush_in_h8_store(struct device *dev,
 	if (kstrtouint(buf, 0, &value))
 		return -EINVAL;
 
-	if (ufshcd_wb_toggle_flush_during_h8(hba, (bool)value))
+	if (mi_ufshcd_wb_toggle_flush_during_h8(hba, (bool)value))
 		return -EINVAL;
 
 	return count;
