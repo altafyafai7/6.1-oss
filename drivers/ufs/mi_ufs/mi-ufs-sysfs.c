@@ -1240,7 +1240,7 @@ static struct attribute *ufs_sysfs_unit_descriptor[] = {
 	NULL,
 };
 
-const struct attribute_group ufs_sysfs_unit_descriptor_group = {
+const struct attribute_group mi_ufs_sysfs_unit_descriptor_group = {
 	.name = "unit_descriptor",
 	.attrs = ufs_sysfs_unit_descriptor,
 };
@@ -1269,11 +1269,11 @@ static struct attribute *ufs_sysfs_lun_attributes[] = {
 	NULL,
 };
 
-const struct attribute_group ufs_sysfs_lun_attributes_group = {
+const struct attribute_group mi_ufs_sysfs_lun_attributes_group = {
 	.attrs = ufs_sysfs_lun_attributes,
 };
 
-void ufs_sysfs_add_nodes(struct ufs_hba *hba)
+void mi_ufs_sysfs_add_nodes(struct ufs_hba *hba)
 {
 	int ret;
 
@@ -1286,7 +1286,7 @@ void ufs_sysfs_add_nodes(struct ufs_hba *hba)
 	}
 }
 
-void ufs_sysfs_remove_nodes(struct device *dev)
+void mi_ufs_sysfs_remove_nodes(struct device *dev)
 {
 	sysfs_remove_groups(&dev->kobj, ufs_sysfs_groups);
 }
