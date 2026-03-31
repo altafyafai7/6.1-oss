@@ -4,7 +4,7 @@
 #include <linux/reset-controller.h>
 #include <linux/reset.h>
 #include <ufs/ufshcd.h>
-#include "mi-ufs.h"
+#include "../mi_ufs/mi-ufs.h"
 
 #define MAX_QS 16
 #define MAX_LUNS 32
