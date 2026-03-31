@@ -1137,7 +1137,12 @@ struct ufs_hba {
 	struct ufs_hw_queue *dev_cmd_queue;
 	struct ufshcd_mcq_opr_info_t mcq_opr[OPR_MAX];
 
-	ANDROID_OEM_DATA(1);
+	union {
+		struct {
+			bool scsi_host_added;
+		};
+		ANDROID_OEM_DATA(1);
+	};
 };
 
 /**
