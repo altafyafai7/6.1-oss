@@ -9,6 +9,66 @@
 #define MAX_QS 16
 #define MAX_LUNS 32
 
+#define UFS_CNTLR_2_x_x_VEN_REGS_OFFSET(x)	(0x000 + x)
+#define UFS_CNTLR_3_x_x_VEN_REGS_OFFSET(x)	(0x400 + x)
+
+/* Host controller hardware version: major.minor.step */
+struct ufs_hw_version {
+	u16 step;
+	u16 minor;
+	u8 major;
+};
+
+/* Host UIC error code PHY adapter layer */
+#ifndef _UFS_EC_PA_DEFINED
+#define _UFS_EC_PA_DEFINED
+enum ufshcd_ec_pa {
+	UFS_EC_PA_LANE_0,
+	UFS_EC_PA_LANE_1,
+	UFS_EC_PA_LANE_2,
+	UFS_EC_PA_LANE_3,
+	UFS_EC_PA_LINE_RESET,
+	UFS_EC_PA_MAX,
+};
+#endif
+
+/* Host UIC error code data link layer */
+#ifndef _UFS_EC_DL_DEFINED
+#define _UFS_EC_DL_DEFINED
+enum ufshcd_ec_dl {
+	UFS_EC_DL_NAC_RECEIVED,
+	UFS_EC_DL_TCx_REPLAY_TIMER_EXPIRED,
+	UFS_EC_DL_AFCx_REQUEST_TIMER_EXPIRED,
+	UFS_EC_DL_FCx_PROTECT_TIMER_EXPIRED,
+	UFS_EC_DL_CRC_ERROR,
+	UFS_EC_DL_RX_BUFFER_OVERFLOW,
+	UFS_EC_DL_MAX_FRAME_LENGTH_EXCEEDED,
+	UFS_EC_DL_WRONG_SEQUENCE_NUMBER,
+	UFS_EC_DL_AFC_FRAME_SYNTAX_ERROR,
+	UFS_EC_DL_NAC_FRAME_SYNTAX_ERROR,
+	UFS_EC_DL_EOF_SYNTAX_ERROR,
+	UFS_EC_DL_FRAME_SYNTAX_ERROR,
+	UFS_EC_DL_BAD_CTRL_SYMBOL_TYPE,
+	UFS_EC_DL_PA_INIT_ERROR,
+	UFS_EC_DL_PA_ERROR_IND_RECEIVED,
+	UFS_EC_DL_MAX,
+};
+#endif
+
+struct ufs_uic_stats {
+	u32 pa_err_cnt_total;
+	u32 pa_err_cnt[UFS_EC_PA_MAX];
+	u32 dl_err_cnt_total;
+	u32 dl_err_cnt[UFS_EC_DL_MAX];
+	u32 dme_err_cnt;
+
+	u32 last_intr_status;
+	u64 last_intr_ts;
+	u32 hibern8_exit_cnt;
+	u64 last_hibern8_exit_tstamp;
+	struct ufs_event_hist event[UFS_EVT_CNT];
+};
+
 struct ufs_qcom_testbus {
 	u8 select_id;
 	u8 config;
