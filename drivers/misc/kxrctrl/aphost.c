@@ -949,3 +949,4 @@ module_init(js_driver_init);
 module_exit(js_driver_exit);
 MODULE_DESCRIPTION("kinetics nordic52832 driver");
 MODULE_LICENSE("GPL v2");
+MODULE_IMPORT_NS(DMA_BUF);
