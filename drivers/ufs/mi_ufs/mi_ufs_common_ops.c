@@ -56,7 +56,7 @@ int mi_ufs_query_attr(struct ufs_hba *hba, enum query_opcode opcode,  enum attr_
 
 	pm_runtime_get_sync(hba->dev);
 	for (retries = 0; retries < 3; retries++) {
-		ret = ufshcd_query_attr(hba, opcode, idn, idx,
+		ret = mi_ufshcd_query_attr(hba, opcode, idn, idx,
 				selector, attr_val);
 		if (ret)
 			dev_dbg(hba->dev,

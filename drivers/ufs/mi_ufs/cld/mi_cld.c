@@ -97,7 +97,7 @@ void ufscld_auto_hibern8_enable(struct ufscld_dev *cld,
 		return;
 
 	pm_runtime_get_sync(hba->dev);
-	ufshcd_hold(hba, false);
+	mi_ufshcd_hold(hba, false);
 	down_write(&hba->clk_scaling_lock);
 	ufshcd_scsi_block_requests(hba);
 	/* wait for all the outstanding requests to finish */
@@ -127,7 +127,7 @@ void ufscld_auto_hibern8_enable(struct ufscld_dev *cld,
 	spin_unlock_irqrestore(hba->host->host_lock, flags);
 	ufshcd_scsi_unblock_requests(hba);
 	up_write(&hba->clk_scaling_lock);
-	ufshcd_release(hba);
+	mi_ufshcd_release(hba);
 	pm_runtime_put_sync(hba->dev);
 }
 
@@ -142,7 +142,7 @@ void ufscld_block_enter_suspend(struct ufscld_dev *cld)
 	cld->block_suspend = true;
 
 	pm_runtime_get_sync(hba->dev);
-	ufshcd_hold(hba, false);
+	mi_ufshcd_hold(hba, false);
 
 	spin_lock_irqsave(hba->host->host_lock, flags);
 	CLD_DEBUG(cld,
@@ -162,7 +162,7 @@ void ufscld_allow_enter_suspend(struct ufscld_dev *cld)
 
 	cld->block_suspend = false;
 
-	ufshcd_release(hba);
+	mi_ufshcd_release(hba);
 	pm_runtime_mark_last_busy(hba->dev);
 	pm_runtime_put_noidle(hba->dev);
 
