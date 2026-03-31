@@ -1094,7 +1094,7 @@ static bool ufshcd_is_devfreq_scaling_required(struct ufs_hba *hba,
 	return false;
 }
 
-int ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba,
+int mi_ufshcd_wait_for_doorbell_clr(struct ufs_hba *hba,
 					u64 wait_timeout_us)
 {
 	unsigned long flags;
@@ -1210,7 +1210,7 @@ static int ufshcd_clock_scaling_prepare(struct ufs_hba *hba)
 	down_write(&hba->clk_scaling_lock);
 
 	if (!hba->clk_scaling.is_allowed ||
-	    ufshcd_wait_for_doorbell_clr(hba, DOORBELL_CLR_TOUT_US)) {
+	    mi_ufshcd_wait_for_doorbell_clr(hba, DOORBELL_CLR_TOUT_US)) {
 		ret = -EBUSY;
 		up_write(&hba->clk_scaling_lock);
 		mi_ufshcd_scsi_unblock_requests(hba);
@@ -6853,7 +6853,7 @@ static int ufshcd_issue_devman_upiu_cmd(struct ufs_hba *hba,
 }
 
 /**
- * ufshcd_exec_raw_upiu_cmd - API function for sending raw upiu commands
+ * mi_ufshcd_exec_raw_upiu_cmd - API function for sending raw upiu commands
  * @hba:	per-adapter instance
  * @req_upiu:	upiu request
  * @rsp_upiu:	upiu reply - only 8 DW as we do not support scsi commands
@@ -6867,7 +6867,7 @@ static int ufshcd_issue_devman_upiu_cmd(struct ufs_hba *hba,
  * It is up to the caller to fill the upiu conent properly, as it will
  * be copied without any further input validations.
  */
-int ufshcd_exec_raw_upiu_cmd(struct ufs_hba *hba,
+int mi_ufshcd_exec_raw_upiu_cmd(struct ufs_hba *hba,
 			     struct utp_upiu_req *req_upiu,
 			     struct utp_upiu_req *rsp_upiu,
 			     int msgcode,
@@ -7885,7 +7885,7 @@ ufs_get_bref_clk_from_hz(unsigned long freq)
 	return REF_CLK_FREQ_INVAL;
 }
 
-void ufshcd_parse_dev_ref_clk_freq(struct ufs_hba *hba, struct clk *refclk)
+void mi_ufshcd_parse_dev_ref_clk_freq(struct ufs_hba *hba, struct clk *refclk)
 {
 	unsigned long freq;
 
@@ -8324,7 +8324,7 @@ static int ufshcd_setup_hba_vreg(struct ufs_hba *hba, bool on)
 	return ufshcd_toggle_vreg(hba->dev, info->vdd_hba, on);
 }
 
-int ufshcd_get_vreg(struct device *dev, struct ufs_vreg *vreg)
+int mi_ufshcd_get_vreg(struct device *dev, struct ufs_vreg *vreg)
 {
 	int ret = 0;
 
@@ -8347,13 +8347,13 @@ static int ufshcd_init_vreg(struct ufs_hba *hba)
 	struct device *dev = hba->dev;
 	struct ufs_vreg_info *info = &hba->vreg_info;
 
-	ret = ufshcd_get_vreg(dev, info->vcc);
+	ret = mi_ufshcd_get_vreg(dev, info->vcc);
 	if (ret)
 		goto out;
 
-	ret = ufshcd_get_vreg(dev, info->vccq);
+	ret = mi_ufshcd_get_vreg(dev, info->vccq);
 	if (!ret)
-		ret = ufshcd_get_vreg(dev, info->vccq2);
+		ret = mi_ufshcd_get_vreg(dev, info->vccq2);
 out:
 	return ret;
 }
@@ -8363,7 +8363,7 @@ static int ufshcd_init_hba_vreg(struct ufs_hba *hba)
 	struct ufs_vreg_info *info = &hba->vreg_info;
 
 	if (info)
-		return ufshcd_get_vreg(hba->dev, info->vdd_hba);
+		return mi_ufshcd_get_vreg(hba->dev, info->vdd_hba);
 
 	return 0;
 }
@@ -8461,10 +8461,10 @@ static int ufshcd_init_clocks(struct ufs_hba *hba)
 		/*
 		 * Parse device ref clk freq as per device tree "ref_clk".
 		 * Default dev_ref_clk_freq is set to REF_CLK_FREQ_INVAL
-		 * in ufshcd_alloc_host().
+		 * in mi_ufshcd_alloc_host().
 		 */
 		if (!strcmp(clki->name, "ref_clk"))
-			ufshcd_parse_dev_ref_clk_freq(hba, clki->clk);
+			mi_ufshcd_parse_dev_ref_clk_freq(hba, clki->clk);
 
 		if (clki->max_freq) {
 			ret = clk_set_rate(clki->clk, clki->max_freq);
@@ -9103,14 +9103,14 @@ out:
 }
 
 /**
- * ufshcd_system_suspend - system suspend routine
+ * mi_ufshcd_system_suspend - system suspend routine
  * @hba: per adapter instance
  *
  * Check the description of ufshcd_suspend() function for more details.
  *
  * Returns 0 for success and non-zero for failure
  */
-int ufshcd_system_suspend(struct device *dev)
+int mi_ufshcd_system_suspend(struct device *dev)
 {
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	int ret = 0;
@@ -9140,7 +9140,7 @@ int ufshcd_system_suspend(struct device *dev)
 		 * TODO: If resume takes longer time, we might have optimize
 		 * it in future by not resuming everything if possible.
 		 */
-		ret = ufshcd_runtime_resume(hba->dev);
+		ret = mi_ufshcd_runtime_resume(hba->dev);
 		if (ret)
 			goto out;
 	}
@@ -9158,13 +9158,13 @@ out:
 }
 
 /**
- * ufshcd_system_resume - system resume routine
+ * mi_ufshcd_system_resume - system resume routine
  * @dev: pointer to device handle
  *
  * Returns 0 for success and non-zero for failure
  */
 
-int ufshcd_system_resume(struct device *dev)
+int mi_ufshcd_system_resume(struct device *dev)
 {
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	int ret = 0;
@@ -9189,14 +9189,14 @@ out:
 }
 
 /**
- * ufshcd_runtime_suspend - runtime suspend routine
+ * mi_ufshcd_runtime_suspend - runtime suspend routine
  * @dev: pointer to device handle
  *
  * Check the description of ufshcd_suspend() function for more details.
  *
  * Returns 0 for success and non-zero for failure
  */
-int ufshcd_runtime_suspend(struct device *dev)
+int mi_ufshcd_runtime_suspend(struct device *dev)
 {
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	int ret = 0;
@@ -9214,7 +9214,7 @@ out:
 }
 
 /**
- * ufshcd_runtime_resume - runtime resume routine
+ * mi_ufshcd_runtime_resume - runtime resume routine
  * @dev: pointer to device handle
  *
  * This function basically brings the UFS device, UniPro link and controller
@@ -9234,7 +9234,7 @@ out:
  *
  * Returns 0 for success and non-zero for failure
  */
-int ufshcd_runtime_resume(struct device *dev)
+int mi_ufshcd_runtime_resume(struct device *dev)
 {
 	struct ufs_hba *hba = dev_get_drvdata(dev);
 	int ret = 0;
@@ -9257,14 +9257,14 @@ int ufshcd_runtime_idle(struct device *dev)
 }
 
 /**
- * ufshcd_shutdown - shutdown routine
+ * mi_ufshcd_shutdown - shutdown routine
  * @hba: per adapter instance
  *
  * This function would power off both UFS device and UFS link.
  *
  * Returns 0 always to allow force shutdown even in case of errors.
  */
-int ufshcd_shutdown(struct ufs_hba *hba)
+int mi_ufshcd_shutdown(struct ufs_hba *hba)
 {
 	int ret = 0;
 
@@ -9290,11 +9290,11 @@ out:
 }
 
 /**
- * ufshcd_remove - de-allocate SCSI host and host memory space
+ * mi_ufshcd_remove - de-allocate SCSI host and host memory space
  *		data structure memory
  * @hba: per adapter instance
  */
-void ufshcd_remove(struct ufs_hba *hba)
+void mi_ufshcd_remove(struct ufs_hba *hba)
 {
 	mi_ufs_bsg_remove(hba);
 	ufshpb_remove(hba);
@@ -9309,10 +9309,10 @@ void ufshcd_remove(struct ufs_hba *hba)
 }
 
 /**
- * ufshcd_dealloc_host - deallocate Host Bus Adapter (HBA)
+ * mi_ufshcd_dealloc_host - deallocate Host Bus Adapter (HBA)
  * @hba: pointer to Host Bus Adapter (HBA)
  */
-void ufshcd_dealloc_host(struct ufs_hba *hba)
+void mi_ufshcd_dealloc_host(struct ufs_hba *hba)
 {
 	scsi_host_put(hba->host);
 }
@@ -9334,12 +9334,12 @@ static int ufshcd_set_dma_mask(struct ufs_hba *hba)
 }
 
 /**
- * ufshcd_alloc_host - allocate Host Bus Adapter (HBA)
+ * mi_ufshcd_alloc_host - allocate Host Bus Adapter (HBA)
  * @dev: pointer to device handle
  * @hba_handle: driver private handle
  * Returns 0 on success, non-zero value on failure
  */
-int ufshcd_alloc_host(struct device *dev, struct ufs_hba **hba_handle)
+int mi_ufshcd_alloc_host(struct device *dev, struct ufs_hba **hba_handle)
 {
 	struct Scsi_Host *host;
 	struct ufs_hba *hba;
@@ -9385,13 +9385,13 @@ static const struct blk_mq_ops ufshcd_tmf_ops = {
 };
 
 /**
- * ufshcd_init - Driver initialization routine
+ * mi_ufshcd_init - Driver initialization routine
  * @hba: per-adapter instance
  * @mmio_base: base register address
  * @irq: Interrupt line of device
  * Returns 0 on success, non-zero value on failure
  */
-int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
+int mi_ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 {
 	struct request ***tmf_rqs = &ufs_hba_add_info(hba)->tmf_rqs;
 	int err;

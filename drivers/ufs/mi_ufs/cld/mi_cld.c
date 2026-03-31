@@ -101,7 +101,7 @@ void ufscld_auto_hibern8_enable(struct ufscld_dev *cld,
 	down_write(&hba->clk_scaling_lock);
 	ufshcd_scsi_block_requests(hba);
 	/* wait for all the outstanding requests to finish */
-	ufshcd_wait_for_doorbell_clr(hba, U64_MAX);
+	mi_ufshcd_wait_for_doorbell_clr(hba, U64_MAX);
 	spin_lock_irqsave(hba->host->host_lock, flags);
 
 	reg = ufshcd_readl(hba, REG_AUTO_HIBERNATE_IDLE_TIMER);

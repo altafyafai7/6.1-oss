@@ -200,7 +200,7 @@ out:
  */
 int ufshcd_pltfrm_suspend(struct device *dev)
 {
-	return ufshcd_system_suspend(dev_get_drvdata(dev));
+	return mi_ufshcd_system_suspend(dev_get_drvdata(dev));
 }
 
 /**
@@ -212,17 +212,17 @@ int ufshcd_pltfrm_suspend(struct device *dev)
  */
 int ufshcd_pltfrm_resume(struct device *dev)
 {
-	return ufshcd_system_resume(dev_get_drvdata(dev));
+	return mi_ufshcd_system_resume(dev_get_drvdata(dev));
 }
 
 int ufshcd_pltfrm_runtime_suspend(struct device *dev)
 {
-	return ufshcd_runtime_suspend(dev_get_drvdata(dev));
+	return mi_ufshcd_runtime_suspend(dev_get_drvdata(dev));
 }
 
 int ufshcd_pltfrm_runtime_resume(struct device *dev)
 {
-	return ufshcd_runtime_resume(dev_get_drvdata(dev));
+	return mi_ufshcd_runtime_resume(dev_get_drvdata(dev));
 }
 
 int ufshcd_pltfrm_runtime_idle(struct device *dev)
@@ -234,7 +234,7 @@ int ufshcd_pltfrm_runtime_idle(struct device *dev)
 
 void mi_ufshcd_pltfrm_shutdown(struct platform_device *pdev)
 {
-	ufshcd_shutdown((struct ufs_hba *)platform_get_drvdata(pdev));
+	mi_ufshcd_shutdown((struct ufs_hba *)platform_get_drvdata(pdev));
 }
 
 static void ufshcd_init_lanes_per_dir(struct ufs_hba *hba)
@@ -375,7 +375,7 @@ int mi_ufshcd_pltfrm_init(struct platform_device *pdev,
 		goto out;
 	}
 
-	err = ufshcd_alloc_host(dev, &hba);
+	err = mi_ufshcd_alloc_host(dev, &hba);
 	if (err) {
 		dev_err(&pdev->dev, "Allocation failed\n");
 		goto out;
@@ -398,7 +398,7 @@ int mi_ufshcd_pltfrm_init(struct platform_device *pdev,
 
 	ufshcd_init_lanes_per_dir(hba);
 
-	err = ufshcd_init(hba, mmio_base, irq);
+	err = mi_ufshcd_init(hba, mmio_base, irq);
 	if (err) {
 		dev_err(dev, "Initialization failed\n");
 		goto dealloc_host;
@@ -410,7 +410,7 @@ int mi_ufshcd_pltfrm_init(struct platform_device *pdev,
 	return 0;
 
 dealloc_host:
-	ufshcd_dealloc_host(hba);
+	mi_ufshcd_dealloc_host(hba);
 out:
 	return err;
 }
