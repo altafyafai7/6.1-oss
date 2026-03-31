@@ -64,12 +64,65 @@
 
 #define UFSHCD_ANDROID_QUIRK_CUSTOM_PA_TACTIVATE	0x1
 
-enum ufs_ref_clk_freq {
-	REF_CLK_FREQ_19_2_MHZ	= 0,
-	REF_CLK_FREQ_26_MHZ	= 1,
-	REF_CLK_FREQ_38_4_MHZ	= 2,
-	REF_CLK_FREQ_52_MHZ	= 3,
-	REF_CLK_FREQ_INVAL	= -1,
+/* Used to differentiate the power management options */
+enum ufs_pm_op {
+	UFS_RUNTIME_PM,
+	UFS_SYSTEM_PM,
+	UFS_SHUTDOWN_PM,
+};
+
+/* Host <-> Device UniPro Link state */
+enum uic_link_state {
+	UIC_LINK_OFF_STATE	= 0, /* Link powered down or disabled */
+	UIC_LINK_ACTIVE_STATE	= 1, /* Link is in Fast/Slow/Sleep state */
+	UIC_LINK_HIBERN8_STATE	= 2, /* Link is in Hibernate state */
+	UIC_LINK_BROKEN_STATE	= 3, /* Link is in broken state */
+};
+
+/*
+ * UFS Power management levels.
+ * Each level is in increasing order of power savings, except DeepSleep
+ * which is lower than PowerDown with power on but not PowerDown with
+ * power off.
+ */
+enum ufs_pm_level {
+	UFS_PM_LVL_0,
+	UFS_PM_LVL_1,
+	UFS_PM_LVL_2,
+	UFS_PM_LVL_3,
+	UFS_PM_LVL_4,
+	UFS_PM_LVL_5,
+	UFS_PM_LVL_6,
+	UFS_PM_LVL_MAX
+};
+
+/**
+ * struct uic_command - UIC command structure
+ * @command: UIC command
+ * @argument1: UIC command argument 1
+ * @argument2: UIC command argument 2
+ * @argument3: UIC command argument 3
+ * @cmd_active: Indicate if UIC command is outstanding
+ * @done: UIC command completion
+ */
+struct uic_command {
+	u32 command;
+	u32 argument1;
+	u32 argument2;
+	u32 argument3;
+	int cmd_active;
+	struct completion done;
+};
+
+enum ufshcd_res {
+       RES_UFS,
+       RES_MCQ,
+       RES_MCQ_SQD,
+       RES_MCQ_SQIS,
+       RES_MCQ_CQD,
+       RES_MCQ_CQIS,
+       RES_MCQ_VS,
+       RES_MAX,
 };
 
 struct ufs_pa_layer_attr {
@@ -118,23 +171,6 @@ struct ufs_dev_cmd {
 	struct ufs_query query;
 	struct completion *done;
 	struct mutex lock;
-};
-
-struct ufs_vreg {
-	struct regulator *reg;
-	const char *name;
-	u32 min_uV;
-	u32 max_uV;
-	bool enabled;
-	bool is_always_on;
-	u32 max_uA;
-};
-
-struct ufs_vreg_info {
-	struct ufs_vreg *vcc;
-	struct ufs_vreg *vccq;
-	struct ufs_vreg *vccq2;
-	struct ufs_vreg *vdd_hba;
 };
 
 struct ufs_clk_info {
@@ -436,6 +472,48 @@ struct ufs_hba {
 	ANDROID_KABI_RESERVE(2);
 };
 
-/* Additional definitions and exports omitted for brevity, keeping only core structure for KMI fix */
+#define ufshcd_writel(hba, val, reg)   \
+	writel((val), (hba)->mmio_base + (reg))
+#define ufshcd_readl(hba, reg) \
+	readl((hba)->mmio_base + (reg))
 
-#endif /* UFSHCD_H */
+/**
+ * ufshcd_rmwl - perform read/modify/write for a controller register
+ * @hba: per adapter instance
+ * @mask: mask to apply on read value
+ * @val: actual value to write
+ * @reg: register address
+ */
+static inline void ufshcd_rmwl(struct ufs_hba *hba, u32 mask, u32 val, u32 reg)
+{
+	u32 tmp;
+
+	tmp = ufshcd_readl(hba, reg);
+	tmp &= ~mask;
+	tmp |= (val & mask);
+	ufshcd_writel(hba, tmp, reg);
+}
+
+/**
+ * ufshcd_set_variant - set variant specific data to the hba
+ * @hba: per adapter instance
+ * @variant: pointer to variant specific data
+ */
+static inline void ufshcd_set_variant(struct ufs_hba *hba, void *variant)
+{
+	hba->priv = variant;
+}
+
+/**
+ * ufshcd_get_variant - get variant specific data from the hba
+ * @hba: per adapter instance
+ */
+static inline void *ufshcd_get_variant(struct ufs_hba *hba)
+{
+	return hba->priv;
+}
+
+#define ufshcd_is_hs_mode(pwr_info) \
+	((pwr_info)->pwr_rx == FAST_MODE || (pwr_info)->pwr_rx == FASTAUTO_MODE)
+
+#endif /* _UFSHCD_H */

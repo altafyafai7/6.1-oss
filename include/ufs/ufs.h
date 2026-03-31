@@ -647,7 +647,9 @@ struct ufs_query_res {
 struct ufs_vreg {
 	struct regulator *reg;
 	const char *name;
-	bool always_on;
+	u32 min_uV;
+	u32 max_uV;
+	bool is_always_on;
 	bool enabled;
 	int max_uA;
 };
