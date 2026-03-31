@@ -120,10 +120,50 @@ int mi_ufshcd_query_flag_sel(struct ufs_hba *hba, enum query_opcode opcode,
 int mi_ufshcd_query_flag_retry(struct ufs_hba *hba,
 	enum query_opcode opcode, enum flag_idn idn, u8 index, bool *flag_res);
 
+int mi_ufshcd_query_attr(struct ufs_hba *hba, enum query_opcode opcode,
+		      enum attr_idn idn, u8 index, u8 selector, u32 *attr_val);
+
+int mi_ufshcd_dme_set_attr(struct ufs_hba *hba, u32 attr_sel,
+			u8 attr_set, u32 mib_val, u8 peer);
+
+int mi_ufshcd_dme_get_attr(struct ufs_hba *hba, u32 attr_sel,
+			u32 *mib_val, u8 peer);
+
 u8 mi_ufshcd_wb_get_query_index(struct ufs_hba *hba);
 
 int mi_ufshcd_read_string_desc(struct ufs_hba *hba, u8 desc_index,
 			    u8 **buf, bool ascii);
+
+int mi_ufshcd_hold(struct ufs_hba *hba, bool async);
+void mi_ufshcd_release(struct ufs_hba *hba);
+
+int mi_ufshcd_send_uic_cmd(struct ufs_hba *hba, struct uic_command *uic_cmd);
+int mi_ufshcd_link_recovery(struct ufs_hba *hba);
+int mi_ufshcd_uic_hibern8_enter(struct ufs_hba *hba);
+int mi_ufshcd_uic_hibern8_exit(struct ufs_hba *hba);
+
+void mi_ufshcd_auto_hibern8_update(struct ufs_hba *hba, u32 ahit);
+void mi_ufshcd_auto_hibern8_enable(struct ufs_hba *hba);
+
+int mi_ufshcd_config_pwr_mode(struct ufs_hba *hba,
+		struct ufs_pa_layer_attr *desired_pwr_mode);
+
+int mi_ufshcd_make_hba_operational(struct ufs_hba *hba);
+void mi_ufshcd_hba_stop(struct ufs_hba *hba);
+int mi_ufshcd_hba_enable(struct ufs_hba *hba);
+
+void mi_ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
+int mi_ufshcd_bkops_ctrl(struct ufs_hba *hba,
+			     enum bkops_status status);
+
+int mi_ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
+		     const char *prefix);
+
+void mi_ufshcd_scsi_unblock_requests(struct ufs_hba *hba);
+void mi_ufshcd_scsi_block_requests(struct ufs_hba *hba);
+void mi_ufshcd_delay_us(unsigned long us, unsigned long tolerance);
+
+u32 mi_ufshcd_get_local_unipro_ver(struct ufs_hba *hba);
 
 static inline u32 mi_ufshci_version(u32 major, u32 minor)
 {
