@@ -200,6 +200,9 @@ enum {
 	UFSHCD_CAN_QUEUE	= 32 - UFSHCD_NUM_RESERVED,
 };
 
+static int ufshcd_wb_toggle_buf_flush(struct ufs_hba *hba, bool enable);
+static void ufshcd_wb_toggle_buf_flush_during_h8(struct ufs_hba *hba, bool set);
+
 static const char *const ufshcd_state_name[] = {
 	[UFSHCD_STATE_RESET]			= "reset",
 	[UFSHCD_STATE_OPERATIONAL]		= "operational",
@@ -209,9 +212,6 @@ static const char *const ufshcd_state_name[] = {
 };
 
 /* UFSHCD error handling flags */
-enum {
-	UFSHCD_EH_IN_PROGRESS = (1 << 0),
-};
 
 /* UFSHCD UIC layer error flags */
 enum {

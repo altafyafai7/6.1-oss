@@ -65,6 +65,7 @@
 #define UFSHCI_QUIRK_SKIP_MANUAL_WB_FLUSH_CTRL		0x100000
 
 #define UFSHCD_ANDROID_QUIRK_CUSTOM_PA_TACTIVATE	0x1
+#define UFSHCD_ANDROID_QUIRK_KEYS_IN_PRDT		0x2
 
 /* Used to differentiate the power management options */
 enum ufs_pm_op {
@@ -149,8 +150,8 @@ struct ufs_pwr_mode_info {
 
 struct ufshcd_lrb {
 	struct utp_transfer_req_desc *utr_descriptor_ptr;
-	struct utp_transfer_cmd_desc *ucd_req_ptr;
-	struct utp_transfer_cmd_desc *ucd_rsp_ptr;
+	struct utp_upiu_req *ucd_req_ptr;
+	struct utp_upiu_rsp *ucd_rsp_ptr;
 	dma_addr_t utr_desc_dma_addr;
 	dma_addr_t ucd_req_dma_addr;
 	dma_addr_t ucd_rsp_dma_addr;
@@ -162,6 +163,10 @@ struct ufshcd_lrb {
 	bool intr_cmd;
 	union ufs_crypto_cfg_entry crypto_cfg;
 	bool crypto_enabled;
+	int crypto_key_slot;
+	u64 data_unit_num;
+	struct ufshcd_sg_entry *ucd_prdt_ptr;
+	dma_addr_t ucd_prdt_dma_addr;
 
 	ktime_t compl_time_stamp;
 	ktime_t queue_time_stamp;
@@ -274,6 +279,17 @@ struct ufs_hba_monitor {
 	u32  lat_bins[UFS_HBA_MONITOR_QUEUES_COUNT][10];
 	u32  nr_queued[UFS_HBA_MONITOR_QUEUES_COUNT];
 	bool enabled;
+
+	unsigned long chunk_size;
+	unsigned long nr_sec_rw[2];
+	ktime_t total_busy[2];
+	unsigned long nr_req[2];
+	ktime_t lat_sum[2];
+	ktime_t lat_max[2];
+	ktime_t lat_min[2];
+	u32 nr_queued_monitor[2];
+	ktime_t busy_start_ts[2];
+	ktime_t enabled_ts;
 };
 
 struct ufshpb_dev_info {
@@ -291,6 +307,8 @@ enum ufshcd_state {
 	UFSHCD_STATE_OPERATIONAL,
 	UFSHCD_STATE_EH_BEGIN_RESUME,
 	UFSHCD_STATE_EH_SCHEDULED,
+	UFSHCD_STATE_EH_SCHEDULED_FATAL,
+	UFSHCD_STATE_EH_SCHEDULED_NON_FATAL,
 	UFSHCD_STATE_ERROR,
 	UFSHCD_STATE_DEVICE_LOSS,
 };
@@ -308,6 +326,8 @@ enum ufshcd_caps {
 	UFSHCD_CAP_MCQ					= 1 << 5,
 	UFSHCD_CAP_KEEP_AUTO_BKOPS_ENABLED_EXCEPT_SUSPEND = 1 << 6,
 	UFSHCD_CAP_WB_EN				= 1 << 7,
+	UFSHCD_CAP_DEEPSLEEP				= 1 << 8,
+	UFSHCD_CAP_WB_WITH_CLK_SCALING			= 1 << 9,
 };
 
 struct ufshcd_res_info {
@@ -592,6 +612,29 @@ static inline bool ufshcd_is_wb_allowed(struct ufs_hba *hba)
 {
 	return hba->caps & UFSHCD_CAP_WB_EN;
 }
+
+static inline size_t ufshcd_sg_entry_size(struct ufs_hba *hba)
+{
+	return hba->sg_entry_size;
+}
+
+static inline bool ufshcd_is_auto_hibern8_supported(struct ufs_hba *hba)
+{
+	return (hba->capabilities & MASK_AUTO_HIBERN8_SUPPORT) &&
+		!(hba->quirks & UFSHCD_QUIRK_BROKEN_AUTO_HIBERN8);
+}
+
+static inline bool ufshcd_is_clkscaling_supported(struct ufs_hba *hba)
+{
+	return hba->caps & UFSHCD_CAP_CLK_SCALING;
+}
+
+static inline bool ufshcd_enable_wb_if_scaling_up(struct ufs_hba *hba)
+{
+	return hba->caps & UFSHCD_CAP_WB_WITH_CLK_SCALING;
+}
+
+int ufshcd_wb_toggle_buf_flush(struct ufs_hba *hba, bool enable);
 
 void ufshcd_remove(struct ufs_hba *hba);
 int ufshcd_system_suspend(struct device *dev);

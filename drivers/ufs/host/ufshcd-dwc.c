@@ -115,11 +115,11 @@ static int ufshcd_dwc_connection_setup(struct ufs_hba *hba)
  * Returns 0 on success, non-zero value on failure
  */
 int ufshcd_dwc_link_startup_notify(struct ufs_hba *hba,
-					enum ufs_notify_change_status status)
+					bool status)
 {
 	int err = 0;
 
-	if (status == PRE_CHANGE) {
+	if (status == false) {
 		ufshcd_dwc_program_clk_div(hba, DWC_UFS_REG_HCLKDIV_DIV_125);
 
 		err = ufshcd_vops_phy_initialization(hba);

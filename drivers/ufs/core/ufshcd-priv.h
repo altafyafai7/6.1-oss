@@ -5,6 +5,7 @@
 
 #include <linux/pm_runtime.h>
 #include <ufs/ufshcd.h>
+#include <scsi/scsi_device.h>
 
 static inline bool ufshcd_is_user_access_allowed(struct ufs_hba *hba)
 {
