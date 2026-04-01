@@ -64,6 +64,8 @@
 
 #define UFSHCI_QUIRK_SKIP_MANUAL_WB_FLUSH_CTRL		0x100000
 #define UFSHCD_QUIRK_BROKEN_AUTO_HIBERN8		0x200000
+#define UFSHCD_QUIRK_PRDT_BYTE_GRAN			0x400000
+#define UFSHCI_QUIRK_BROKEN_REQ_LIST_CLR		0x800000
 
 #define UFSHCD_ANDROID_QUIRK_CUSTOM_PA_TACTIVATE	0x1
 #define UFSHCD_ANDROID_QUIRK_KEYS_IN_PRDT		0x2
@@ -153,7 +155,7 @@ struct ufshcd_lrb {
 	struct utp_transfer_req_desc *utr_descriptor_ptr;
 	struct utp_upiu_req *ucd_req_ptr;
 	struct utp_upiu_rsp *ucd_rsp_ptr;
-	dma_addr_t utr_desc_dma_addr;
+	dma_addr_t utrd_dma_addr;
 	dma_addr_t ucd_req_dma_addr;
 	dma_addr_t ucd_rsp_dma_addr;
 
@@ -171,6 +173,8 @@ struct ufshcd_lrb {
 
 	ktime_t compl_time_stamp;
 	ktime_t queue_time_stamp;
+	u64 issue_time_stamp_local_clock;
+	u64 compl_time_stamp_local_clock;
 	ANDROID_KABI_RESERVE(1);
 };
 
@@ -192,6 +196,7 @@ struct ufs_clk_info {
 	const char *name;
 	unsigned int min_freq;
 	unsigned int max_freq;
+	unsigned int curr_freq;
 	bool enabled;
 	bool keep_lp;
 };
@@ -225,6 +230,8 @@ enum ufs_event_type {
 	UFS_EVT_DEV_RESET,
 	UFS_EVT_HOST_RESET,
 	UFS_EVT_ABORT,
+	UFS_EVT_WL_RES_ERR,
+	UFS_EVT_WL_SUSP_ERR,
 
 	UFS_EVT_CNT
 };
@@ -232,6 +239,8 @@ enum ufs_event_type {
 struct ufs_stats {
 	u32 hibern8_exit_cnt;
 	u32 last_intr_status;
+	u64 last_hibern8_exit_tstamp;
+	u64 last_intr_ts;
 	struct ufs_event_hist event[UFS_EVT_CNT];
 };
 
@@ -368,6 +377,7 @@ struct ufs_hw_queue {
 	u32 cq_tail_slot;
 	u32 cq_head_slot;
 	u32 max_entries;
+	u32 id;
 	spinlock_t sq_lock;
 	spinlock_t cq_lock;
 };
@@ -642,5 +652,7 @@ int ufshcd_system_suspend(struct device *dev);
 int ufshcd_system_resume(struct device *dev);
 int ufshcd_runtime_suspend(struct device *dev);
 int ufshcd_runtime_resume(struct device *dev);
+
+void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
 
 #endif /* _UFSHCD_H */
