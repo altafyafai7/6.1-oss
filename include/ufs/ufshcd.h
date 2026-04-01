@@ -62,6 +62,8 @@
 #define UFSHCD_QUIRK_HIBERN8_EXIT_WITH_LCC		0x40000
 #define UFSHCD_QUIRK_REINIT_ON_DEV_LOSS			0x80000
 
+#define UFSHCI_QUIRK_SKIP_MANUAL_WB_FLUSH_CTRL		0x100000
+
 #define UFSHCD_ANDROID_QUIRK_CUSTOM_PA_TACTIVATE	0x1
 
 /* Used to differentiate the power management options */
@@ -69,6 +71,11 @@ enum ufs_pm_op {
 	UFS_RUNTIME_PM,
 	UFS_SYSTEM_PM,
 	UFS_SHUTDOWN_PM,
+};
+
+enum ufs_notify_change_status {
+	PRE_CHANGE,
+	POST_CHANGE,
 };
 
 /* Host <-> Device UniPro Link state */
@@ -299,6 +306,8 @@ enum ufshcd_caps {
 	UFSHCD_CAP_AUTO_BKOPS_WITH_COMMAND_LOGGING	= 1 << 3,
 	UFSHCD_CAP_INTR_AGGR				= 1 << 4,
 	UFSHCD_CAP_MCQ					= 1 << 5,
+	UFSHCD_CAP_KEEP_AUTO_BKOPS_ENABLED_EXCEPT_SUSPEND = 1 << 6,
+	UFSHCD_CAP_WB_EN				= 1 << 7,
 };
 
 struct ufshcd_res_info {
@@ -316,6 +325,40 @@ struct ufshcd_mcq_opr_info_t {
 	unsigned long offset;
 	unsigned long stride;
 	void __iomem *base;
+};
+
+struct ufs_hba;
+
+struct ufs_hba_variant_ops {
+	const char *name;
+	int	(*init)(struct ufs_hba *);
+	void	(*exit)(struct ufs_hba *);
+	u32	(*get_ufs_hci_version)(struct ufs_hba *);
+	int	(*clk_scale_notify)(struct ufs_hba *, bool, enum ufs_notify_change_status);
+	void	(*event_notify)(struct ufs_hba *, enum ufs_event_type, void *);
+	int	(*setup_clocks)(struct ufs_hba *, bool, enum ufs_notify_change_status);
+	int	(*setup_regulators)(struct ufs_hba *, bool);
+	int	(*hce_enable_notify)(struct ufs_hba *, bool);
+	int	(*link_startup_notify)(struct ufs_hba *, bool);
+	int	(*pwr_change_notify)(struct ufs_hba *, enum ufs_notify_change_status, struct ufs_pa_layer_attr *, struct ufs_pa_layer_attr *);
+	void	(*setup_xfer_req)(struct ufs_hba *, int, bool);
+	void	(*setup_task_mgmt)(struct ufs_hba *, int, u8);
+	void	(*hibern8_notify)(struct ufs_hba *, enum uic_cmd_dme, enum ufs_notify_change_status);
+	int	(*apply_dev_quirks)(struct ufs_hba *);
+	void	(*fixup_dev_quirks)(struct ufs_hba *);
+	int	(*suspend)(struct ufs_hba *, enum ufs_pm_op, enum ufs_notify_change_status);
+	int	(*resume)(struct ufs_hba *, enum ufs_pm_op);
+	void	(*dbg_register_dump)(struct ufs_hba *);
+	int	(*phy_initialization)(struct ufs_hba *);
+	int	(*device_reset)(struct ufs_hba *);
+	void	(*config_scaling_param)(struct ufs_hba *, struct devfreq_dev_profile *, struct devfreq_simple_ondemand_data *);
+	int	(*program_key)(struct ufs_hba *, const union ufs_crypto_cfg_entry *, int);
+	void	(*reinit_notify)(struct ufs_hba *);
+	int	(*mcq_config_resource)(struct ufs_hba *);
+	int	(*get_hba_mac)(struct ufs_hba *);
+	int	(*op_runtime_config)(struct ufs_hba *);
+	int	(*get_outstanding_cqs)(struct ufs_hba *, unsigned long *);
+	int	(*config_esi)(struct ufs_hba *);
 };
 
 struct ufs_hba {
@@ -522,5 +565,16 @@ static inline void *ufshcd_get_variant(struct ufs_hba *hba)
 
 #define ufshcd_is_hs_mode(pwr_info) \
 	((pwr_info)->pwr_rx == FAST_MODE || (pwr_info)->pwr_rx == FASTAUTO_MODE)
+
+static inline bool ufshcd_is_wb_allowed(struct ufs_hba *hba)
+{
+	return hba->caps & UFSHCD_CAP_WB_EN;
+}
+
+void ufshcd_remove(struct ufs_hba *hba);
+int ufshcd_system_suspend(struct device *dev);
+int ufshcd_system_resume(struct device *dev);
+int ufshcd_runtime_suspend(struct device *dev);
+int ufshcd_runtime_resume(struct device *dev);
 
 #endif /* _UFSHCD_H */

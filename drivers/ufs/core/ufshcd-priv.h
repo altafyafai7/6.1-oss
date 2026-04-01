@@ -111,10 +111,24 @@ static inline const char *ufshcd_get_var_name(struct ufs_hba *hba)
 	return "";
 }
 
+static inline int ufshcd_vops_init(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->init)
+		return hba->vops->init(hba);
+	return 0;
+}
+
 static inline void ufshcd_vops_exit(struct ufs_hba *hba)
 {
 	if (hba->vops && hba->vops->exit)
 		return hba->vops->exit(hba);
+}
+
+static inline int ufshcd_vops_phy_initialization(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->phy_initialization)
+		return hba->vops->phy_initialization(hba);
+	return 0;
 }
 
 static inline u32 ufshcd_vops_get_ufs_hci_version(struct ufs_hba *hba)
