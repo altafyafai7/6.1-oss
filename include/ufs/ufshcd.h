@@ -329,6 +329,28 @@ struct ufshcd_mcq_opr_info_t {
 
 struct ufs_hba;
 
+struct ufs_pm_lvl_states {
+	enum ufs_dev_pwr_mode dev_state;
+	enum uic_link_state link_state;
+};
+
+struct ufs_hw_queue {
+	void __iomem *mcq_sq_head;
+	void __iomem *mcq_sq_tail;
+	void __iomem *mcq_cq_head;
+	void __iomem *mcq_cq_tail;
+	void *sqe_base_addr;
+	dma_addr_t sqe_dma_addr;
+	void *cqe_base_addr;
+	dma_addr_t cqe_dma_addr;
+	u32 sq_tail_slot;
+	u32 cq_tail_slot;
+	u32 cq_head_slot;
+	u32 max_entries;
+	spinlock_t sq_lock;
+	spinlock_t cq_lock;
+};
+
 struct ufs_hba_variant_ops {
 	const char *name;
 	int	(*init)(struct ufs_hba *);
