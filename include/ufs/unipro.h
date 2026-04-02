@@ -330,4 +330,10 @@ enum {
 };
 #endif
 
+struct ufs_hba;
+int ufshcd_dme_get_attr(struct ufs_hba *hba, u32 attr_sel,
+		       u32 *mib_val, u8 peer);
+int ufshcd_dme_set_attr(struct ufs_hba *hba, u32 attr_sel,
+		       u8 attr_set, u32 mib_val, u8 peer);
+
 #endif /* _UNIPRO_H_ */

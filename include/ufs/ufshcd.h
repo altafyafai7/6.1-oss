@@ -270,8 +270,8 @@ struct ufs_clk_gating {
 
 struct ufs_clk_scaling {
 	struct devfreq_dev_status prev_status;
-	struct delayed_work suspend_work;
-	struct delayed_work resume_work;
+	struct work_struct suspend_work;
+	struct work_struct resume_work;
 	struct work_struct ungate_work;
 	struct device_attribute enable_attr;
 	struct device_attribute window_attr;
@@ -290,6 +290,8 @@ struct ufs_clk_scaling {
 	bool suspend_on_no_request;
 	struct workqueue_struct *workq;
 	ktime_t window_start_t;
+	struct ufs_saved_pwr_info saved_pwr_info;
+	u32 min_gear;
 };
 
 #define UFS_HBA_MONITOR_QUEUES_COUNT 32
@@ -315,9 +317,16 @@ struct ufshpb_dev_info {
 	unsigned int num_user_queues;
 };
 
+struct ufs_saved_pwr_info {
+	struct ufs_pa_layer_attr info;
+	bool is_valid;
+};
+
 struct ufs_hba_variant_params {
 	struct ufs_pa_layer_attr dev_cap;
 	u16 hs_rate;
+	struct devfreq_dev_profile devfreq_profile;
+	struct devfreq_simple_ondemand_data ondemand_data;
 };
 
 enum ufshcd_state {
@@ -659,6 +668,12 @@ static inline void ufshcd_set_link_active(struct ufs_hba *hba)
 {
 	hba->uic_link_state = UIC_LINK_ACTIVE_STATE;
 }
+
+int ufshcd_config_pwr_mode(struct ufs_hba *hba,
+			struct ufs_pa_layer_attr *desired_pwr_mode);
+
+#define ufshcd_dme_get(hba, attr_sel, mib_val) \
+	ufshcd_dme_get_attr(hba, attr_sel, mib_val, DME_LOCAL)
 
 void ufshcd_remove(struct ufs_hba *hba);
 int ufshcd_system_suspend(struct device *dev);
