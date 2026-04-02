@@ -665,6 +665,226 @@ static inline void *ufshcd_get_variant(struct ufs_hba *hba)
 	return hba->priv;
 }
 
+/* Wrapper functions for safely calling variant operations */
+static inline const char *ufshcd_get_var_name(struct ufs_hba *hba)
+{
+	if (hba->vops)
+		return hba->vops->name;
+	return "";
+}
+
+static inline int ufshcd_vops_init(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->init)
+		return hba->vops->init(hba);
+	return 0;
+}
+
+static inline void ufshcd_vops_exit(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->exit)
+		return hba->vops->exit(hba);
+}
+
+static inline int ufshcd_vops_phy_initialization(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->phy_initialization)
+		return hba->vops->phy_initialization(hba);
+	return 0;
+}
+
+static inline u32 ufshcd_vops_get_ufs_hci_version(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->get_ufs_hci_version)
+		return hba->vops->get_ufs_hci_version(hba);
+
+	return ufshcd_readl(hba, REG_UFS_VERSION);
+}
+
+static inline int ufshcd_vops_clk_scale_notify(struct ufs_hba *hba,
+			bool up, enum ufs_notify_change_status status)
+{
+	if (hba->vops && hba->vops->clk_scale_notify)
+		return hba->vops->clk_scale_notify(hba, up, status);
+	return 0;
+}
+
+static inline void ufshcd_vops_event_notify(struct ufs_hba *hba,
+					    enum ufs_event_type evt,
+					    void *data)
+{
+	if (hba->vops && hba->vops->event_notify)
+		hba->vops->event_notify(hba, evt, data);
+}
+
+static inline int ufshcd_vops_setup_clocks(struct ufs_hba *hba, bool on,
+					enum ufs_notify_change_status status)
+{
+	if (hba->vops && hba->vops->setup_clocks)
+		return hba->vops->setup_clocks(hba, on, status);
+	return 0;
+}
+
+static inline int ufshcd_vops_hce_enable_notify(struct ufs_hba *hba,
+						bool status)
+{
+	if (hba->vops && hba->vops->hce_enable_notify)
+		return hba->vops->hce_enable_notify(hba, status);
+
+	return 0;
+}
+static inline int ufshcd_vops_link_startup_notify(struct ufs_hba *hba,
+						bool status)
+{
+	if (hba->vops && hba->vops->link_startup_notify)
+		return hba->vops->link_startup_notify(hba, status);
+
+	return 0;
+}
+
+static inline int ufshcd_vops_pwr_change_notify(struct ufs_hba *hba,
+				  enum ufs_notify_change_status status,
+				  struct ufs_pa_layer_attr *dev_max_params,
+				  struct ufs_pa_layer_attr *dev_req_params)
+{
+	if (hba->vops && hba->vops->pwr_change_notify)
+		return hba->vops->pwr_change_notify(hba, status,
+					dev_max_params, dev_req_params);
+
+	return -ENOTSUPP;
+}
+
+static inline void ufshcd_vops_setup_task_mgmt(struct ufs_hba *hba,
+					int tag, u8 tm_function)
+{
+	if (hba->vops && hba->vops->setup_task_mgmt)
+		return hba->vops->setup_task_mgmt(hba, tag, tm_function);
+}
+
+static inline void ufshcd_vops_hibern8_notify(struct ufs_hba *hba,
+					enum uic_cmd_dme cmd,
+					enum ufs_notify_change_status status)
+{
+	if (hba->vops && hba->vops->hibern8_notify)
+		return hba->vops->hibern8_notify(hba, cmd, status);
+}
+
+static inline int ufshcd_vops_apply_dev_quirks(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->apply_dev_quirks)
+		return hba->vops->apply_dev_quirks(hba);
+	return 0;
+}
+
+static inline void ufshcd_vops_fixup_dev_quirks(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->fixup_dev_quirks)
+		hba->vops->fixup_dev_quirks(hba);
+}
+
+static inline int ufshcd_vops_suspend(struct ufs_hba *hba, enum ufs_pm_op op,
+				enum ufs_notify_change_status status)
+{
+	if (hba->vops && hba->vops->suspend)
+		return hba->vops->suspend(hba, op, status);
+
+	return 0;
+}
+
+static inline int ufshcd_vops_resume(struct ufs_hba *hba, enum ufs_pm_op op)
+{
+	if (hba->vops && hba->vops->resume)
+		return hba->vops->resume(hba, op);
+
+	return 0;
+}
+
+static inline void ufshcd_vops_dbg_register_dump(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->dbg_register_dump)
+		hba->vops->dbg_register_dump(hba);
+}
+
+static inline int ufshcd_vops_device_reset(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->device_reset)
+		return hba->vops->device_reset(hba);
+
+	return 0;
+}
+
+static inline void ufshcd_vops_config_scaling_param(struct ufs_hba *hba,
+		struct devfreq_dev_profile *profile,
+		struct devfreq_simple_ondemand_data *data)
+{
+	if (hba->vops && hba->vops->config_scaling_param)
+		hba->vops->config_scaling_param(hba, profile, data);
+}
+
+static inline int ufshcd_vops_program_key(struct ufs_hba *hba,
+				const union ufs_crypto_cfg_entry *cfg, int slot)
+{
+	if (hba->vops && hba->vops->program_key)
+		return hba->vops->program_key(hba, cfg, slot);
+
+	return 0;
+}
+
+static inline void ufshcd_vops_reinit_notify(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->reinit_notify)
+		hba->vops->reinit_notify(hba);
+}
+
+static inline int ufshcd_vops_mcq_config_resource(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->mcq_config_resource)
+		return hba->vops->mcq_config_resource(hba);
+
+	return 0;
+}
+
+static inline int ufshcd_vops_get_hba_mac(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->get_hba_mac)
+		return hba->vops->get_hba_mac(hba);
+
+	return 0;
+}
+
+static inline int ufshcd_vops_op_runtime_config(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->op_runtime_config)
+		return hba->vops->op_runtime_config(hba);
+
+	return 0;
+}
+
+static inline int ufshcd_vops_get_outstanding_cqs(struct ufs_hba *hba,
+						 unsigned long *ocqs)
+{
+	if (hba->vops && hba->vops->get_outstanding_cqs)
+		return hba->vops->get_outstanding_cqs(hba, ocqs);
+
+	return 0;
+}
+
+static inline int ufshcd_vops_config_esi(struct ufs_hba *hba)
+{
+	if (hba->vops && hba->vops->config_esi)
+		return hba->vops->config_esi(hba);
+
+	return 0;
+}
+
+static inline int ufshcd_vops_setup_regulators(struct ufs_hba *hba, bool status)
+{
+	if (hba->vops && hba->vops->setup_regulators)
+		return hba->vops->setup_regulators(hba, status);
+
+	return 0;
+}
+
 #define ufshcd_is_hs_mode(pwr_info) \
 	((pwr_info)->pwr_rx == FAST_MODE || (pwr_info)->pwr_rx == FASTAUTO_MODE)
 
