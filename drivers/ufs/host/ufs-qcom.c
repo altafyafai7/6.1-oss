@@ -16,7 +16,6 @@
 #include <linux/devfreq.h>
 #include <linux/msi.h>
 #include <linux/irq.h>
-#include <linux/platform_msi.h>
 
 struct msi_desc;
 struct msi_msg;

@@ -633,6 +633,12 @@ struct ufs_hba {
 	struct ufs_hw_queue *dev_cmd_queue;
 	struct ufshcd_mcq_opr_info_t mcq_opr[OPR_MAX];
 
+#ifdef CONFIG_DEBUG_FS
+	struct dentry *debugfs_root;
+	u32 debugfs_ee_rate_limit_ms;
+	struct delayed_work debugfs_ee_work;
+#endif
+
 	ANDROID_KABI_RESERVE(2);
 };
 
