@@ -41,6 +41,9 @@
 #include <linux/workqueue.h>
 #include <linux/blk-crypto-profile.h>
 
+#define UFSHCD "ufshcd"
+#define UFSHCD_DRIVER_VERSION "0.2"
+
 #define UFSHCD_QUIRK_BROKEN_LCC				0x1
 #define UFSHCD_QUIRK_DME_PEER_GET_CONFIG_ATTR_TIMEOUT	0x2
 #define UFSHCD_QUIRK_BROKEN_PA_RXHSUNTERMINADAPT	0x4
@@ -73,6 +76,11 @@
 #define UFSHCD_QUIRK_HIBERN_FASTAUTO			0x20000000
 #define UFSHCD_QUIRK_SKIP_DEF_UNIPRO_TIMEOUT_SETTING	0x40000000
 #define UFSHCI_QUIRK_BROKEN_HCE				UFSHCD_QUIRK_BROKEN_HCE
+#define UFSHCI_QUIRK_SKIP_RESET_INTR_AGGR		UFSHCD_QUIRK_SKIP_RESET_INTR_AGGR
+#define UFSHCD_QUIRK_MCQ_BROKEN_INTR			UFSHCD_QUIRK_MCQ_BROKEN_INTR_CONF
+#define UFSHCD_QUIRK_PERFORM_LINK_STARTUP_ONCE		(1ULL << 31)
+#define UFSHCD_QUIRK_4KB_DMA_ALIGNMENT			(1ULL << 32)
+#define UFSHCD_QUIRK_BROKEN_OCS_FATAL_ERROR		(1ULL << 33)
 
 #define DME_LOCAL	0
 #define DME_PEER	1
@@ -219,6 +227,7 @@ struct ufs_clk_info {
 	unsigned int curr_freq;
 	bool enabled;
 	bool keep_lp;
+	bool keep_link_active;
 };
 
 #define UFS_EVENT_HIST_SIZE 8
@@ -346,6 +355,7 @@ struct ufs_hba_variant_params {
 	struct devfreq_dev_profile devfreq_profile;
 	struct devfreq_simple_ondemand_data ondemand_data;
 	u32 hba_enable_delay_us;
+	u32 wb_flush_threshold;
 };
 
 enum ufshcd_state {
@@ -374,6 +384,8 @@ enum ufshcd_caps {
 	UFSHCD_CAP_WB_EN				= 1 << 7,
 	UFSHCD_CAP_DEEPSLEEP				= 1 << 8,
 	UFSHCD_CAP_WB_WITH_CLK_SCALING			= 1 << 9,
+	UFSHCD_CAP_TEMP_NOTIF				= 1 << 10,
+	UFSHCD_CAP_RPM_AUTOSUSPEND			= 1 << 11,
 };
 
 struct ufshcd_res_info {
@@ -504,9 +516,9 @@ struct ufs_hba {
 	bool is_irq_enabled;
 	enum ufs_ref_clk_freq dev_ref_clk_freq;
 
-	unsigned int quirks;	/* Deviations from standard UFSHCI spec. */
-
+	u64 quirks;	/* Deviations from standard UFSHCI spec. */
 	unsigned int android_quirks; /* for UFSHCD_ANDROID_QUIRK_* flags */
+
 
 	/* Device deviations from standard UFS device spec. */
 	unsigned int dev_quirks;

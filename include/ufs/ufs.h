@@ -652,6 +652,7 @@ struct ufs_vreg {
 	bool is_always_on;
 	bool enabled;
 	int max_uA;
+	bool always_on;
 };
 
 struct ufs_vreg_info {
