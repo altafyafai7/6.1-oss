@@ -30,6 +30,7 @@
 
 #include <linux/bitfield.h>
 #include <linux/completion.h>
+#include <linux/msi.h>
 #include <linux/device.h>
 #include <linux/device-mapper.h>
 #include <linux/devfreq.h>
@@ -40,6 +41,17 @@
 #include <linux/types.h>
 #include <linux/workqueue.h>
 #include <linux/blk-crypto-profile.h>
+
+enum ufshcd_mcq_opr {
+	OPR_SQD,
+	OPR_SQIS,
+	OPR_CQD,
+	OPR_CQIS,
+	OPR_MAX,
+};
+
+#define ufsmcq_writel(hba, val, reg)	writel((val), (hba)->mmio_base + (reg))
+#define ufsmcq_writelx(hba, val, reg)	writel((val), (hba)->mmio_base + (reg))
 
 #define UFSHCD "ufshcd"
 #define UFSHCD_DRIVER_VERSION "0.2"
@@ -81,6 +93,7 @@
 #define UFSHCD_QUIRK_PERFORM_LINK_STARTUP_ONCE		(1ULL << 31)
 #define UFSHCD_QUIRK_4KB_DMA_ALIGNMENT			(1ULL << 32)
 #define UFSHCD_QUIRK_BROKEN_OCS_FATAL_ERROR		(1ULL << 33)
+#define UFSHCD_QUIRK_MCQ_BROKEN_RTC			(1ULL << 34)
 
 #define DME_LOCAL	0
 #define DME_PEER	1
@@ -398,12 +411,6 @@ struct ufshcd_res_info {
 	struct resource *resource;
 };
 
-enum ufshcd_mcq_opr {
-	OPR_SQD,
-	OPR_CQD,
-	OPR_MAX,
-};
-
 struct ufshcd_mcq_opr_info_t {
 	unsigned long offset;
 	unsigned long stride;
@@ -418,6 +425,7 @@ struct ufs_pm_lvl_states {
 };
 
 struct ufs_hw_queue {
+	struct mutex sq_mutex;
 	void __iomem *mcq_sq_head;
 	void __iomem *mcq_sq_tail;
 	void __iomem *mcq_cq_head;
@@ -1030,5 +1038,11 @@ void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
 
 int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 		     const char *prefix);
+
+void ufshcd_mcq_write_cqis(struct ufs_hba *hba, u32 val, int i);
+unsigned long ufshcd_mcq_poll_cqe_lock(struct ufs_hba *hba,
+				       struct ufs_hw_queue *hwq);
+void ufshcd_mcq_config_esi(struct ufs_hba *hba, struct msi_msg *msg);
+void ufshcd_mcq_enable_esi(struct ufs_hba *hba);
 
 #endif /* _UFSHCD_H */

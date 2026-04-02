@@ -14,6 +14,40 @@
 #include <linux/gpio/consumer.h>
 #include <linux/reset-controller.h>
 #include <linux/devfreq.h>
+#include <linux/msi.h>
+#include <linux/irq.h>
+#include <linux/platform_msi.h>
+
+struct msi_desc;
+struct msi_msg;
+
+typedef void (*irq_write_msi_msg_t)(struct msi_desc *desc,
+				    struct msi_msg *msg);
+
+#ifndef msi_desc_to_dev
+#define msi_desc_to_dev(desc) ((desc)->dev)
+#endif
+
+#ifndef msi_for_each_desc
+#define msi_for_each_desc(desc, dev, filter) \
+	for ((desc) = msi_first_desc((dev), (filter)); (desc); \
+	     (desc) = msi_next_desc((dev), (filter)))
+#endif
+
+#ifndef MSI_DESC_ALL
+enum {
+	MSI_DESC_ALL,
+	MSI_DESC_NOTASSOCIATED,
+	MSI_DESC_ASSOCIATED,
+};
+#endif
+
+struct msi_desc *msi_first_desc(struct device *dev, enum msi_desc_filter filter);
+struct msi_desc *msi_next_desc(struct device *dev, enum msi_desc_filter filter);
+
+int platform_msi_domain_alloc_irqs(struct device *dev, unsigned int nvec,
+				   irq_write_msi_msg_t write_msi_msg);
+void platform_msi_domain_free_irqs(struct device *dev);
 
 #include <ufs/ufshcd.h>
 #include "ufshcd-pltfrm.h"

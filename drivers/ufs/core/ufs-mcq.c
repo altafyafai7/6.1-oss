@@ -11,6 +11,10 @@
 #include <linux/dma-mapping.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
+#include <linux/msi.h>
+#include <linux/irq.h>
+#include <linux/mutex.h>
+#include <ufs/ufshcd.h>
 #include "ufshcd-priv.h"
 #include <linux/delay.h>
 #include <scsi/scsi_cmnd.h>
@@ -133,7 +137,7 @@ int ufshcd_mcq_decide_queue_depth(struct ufs_hba *hba)
 	int mac;
 
 	/* Mandatory to implement get_hba_mac() */
-	mac = ufshcd_mcq_vops_get_hba_mac(hba);
+	mac = ufshcd_vops_get_hba_mac(hba);
 	if (mac < 0) {
 		dev_err(hba->dev, "Failed to get mac, err=%d\n", mac);
 		return mac;
@@ -429,7 +433,7 @@ int ufshcd_mcq_init(struct ufs_hba *hba)
 	if (ret)
 		return ret;
 
-	ret = ufshcd_mcq_vops_op_runtime_config(hba);
+	ret = ufshcd_vops_op_runtime_config(hba);
 	if (ret) {
 		dev_err(hba->dev, "Operation runtime config failed, ret=%d\n",
 			ret);
