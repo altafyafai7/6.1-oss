@@ -156,9 +156,9 @@ static ssize_t auto_hibern8_show(struct device *dev,
 		return -EOPNOTSUPP;
 
 	pm_runtime_get_sync(hba->dev);
-	ufshcd_hold(hba, false);
+	mi_ufshcd_hold(hba, false);
 	ahit = ufshcd_readl(hba, REG_AUTO_HIBERNATE_IDLE_TIMER);
-	ufshcd_release(hba);
+	mi_ufshcd_release(hba);
 	pm_runtime_put_sync(hba->dev);
 
 	return sysfs_emit(buf, "%d\n", ufshcd_ahit_to_us(ahit));
