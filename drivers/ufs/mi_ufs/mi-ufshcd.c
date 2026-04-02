@@ -32,6 +32,7 @@
 #include <scsi/scsi_status.h>
 #include <trace/events/ufs.h>
 #include "../core/ufshcd-priv.h"
+#include <ufs/ufs_quirks.h>
 
 #include <trace/hooks/ufshcd.h>
 
@@ -155,11 +156,6 @@ int mi_ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 
 	return 0;
 }
-
-/* UFSHCD error handling flags */
-enum {
-	UFSHCD_EH_IN_PROGRESS = (1 << 0),
-};
 
 /* UFSHCD UIC layer error flags */
 enum {

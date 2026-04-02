@@ -635,6 +635,8 @@ struct ufs_hba {
 	struct ufs_hw_queue *dev_cmd_queue;
 	struct ufshcd_mcq_opr_info_t mcq_opr[OPR_MAX];
 
+	unsigned char desc_size[QUERY_DESC_IDN_MAX];
+
 #ifdef CONFIG_SCSI_UFS_CRYPTO
 	union ufs_crypto_capabilities crypto_capabilities;
 	u32 crypto_cfg_register;
@@ -1053,6 +1055,9 @@ void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
 
 int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 		     const char *prefix);
+
+void ufshcd_fixup_dev_quirks(struct ufs_hba *hba,
+			    const struct ufs_dev_quirk *fixups);
 
 int ufshcd_system_suspend(struct device *dev);
 int ufshcd_system_resume(struct device *dev);

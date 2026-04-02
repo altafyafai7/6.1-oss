@@ -9,7 +9,7 @@
  * Do NOT use this data structure in any out-of-tree driver since it is not
  * covered by the GKI.
  */
-struct ufshpb_dev_info {
+struct mi_ufshpb_dev_info {
 	int num_lu;
 	int rgn_size;
 	int srgn_size;
@@ -24,9 +24,8 @@ struct ufs_hba_add_info {
 	struct ufs_hba hba;
 	u32 reserved_slot;
 	struct request **tmf_rqs;
-	unsigned char desc_size[QUERY_DESC_IDN_MAX];
 #ifdef CONFIG_SCSI_UFS_HPB
-	struct ufshpb_dev_info hpb_dev;
+	struct mi_ufshpb_dev_info hpb_dev;
 #endif
 };
 
