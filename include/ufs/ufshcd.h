@@ -990,7 +990,7 @@ void ufshcd_auto_hibern8_enable(struct ufs_hba *hba);
 
 u32 ufshcd_get_local_unipro_ver(struct ufs_hba *hba);
 int ufshcd_disable_host_tx_lcc(struct ufs_hba *hba);
-void ufshcd_dme_configure_adapt(struct ufs_hba *hba, u32 gear, u8 adapt_val);
+int ufshcd_dme_configure_adapt(struct ufs_hba *hba, int agreed_gear, int adapt_val);
 
 static inline bool ufshcd_is_rpm_autosuspend_allowed(struct ufs_hba *hba)
 {
