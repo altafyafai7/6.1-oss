@@ -67,6 +67,12 @@
 #define UFSHCI_QUIRK_BROKEN_REQ_LIST_CLR		0x800000
 #define UFSHCD_QUIRK_PRDT_BYTE_GRAN			0x1000000
 #define UFSHCD_QUIRK_BROKEN_UIC_CMD			0x2000000
+#define UFSHCD_QUIRK_DELAY_BEFORE_DME_CMDS		0x4000000
+#define UFSHCD_QUIRK_DME_PEER_ACCESS_AUTO_MODE		0x8000000
+#define UFSHCD_QUIRK_BROKEN_PA_RXHSUNTERMCAP		0x10000000
+#define UFSHCD_QUIRK_HIBERN_FASTAUTO			0x20000000
+#define UFSHCD_QUIRK_SKIP_DEF_UNIPRO_TIMEOUT_SETTING	0x40000000
+#define UFSHCI_QUIRK_BROKEN_HCE				UFSHCD_QUIRK_BROKEN_HCE
 
 #define DME_LOCAL	0
 #define DME_PEER	1
@@ -153,7 +159,7 @@ struct ufs_pa_layer_attr {
 
 struct ufs_pwr_mode_info {
 	bool is_valid;
-	struct ufs_pa_layer_attr pwr_mode;
+	struct ufs_pa_layer_attr info;
 };
 
 struct ufshcd_lrb {
@@ -339,6 +345,7 @@ struct ufs_hba_variant_params {
 	u16 hs_rate;
 	struct devfreq_dev_profile devfreq_profile;
 	struct devfreq_simple_ondemand_data ondemand_data;
+	u32 hba_enable_delay_us;
 };
 
 enum ufshcd_state {
@@ -698,6 +705,12 @@ int ufshcd_config_pwr_mode(struct ufs_hba *hba,
 #define ufshcd_dme_get(hba, attr_sel, mib_val) \
 	ufshcd_dme_get_attr(hba, attr_sel, mib_val, DME_LOCAL)
 
+#define ufshcd_dme_peer_get(hba, attr_sel, mib_val) \
+	ufshcd_dme_get_attr(hba, attr_sel, mib_val, DME_PEER)
+
+#define ufshcd_dme_set(hba, attr_sel, mib_val) \
+	ufshcd_dme_set_attr(hba, attr_sel, ATTR_SET_NOR, mib_val, DME_LOCAL)
+
 static inline bool ufshcd_can_hibern8_during_gating(struct ufs_hba *hba)
 {
 	return hba->caps & UFSHCD_CAP_HIBERN8_WITH_CLK_GATING;
@@ -711,8 +724,14 @@ static inline bool ufshcd_is_clkgating_allowed(struct ufs_hba *hba)
 #define ufshcd_is_link_hibern8(hba) ((hba)->uic_link_state == UIC_LINK_HIBERN8_STATE)
 #define ufshcd_set_link_hibern8(hba) ((hba)->uic_link_state = UIC_LINK_HIBERN8_STATE)
 
+#define ufshcd_is_link_broken(hba) ((hba)->uic_link_state == UIC_LINK_BROKEN_STATE)
+#define ufshcd_set_link_broken(hba) ((hba)->uic_link_state = UIC_LINK_BROKEN_STATE)
+#define ufshcd_set_link_off(hba) ((hba)->uic_link_state = UIC_LINK_OFF_STATE)
+
 int ufshcd_uic_hibern8_enter(struct ufs_hba *hba);
 int ufshcd_uic_hibern8_exit(struct ufs_hba *hba);
+
+void ufshcd_auto_hibern8_enable(struct ufs_hba *hba);
 
 void ufshcd_remove(struct ufs_hba *hba);
 int ufshcd_system_suspend(struct device *dev);
