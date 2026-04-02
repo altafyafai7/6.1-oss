@@ -1051,4 +1051,9 @@ unsigned long ufshcd_mcq_poll_cqe_lock(struct ufs_hba *hba,
 void ufshcd_mcq_config_esi(struct ufs_hba *hba, struct msi_msg *msg);
 void ufshcd_mcq_enable_esi(struct ufs_hba *hba);
 
+int ufshcd_advanced_rpmb_req_handler(struct ufs_hba *hba, struct utp_upiu_req *req_upiu,
+			 struct utp_upiu_req *rsp_upiu, struct ufs_ehs *req_ehs,
+			 struct ufs_ehs *rsp_ehs, int sg_cnt, struct scatterlist *sg_list,
+			 enum dma_data_direction dir);
+
 #endif /* _UFSHCD_H */
