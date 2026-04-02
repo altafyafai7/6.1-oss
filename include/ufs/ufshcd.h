@@ -64,8 +64,12 @@
 
 #define UFSHCI_QUIRK_SKIP_MANUAL_WB_FLUSH_CTRL		0x100000
 #define UFSHCD_QUIRK_BROKEN_AUTO_HIBERN8		0x200000
-#define UFSHCD_QUIRK_PRDT_BYTE_GRAN			0x400000
 #define UFSHCI_QUIRK_BROKEN_REQ_LIST_CLR		0x800000
+#define UFSHCD_QUIRK_PRDT_BYTE_GRAN			0x1000000
+
+#define DME_LOCAL	0
+#define DME_PEER	1
+#define ATTR_SET_NOR	0
 
 #define UFSHCD_ANDROID_QUIRK_CUSTOM_PA_TACTIVATE	0x1
 #define UFSHCD_ANDROID_QUIRK_KEYS_IN_PRDT		0x2
@@ -282,6 +286,10 @@ struct ufs_clk_scaling {
 	bool is_scaling_up;
 	ktime_t busy_start_t;
 	ktime_t tot_busy_t;
+	int active_reqs;
+	bool suspend_on_no_request;
+	struct workqueue_struct *workq;
+	ktime_t window_start_t;
 };
 
 #define UFS_HBA_MONITOR_QUEUES_COUNT 32
@@ -646,6 +654,11 @@ static inline bool ufshcd_enable_wb_if_scaling_up(struct ufs_hba *hba)
 }
 
 int ufshcd_wb_toggle_buf_flush(struct ufs_hba *hba, bool enable);
+
+static inline void ufshcd_set_link_active(struct ufs_hba *hba)
+{
+	hba->uic_link_state = UIC_LINK_ACTIVE_STATE;
+}
 
 void ufshcd_remove(struct ufs_hba *hba);
 int ufshcd_system_suspend(struct device *dev);
