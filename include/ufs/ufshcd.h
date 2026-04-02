@@ -387,11 +387,15 @@ enum ufshcd_caps {
 	UFSHCD_CAP_TEMP_NOTIF				= 1 << 10,
 	UFSHCD_CAP_RPM_AUTOSUSPEND			= 1 << 11,
 	UFSHCD_CAP_AGGR_POWER_COLLAPSE			= 1 << 12,
+	UFSHCD_CAP_AUTO_BKOPS_SUSPEND			= 1 << 13,
+	UFSHCD_CAP_CRYPTO				= 1 << 14,
 };
 
 struct ufshcd_res_info {
 	void __iomem *base;
 	resource_size_t resource_size;
+	const char *name;
+	struct resource *resource;
 };
 
 enum ufshcd_mcq_opr {
@@ -460,7 +464,7 @@ struct ufs_hba_variant_ops {
 	int	(*get_hba_mac)(struct ufs_hba *);
 	int	(*op_runtime_config)(struct ufs_hba *);
 	int	(*get_outstanding_cqs)(struct ufs_hba *, unsigned long *);
-	int	(*config_esi)(struct ufs_hba *);
+	int	(*mcq_vops_config_esi)(struct ufs_hba *);
 };
 
 struct ufs_hba {
@@ -869,12 +873,12 @@ static inline int ufshcd_vops_get_outstanding_cqs(struct ufs_hba *hba,
 	return 0;
 }
 
-static inline int ufshcd_vops_config_esi(struct ufs_hba *hba)
+static inline int ufshcd_mcq_vops_config_esi(struct ufs_hba *hba)
 {
-	if (hba->vops && hba->vops->config_esi)
-		return hba->vops->config_esi(hba);
+	if (hba->vops && hba->vops->mcq_vops_config_esi)
+		return hba->vops->mcq_vops_config_esi(hba);
 
-	return 0;
+	return -EOPNOTSUPP;
 }
 
 static inline int ufshcd_vops_setup_regulators(struct ufs_hba *hba, bool status)
@@ -925,6 +929,21 @@ static inline bool ufshcd_enable_wb_if_scaling_up(struct ufs_hba *hba)
 	return hba->caps & UFSHCD_CAP_WB_WITH_CLK_SCALING;
 }
 
+static inline bool ufshcd_can_autobkops_during_suspend(struct ufs_hba *hba)
+{
+	return hba->caps & UFSHCD_CAP_AUTO_BKOPS_SUSPEND;
+}
+
+static inline bool ufshcd_is_ufs_dev_deepsleep(struct ufs_hba *hba)
+{
+	return hba->curr_dev_pwr_mode == UFS_DEEPSLEEP_PWR_MODE;
+}
+
+static inline void ufshcd_set_sg_entry_size(struct ufs_hba *hba, size_t size)
+{
+	hba->sg_entry_size = size;
+}
+
 int ufshcd_wb_toggle_buf_flush(struct ufs_hba *hba, bool enable);
 
 static inline void ufshcd_set_link_active(struct ufs_hba *hba)
@@ -969,6 +988,10 @@ int ufshcd_uic_hibern8_exit(struct ufs_hba *hba);
 
 void ufshcd_auto_hibern8_enable(struct ufs_hba *hba);
 
+u32 ufshcd_get_local_unipro_ver(struct ufs_hba *hba);
+int ufshcd_disable_host_tx_lcc(struct ufs_hba *hba);
+void ufshcd_dme_configure_adapt(struct ufs_hba *hba, u32 gear, u8 adapt_val);
+
 static inline bool ufshcd_is_rpm_autosuspend_allowed(struct ufs_hba *hba)
 {
 	return hba->caps & UFSHCD_CAP_RPM_AUTOSUSPEND;
@@ -1004,5 +1027,8 @@ int ufshcd_runtime_suspend(struct device *dev);
 int ufshcd_runtime_resume(struct device *dev);
 
 void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
+
+int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
+		     const char *prefix);
 
 #endif /* _UFSHCD_H */
