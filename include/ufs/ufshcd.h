@@ -66,6 +66,7 @@
 #define UFSHCD_QUIRK_BROKEN_AUTO_HIBERN8		0x200000
 #define UFSHCI_QUIRK_BROKEN_REQ_LIST_CLR		0x800000
 #define UFSHCD_QUIRK_PRDT_BYTE_GRAN			0x1000000
+#define UFSHCD_QUIRK_BROKEN_UIC_CMD			0x2000000
 
 #define DME_LOCAL	0
 #define DME_PEER	1
@@ -177,8 +178,10 @@ struct ufshcd_lrb {
 
 	ktime_t compl_time_stamp;
 	ktime_t queue_time_stamp;
+	ktime_t issue_time_stamp;
 	u64 issue_time_stamp_local_clock;
 	u64 compl_time_stamp_local_clock;
+	bool req_abort_skip;
 	ANDROID_KABI_RESERVE(1);
 };
 
@@ -188,10 +191,17 @@ struct ufs_query {
 	struct ufs_query_res response;
 };
 
+enum dev_cmd_type {
+	DEV_CMD_TYPE_NOP		= 0x0,
+	DEV_CMD_TYPE_QUERY		= 0x1,
+	DEV_CMD_TYPE_RPMB		= 0x2,
+};
+
 struct ufs_dev_cmd {
-	struct ufs_query query;
-	struct completion *done;
+	enum dev_cmd_type type;
 	struct mutex lock;
+	struct completion *complete;
+	struct ufs_query query;
 };
 
 struct ufs_clk_info {
@@ -646,6 +656,17 @@ static inline bool ufshcd_is_wb_allowed(struct ufs_hba *hba)
 static inline size_t ufshcd_sg_entry_size(struct ufs_hba *hba)
 {
 	return hba->sg_entry_size;
+}
+
+static inline unsigned int ufshcd_get_ucd_size(struct ufs_hba *hba)
+{
+	return sizeof(struct utp_transfer_cmd_desc) + SG_ALL * hba->sg_entry_size;
+}
+
+static inline bool ufshcd_is_intr_aggr_allowed(struct ufs_hba *hba)
+{
+	return (hba->caps & UFSHCD_CAP_INTR_AGGR) &&
+	       !(hba->quirks & UFSHCD_QUIRK_BROKEN_INTR_AGGR);
 }
 
 static inline bool ufshcd_is_auto_hibern8_supported(struct ufs_hba *hba)
