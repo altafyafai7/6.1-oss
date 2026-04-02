@@ -101,6 +101,8 @@ enum ufshcd_mcq_opr {
 
 #define UFSHCD_ANDROID_QUIRK_CUSTOM_PA_TACTIVATE	0x1
 #define UFSHCD_ANDROID_QUIRK_KEYS_IN_PRDT		0x2
+#define UFSHCD_ANDROID_QUIRK_BROKEN_CRYPTO_ENABLE	0x4
+#define UFSHCD_ANDROID_QUIRK_CUSTOM_CRYPTO_PROFILE	0x8
 
 /* Used to differentiate the power management options */
 enum ufs_pm_op {
@@ -632,6 +634,13 @@ struct ufs_hba {
 	struct ufs_hw_queue *uhq;
 	struct ufs_hw_queue *dev_cmd_queue;
 	struct ufshcd_mcq_opr_info_t mcq_opr[OPR_MAX];
+
+#ifdef CONFIG_SCSI_UFS_CRYPTO
+	union ufs_crypto_capabilities crypto_capabilities;
+	u32 crypto_cfg_register;
+	const union ufs_crypto_cap_entry *crypto_cap_array;
+	struct blk_crypto_profile crypto_profile;
+#endif
 
 #ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs_root;
