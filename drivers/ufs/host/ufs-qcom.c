@@ -33,21 +33,6 @@ typedef void (*irq_write_msi_msg_t)(struct msi_desc *desc,
 	     (desc) = msi_next_desc((dev), (filter)))
 #endif
 
-#ifndef MSI_DESC_ALL
-enum {
-	MSI_DESC_ALL,
-	MSI_DESC_NOTASSOCIATED,
-	MSI_DESC_ASSOCIATED,
-};
-#endif
-
-struct msi_desc *msi_first_desc(struct device *dev, enum msi_desc_filter filter);
-struct msi_desc *msi_next_desc(struct device *dev, enum msi_desc_filter filter);
-
-int platform_msi_domain_alloc_irqs(struct device *dev, unsigned int nvec,
-				   irq_write_msi_msg_t write_msi_msg);
-void platform_msi_domain_free_irqs(struct device *dev);
-
 #include <ufs/ufshcd.h>
 #include "ufshcd-pltfrm.h"
 #include <ufs/unipro.h>

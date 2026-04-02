@@ -454,8 +454,8 @@ struct ufs_hba_variant_ops {
 	void	(*event_notify)(struct ufs_hba *, enum ufs_event_type, void *);
 	int	(*setup_clocks)(struct ufs_hba *, bool, enum ufs_notify_change_status);
 	int	(*setup_regulators)(struct ufs_hba *, bool);
-	int	(*hce_enable_notify)(struct ufs_hba *, bool);
-	int	(*link_startup_notify)(struct ufs_hba *, bool);
+	int	(*hce_enable_notify)(struct ufs_hba *, enum ufs_notify_change_status);
+	int	(*link_startup_notify)(struct ufs_hba *, enum ufs_notify_change_status);
 	int	(*pwr_change_notify)(struct ufs_hba *, enum ufs_notify_change_status, struct ufs_pa_layer_attr *, struct ufs_pa_layer_attr *);
 	void	(*setup_xfer_req)(struct ufs_hba *, int, bool);
 	void	(*setup_task_mgmt)(struct ufs_hba *, int, u8);
@@ -474,7 +474,7 @@ struct ufs_hba_variant_ops {
 	int	(*get_hba_mac)(struct ufs_hba *);
 	int	(*op_runtime_config)(struct ufs_hba *);
 	int	(*get_outstanding_cqs)(struct ufs_hba *, unsigned long *);
-	int	(*mcq_vops_config_esi)(struct ufs_hba *);
+	int	(*config_esi)(struct ufs_hba *);
 };
 
 struct ufs_hba {
@@ -638,7 +638,7 @@ struct ufs_hba {
 #ifdef CONFIG_SCSI_UFS_CRYPTO
 	union ufs_crypto_capabilities crypto_capabilities;
 	u32 crypto_cfg_register;
-	const union ufs_crypto_cap_entry *crypto_cap_array;
+	union ufs_crypto_cap_entry *crypto_cap_array;
 	struct blk_crypto_profile crypto_profile;
 #endif
 
@@ -753,7 +753,7 @@ static inline int ufshcd_vops_setup_clocks(struct ufs_hba *hba, bool on,
 }
 
 static inline int ufshcd_vops_hce_enable_notify(struct ufs_hba *hba,
-						bool status)
+						enum ufs_notify_change_status status)
 {
 	if (hba->vops && hba->vops->hce_enable_notify)
 		return hba->vops->hce_enable_notify(hba, status);
@@ -761,7 +761,7 @@ static inline int ufshcd_vops_hce_enable_notify(struct ufs_hba *hba,
 	return 0;
 }
 static inline int ufshcd_vops_link_startup_notify(struct ufs_hba *hba,
-						bool status)
+						enum ufs_notify_change_status status)
 {
 	if (hba->vops && hba->vops->link_startup_notify)
 		return hba->vops->link_startup_notify(hba, status);
@@ -898,8 +898,8 @@ static inline int ufshcd_vops_get_outstanding_cqs(struct ufs_hba *hba,
 
 static inline int ufshcd_mcq_vops_config_esi(struct ufs_hba *hba)
 {
-	if (hba->vops && hba->vops->mcq_vops_config_esi)
-		return hba->vops->mcq_vops_config_esi(hba);
+	if (hba->vops && hba->vops->config_esi)
+		return hba->vops->config_esi(hba);
 
 	return -EOPNOTSUPP;
 }
@@ -1053,6 +1053,14 @@ void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
 
 int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
 		     const char *prefix);
+
+int ufshcd_system_suspend(struct device *dev);
+int ufshcd_system_resume(struct device *dev);
+int ufshcd_system_freeze(struct device *dev);
+int ufshcd_system_restore(struct device *dev);
+int ufshcd_system_thaw(struct device *dev);
+int ufshcd_suspend_prepare(struct device *dev);
+void ufshcd_resume_complete(struct device *dev);
 
 void ufshcd_mcq_write_cqis(struct ufs_hba *hba, u32 val, int i);
 unsigned long ufshcd_mcq_poll_cqe_lock(struct ufs_hba *hba,
