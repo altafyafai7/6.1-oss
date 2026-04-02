@@ -32,7 +32,6 @@
 #include <scsi/scsi_status.h>
 #include <trace/events/ufs.h>
 #include "../core/ufshcd-priv.h"
-#include <ufs/ufs_quirks.h>
 
 #include <trace/hooks/ufshcd.h>
 
