@@ -420,6 +420,7 @@ struct ufshcd_mcq_opr_info_t {
 };
 
 struct ufs_hba;
+struct ufs_dev_quirk;
 
 struct ufs_pm_lvl_states {
 	enum ufs_dev_pwr_mode dev_state;
