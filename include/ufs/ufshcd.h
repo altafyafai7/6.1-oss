@@ -386,6 +386,7 @@ enum ufshcd_caps {
 	UFSHCD_CAP_WB_WITH_CLK_SCALING			= 1 << 9,
 	UFSHCD_CAP_TEMP_NOTIF				= 1 << 10,
 	UFSHCD_CAP_RPM_AUTOSUSPEND			= 1 << 11,
+	UFSHCD_CAP_AGGR_POWER_COLLAPSE			= 1 << 12,
 };
 
 struct ufshcd_res_info {
@@ -723,6 +724,9 @@ int ufshcd_config_pwr_mode(struct ufs_hba *hba,
 #define ufshcd_dme_set(hba, attr_sel, mib_val) \
 	ufshcd_dme_set_attr(hba, attr_sel, ATTR_SET_NOR, mib_val, DME_LOCAL)
 
+#define ufshcd_dme_peer_set(hba, attr_sel, mib_val) \
+	ufshcd_dme_set_attr(hba, attr_sel, ATTR_SET_NOR, mib_val, DME_PEER)
+
 static inline bool ufshcd_can_hibern8_during_gating(struct ufs_hba *hba)
 {
 	return hba->caps & UFSHCD_CAP_HIBERN8_WITH_CLK_GATING;
@@ -744,6 +748,34 @@ int ufshcd_uic_hibern8_enter(struct ufs_hba *hba);
 int ufshcd_uic_hibern8_exit(struct ufs_hba *hba);
 
 void ufshcd_auto_hibern8_enable(struct ufs_hba *hba);
+
+static inline bool ufshcd_is_rpm_autosuspend_allowed(struct ufs_hba *hba)
+{
+	return hba->caps & UFSHCD_CAP_RPM_AUTOSUSPEND;
+}
+
+static inline bool ufshcd_is_auto_hibern8_enabled(struct ufs_hba *hba)
+{
+	return ufshcd_is_auto_hibern8_supported(hba) && hba->ahit;
+}
+
+#define ufshcd_is_ufs_dev_active(hba) \
+	((hba)->curr_dev_pwr_mode == UFS_ACTIVE_PWR_MODE)
+
+#define ufshcd_is_ufs_dev_poweroff(hba) \
+	((hba)->curr_dev_pwr_mode == UFS_POWERDOWN_PWR_MODE)
+
+#define ufshcd_is_link_active(hba) \
+	((hba)->uic_link_state == UIC_LINK_ACTIVE_STATE)
+
+#define ufshcd_is_link_off(hba) \
+	((hba)->uic_link_state == UIC_LINK_OFF_STATE)
+
+static inline bool ufshcd_can_aggressive_pc(struct ufs_hba *hba)
+{
+	return !!(ufshcd_is_link_hibern8(hba) &&
+		  (hba->caps & UFSHCD_CAP_AGGR_POWER_COLLAPSE));
+}
 
 void ufshcd_remove(struct ufs_hba *hba);
 int ufshcd_system_suspend(struct device *dev);
