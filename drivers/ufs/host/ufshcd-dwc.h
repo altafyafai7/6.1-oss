@@ -19,7 +19,7 @@ struct ufshcd_dme_attr_val {
 };
 
 int ufshcd_dwc_link_startup_notify(struct ufs_hba *hba,
-					bool status);
+					enum ufs_notify_change_status status);
 int ufshcd_dwc_dme_set_attrs(struct ufs_hba *hba,
 				const struct ufshcd_dme_attr_val *v, int n);
 #endif /* End of Header */
