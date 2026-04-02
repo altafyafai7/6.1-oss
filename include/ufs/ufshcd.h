@@ -248,6 +248,11 @@ struct ufs_stats {
 	struct ufs_event_hist event[UFS_EVT_CNT];
 };
 
+struct ufs_saved_pwr_info {
+	struct ufs_pa_layer_attr info;
+	bool is_valid;
+};
+
 enum ufs_clk_gating_state {
 	CLKS_OFF,
 	CLKS_ON,
@@ -315,11 +320,6 @@ struct ufs_hba_monitor {
 struct ufshpb_dev_info {
 	unsigned int num_hw_queues;
 	unsigned int num_user_queues;
-};
-
-struct ufs_saved_pwr_info {
-	struct ufs_pa_layer_attr info;
-	bool is_valid;
 };
 
 struct ufs_hba_variant_params {
