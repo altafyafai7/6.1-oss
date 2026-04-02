@@ -1046,11 +1046,11 @@ static inline bool ufshcd_can_aggressive_pc(struct ufs_hba *hba)
 		  (hba->caps & UFSHCD_CAP_AGGR_POWER_COLLAPSE));
 }
 
+int ufshcd_alloc_host(struct device *dev, struct ufs_hba **hba_handle);
+void ufshcd_dealloc_host(struct ufs_hba *hba);
+int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq);
+int ufshcd_shutdown(struct ufs_hba *hba);
 void ufshcd_remove(struct ufs_hba *hba);
-int ufshcd_system_suspend(struct device *dev);
-int ufshcd_system_resume(struct device *dev);
-int ufshcd_runtime_suspend(struct device *dev);
-int ufshcd_runtime_resume(struct device *dev);
 
 void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
 
@@ -1067,6 +1067,8 @@ int ufshcd_system_restore(struct device *dev);
 int ufshcd_system_thaw(struct device *dev);
 int ufshcd_suspend_prepare(struct device *dev);
 void ufshcd_resume_complete(struct device *dev);
+int ufshcd_runtime_suspend(struct device *dev);
+int ufshcd_runtime_resume(struct device *dev);
 
 void ufshcd_mcq_write_cqis(struct ufs_hba *hba, u32 val, int i);
 unsigned long ufshcd_mcq_poll_cqe_lock(struct ufs_hba *hba,
