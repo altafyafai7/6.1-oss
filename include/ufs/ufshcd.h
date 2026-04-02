@@ -271,6 +271,8 @@ struct ufs_clk_gating {
 	bool is_enabled;
 	bool active_reqs;
 	bool is_initialized;
+	bool is_suspended;
+	struct workqueue_struct *clk_gating_workq;
 };
 
 struct ufs_clk_scaling {
@@ -674,6 +676,22 @@ int ufshcd_config_pwr_mode(struct ufs_hba *hba,
 
 #define ufshcd_dme_get(hba, attr_sel, mib_val) \
 	ufshcd_dme_get_attr(hba, attr_sel, mib_val, DME_LOCAL)
+
+static inline bool ufshcd_can_hibern8_during_gating(struct ufs_hba *hba)
+{
+	return hba->caps & UFSHCD_CAP_HIBERN8_WITH_CLK_GATING;
+}
+
+static inline bool ufshcd_is_clkgating_allowed(struct ufs_hba *hba)
+{
+	return hba->caps & UFSHCD_CAP_CLK_GATING;
+}
+
+#define ufshcd_is_link_hibern8(hba) ((hba)->uic_link_state == UIC_LINK_HIBERN8_STATE)
+#define ufshcd_set_link_hibern8(hba) ((hba)->uic_link_state = UIC_LINK_HIBERN8_STATE)
+
+int ufshcd_uic_hibern8_enter(struct ufs_hba *hba);
+int ufshcd_uic_hibern8_exit(struct ufs_hba *hba);
 
 void ufshcd_remove(struct ufs_hba *hba);
 int ufshcd_system_suspend(struct device *dev);
