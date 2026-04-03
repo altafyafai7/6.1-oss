@@ -15,7 +15,7 @@
 
 #define VERSION "0.1"
 
-int qca_read_soc_version(struct hci_dev *hdev, u32 *ver,
+int qca_read_soc_version(struct hci_dev *hdev, struct qca_btsoc_version *ver,
 			 enum qca_btsoc_type soc_type)
 {
 	struct sk_buff *skb;
@@ -23,8 +23,7 @@ int qca_read_soc_version(struct hci_dev *hdev, u32 *ver,
 	char cmd;
 	int err = 0;
 	u8 event_type = HCI_EV_VENDOR;
-	struct qca_btsoc_version v;
-	u8 rlen = sizeof(*edl) + sizeof(v);
+	u8 rlen = sizeof(*edl) + sizeof(*ver);
 	u8 rtype = EDL_APP_VER_RES_EVT;
 
 	bt_dev_dbg(hdev, "QCA Version Request");
@@ -33,7 +32,8 @@ int qca_read_soc_version(struct hci_dev *hdev, u32 *ver,
 	 * VSE event. WCN3991 sends version command response as a payload to
 	 * command complete event.
 	 */
-	if (soc_type >= QCA_WCN3991) {
+	if (soc_type >= QCA_WCN3991 &&
+	    soc_type <= QCA_WCN6750) {
 		event_type = 0;
 		rlen += 1;
 		rtype = EDL_PATCH_VER_REQ_CMD;
@@ -69,25 +69,23 @@ int qca_read_soc_version(struct hci_dev *hdev, u32 *ver,
 		err = -EIO;
 		goto out;
 	}
-if (soc_type >= QCA_WCN3991 ||
-    soc_type == QCA_WCN6750)
-	memmove(&edl->data, &edl->data[1], sizeof(v));
+	if (soc_type >= QCA_WCN3991 &&
+	    soc_type <= QCA_WCN6750)
+		memmove(&edl->data, &edl->data[1], sizeof(*ver));
 
-memcpy(&v, edl->data, sizeof(v));
-memcpy(ver, &v, sizeof(v));
+memcpy(ver, edl->data, sizeof(*ver));
 
 bt_dev_info(hdev, "QCA Product ID   :0x%08x",
-	    le32_to_cpu(v.product_id));
+	    le32_to_cpu(ver->product_id));
 bt_dev_info(hdev, "QCA SOC Version  :0x%08x",
-	    le32_to_cpu(v.soc_id));
+	    le32_to_cpu(ver->soc_id));
 bt_dev_info(hdev, "QCA ROM Version  :0x%08x",
-	    le16_to_cpu(v.rom_ver));
+	    le16_to_cpu(ver->rom_ver));
 bt_dev_info(hdev, "QCA Patch Version:0x%08x",
-	    le16_to_cpu(v.patch_ver));
+	    le16_to_cpu(ver->patch_ver));
 
-	if (v.soc_id == 0 || v.rom_ver == 0)
-		err = -EILSEQ;
-
+if (ver->soc_id == 0 || ver->rom_ver == 0)
+	err = -EILSEQ;
 out:
 	kfree_skb(skb);
 	if (err)
@@ -728,19 +726,17 @@ static int qca_check_bdaddr(struct hci_dev *hdev, const struct qca_fw_config *co
 }
 
 int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
-		   enum qca_btsoc_type soc_type, u32 ver,
+		   enum qca_btsoc_type soc_type, struct qca_btsoc_version ver,
 		   const char *firmware_name)
 {
 	struct qca_fw_config config = {};
 	int err;
 	u8 rom_ver = 0;
 	u32 soc_ver;
-	struct qca_btsoc_version v;
 
 	bt_dev_dbg(hdev, "QCA setup on UART");
 
-	memcpy(&v, &ver, sizeof(v));
-	soc_ver = get_soc_ver(v.soc_id, v.rom_ver);
+	soc_ver = get_soc_ver(ver.soc_id, ver.rom_ver);
 
 	bt_dev_info(hdev, "QCA controller version 0x%08x", soc_ver);
 
@@ -794,7 +790,7 @@ int qca_uart_setup(struct hci_dev *hdev, uint8_t baudrate,
 		snprintf(config.fwname, sizeof(config.fwname),
 			 "qca/%s", firmware_name);
 	else if (qca_is_wcn399x(soc_type)) {
-		if (v.soc_id == QCA_WCN3991_SOC_ID) {
+		if (ver.soc_id == QCA_WCN3991_SOC_ID) {
 			snprintf(config.fwname, sizeof(config.fwname),
 				 "qca/crnv%02xu.bin", rom_ver);
 		} else {

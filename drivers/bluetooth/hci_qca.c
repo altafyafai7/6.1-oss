@@ -1708,8 +1708,7 @@ static int qca_setup(struct hci_uart *hu)
 	enum qca_btsoc_type soc_type = qca_soc_type(hu);
 	const char *firmware_name = qca_get_firmware_name(hu);
 	int ret;
-	u32 ver;
-	struct qca_btsoc_version v;
+	struct qca_btsoc_version ver;
 	struct qca_serdev *qcadev;
 
 	ret = qca_check_speeds(hu);
@@ -1751,7 +1750,6 @@ retry:
 		ret = qca_read_soc_version(hdev, &ver, soc_type);
 		if (ret)
 			goto out;
-		memcpy(&v, &ver, sizeof(v));
 	} else {
 		qca_set_speed(hu, QCA_INIT_SPEED);
 	}
@@ -1772,7 +1770,6 @@ retry:
 		ret = qca_read_soc_version(hdev, &ver, soc_type);
 		if (ret)
 			goto out;
-		memcpy(&v, &ver, sizeof(v));
 	}
 
 	/* Setup patch / NVM configurations */
