@@ -546,9 +546,9 @@ struct ufs_hba {
 	bool is_irq_enabled;
 	enum ufs_ref_clk_freq dev_ref_clk_freq;
 
-	u64 quirks;	/* Deviations from standard UFSHCI spec. */
-	unsigned int android_quirks; /* for UFSHCD_ANDROID_QUIRK_* flags */
+	unsigned int quirks;	/* Deviations from standard UFSHCI spec. */
 
+	unsigned int android_quirks; /* for UFSHCD_ANDROID_QUIRK_* flags */
 
 	/* Device deviations from standard UFS device spec. */
 	unsigned int dev_quirks;
@@ -623,25 +623,33 @@ struct ufs_hba {
 	struct rw_semaphore clk_scaling_lock;
 	atomic_t scsi_block_reqs_cnt;
 
-	struct device           bsg_dev;
-	struct request_queue    *bsg_queue;
+	struct device		bsg_dev;
+	struct request_queue	*bsg_queue;
 	struct delayed_work rpm_dev_flush_recheck_work;
 
-	ANDROID_KABI_RESERVE(1); /* Original reserve for HPB or other */
+#ifdef CONFIG_SCSI_UFS_HPB
+	struct ufshpb_dev_info ufshpb_dev;
+#endif
 
-	union {
-		struct {
-			struct ufs_hba_monitor monitor;
-			bool scsi_host_added;
-		};
-		ANDROID_OEM_DATA(1);
-	};
+	struct ufs_hba_monitor	monitor;
 
+#ifdef CONFIG_SCSI_UFS_CRYPTO
+	union ufs_crypto_capabilities crypto_capabilities;
+	union ufs_crypto_cap_entry *crypto_cap_array;
+	u32 crypto_cfg_register;
+	struct blk_crypto_profile crypto_profile;
+#endif
+#ifdef CONFIG_DEBUG_FS
+	struct dentry *debugfs_root;
+	struct delayed_work debugfs_ee_work;
+	u32 debugfs_ee_rate_limit_ms;
+#endif
 	u32 luns_avail;
 	unsigned int nr_hw_queues;
 	unsigned int nr_queues[HCTX_MAX_TYPES];
 	bool complete_put;
 	bool ext_iid_sup;
+	bool scsi_host_added;
 	bool mcq_sup;
 	bool mcq_enabled;
 	struct ufshcd_res_info res[RES_MAX];
@@ -650,20 +658,7 @@ struct ufs_hba {
 	struct ufs_hw_queue *dev_cmd_queue;
 	struct ufshcd_mcq_opr_info_t mcq_opr[OPR_MAX];
 
-#ifdef CONFIG_SCSI_UFS_CRYPTO
-	union ufs_crypto_capabilities crypto_capabilities;
-	u32 crypto_cfg_register;
-	union ufs_crypto_cap_entry *crypto_cap_array;
-	struct blk_crypto_profile crypto_profile;
-#endif
-
-#ifdef CONFIG_DEBUG_FS
-	struct dentry *debugfs_root;
-	u32 debugfs_ee_rate_limit_ms;
-	struct delayed_work debugfs_ee_work;
-#endif
-
-	ANDROID_KABI_RESERVE(2);
+	ANDROID_OEM_DATA(1);
 };
 
 #define ufshcd_writel(hba, val, reg)   \
