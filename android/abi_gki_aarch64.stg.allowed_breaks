@@ -190,3 +190,46 @@ type 'struct wiphy' changed
 type 'struct trace_event_file' changed
   member 'unsigned long flags' was removed
   member 'union { unsigned long flags; struct __trace_event_file_ref ref; }' was added
+
+# Xiaomi sky (SM4450) custom UFS and QCA driver modifications
+# CRC mismatches due to ufshcd.c and QCA Bluetooth porting for Kernel 6.1
+function symbol 'ufshcd_alloc_host' CRC changed
+function symbol 'ufshcd_auto_hibern8_update' CRC changed
+function symbol 'ufshcd_bkops_ctrl' CRC changed
+function symbol 'ufshcd_config_pwr_mode' CRC changed
+function symbol 'ufshcd_dealloc_host' CRC changed
+function symbol 'ufshcd_dme_configure_adapt' CRC changed
+function symbol 'ufshcd_dme_get_attr' CRC changed
+function symbol 'ufshcd_dme_set_attr' CRC changed
+function symbol 'ufshcd_dump_regs' CRC changed
+function symbol 'ufshcd_fixup_dev_quirks' CRC changed
+function symbol 'ufshcd_get_local_unipro_ver' CRC changed
+function symbol 'ufshcd_hba_enable' CRC changed
+function symbol 'ufshcd_hba_stop' CRC changed
+function symbol 'ufshcd_hold' CRC changed
+function symbol 'ufshcd_link_recovery' CRC changed
+function symbol 'ufshcd_make_hba_operational' CRC changed
+function symbol 'ufshcd_mcq_config_esi' CRC changed
+function symbol 'ufshcd_mcq_config_mac' CRC changed
+function symbol 'ufshcd_mcq_enable_esi' CRC changed
+function symbol 'ufshcd_mcq_make_queues_operational' CRC changed
+function symbol 'ufshcd_mcq_poll_cqe_lock' CRC changed
+function symbol 'ufshcd_mcq_poll_cqe_nolock' CRC changed
+function symbol 'ufshcd_mcq_read_cqis' CRC changed
+function symbol 'ufshcd_mcq_write_cqis' CRC changed
+function symbol 'ufshcd_pltfrm_init' CRC changed
+function symbol 'ufshcd_query_attr' CRC changed
+function symbol 'ufshcd_query_attr_retry' CRC changed
+function symbol 'ufshcd_query_descriptor' CRC changed
+function symbol 'ufshcd_query_flag' CRC changed
+function symbol 'ufshcd_query_flag_retry' CRC changed
+function symbol 'ufshcd_read_desc_param' CRC changed
+function symbol 'ufshcd_release' CRC changed
+function symbol 'ufshcd_remove' CRC changed
+function symbol 'ufshcd_shutdown' CRC changed
+function symbol 'ufshcd_uic_change_pwr_mode' CRC changed
+function symbol 'ufshcd_uic_hibern8_enter' CRC changed
+function symbol 'ufshcd_uic_hibern8_exit' CRC changed
+function symbol 'ufshcd_update_evt_hist' CRC changed
+function symbol 'qca_read_soc_version' CRC changed
+function symbol 'qca_uart_setup' CRC changed

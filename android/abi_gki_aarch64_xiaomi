@@ -557,3 +557,35 @@ __tracepoint_android_vh_pcp_alloc_factor_adjust
 # required by mi cma pool
 cma_mutex
 
+# required by Xiaomi sky (SM4450) custom UFS driver - Kernel 6.1
+ufshcd_mcq_config_esi
+ufshcd_mcq_config_mac
+ufshcd_mcq_enable_esi
+ufshcd_mcq_make_queues_operational
+ufshcd_mcq_poll_cqe_lock
+ufshcd_mcq_poll_cqe_nolock
+ufshcd_mcq_read_cqis
+ufshcd_mcq_write_cqis
+ufshcd_dme_configure_adapt
+ufshcd_dme_get_attr
+ufshcd_dme_set_attr
+ufshcd_uic_change_pwr_mode
+ufshcd_uic_hibern8_enter
+ufshcd_uic_hibern8_exit
+ufshcd_hba_stop
+ufshcd_hold
+ufshcd_dump_regs
+ufshcd_get_local_unipro_ver
+ufshcd_bkops_ctrl
+ufshcd_auto_hibern8_update
+ufshcd_fixup_dev_quirks
+ufshcd_query_attr
+ufshcd_query_descriptor
+ufshcd_link_recovery
+ufshcd_make_hba_operational
+ufshcd_update_evt_hist
+
+# required by Xiaomi QCA Bluetooth - Kernel 6.1
+qca_read_soc_version
+qca_uart_setup
+
