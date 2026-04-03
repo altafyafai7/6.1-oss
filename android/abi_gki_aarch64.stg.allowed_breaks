@@ -220,7 +220,7 @@ function symbol 'ufshcd_mcq_write_cqis' CRC changed
 function symbol 'ufshcd_pltfrm_init' CRC changed
 function symbol 'ufshcd_query_attr' CRC changed
 function symbol 'ufshcd_query_attr_retry' CRC changed
-function symbol 'ufshcd_query_descriptor' CRC changed
+function symbol 'ufshcd_query_descriptor_retry' CRC changed
 function symbol 'ufshcd_query_flag' CRC changed
 function symbol 'ufshcd_query_flag_retry' CRC changed
 function symbol 'ufshcd_read_desc_param' CRC changed
