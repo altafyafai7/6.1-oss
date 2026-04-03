@@ -27,6 +27,7 @@
 #include <ufs/ufs.h>
 #include <ufs/ufshci.h>
 #include <ufs/unipro.h>
+#include <ufs/ufs_quirks.h>
 
 #include <linux/bitfield.h>
 #include <linux/completion.h>
