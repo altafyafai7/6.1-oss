@@ -203,16 +203,6 @@ enum {
 int ufshcd_wb_toggle_buf_flush(struct ufs_hba *hba, bool enable);
 static void ufshcd_wb_toggle_buf_flush_during_h8(struct ufs_hba *hba, bool set);
 
-static inline bool is_mcq_enabled(struct ufs_hba *hba)
-{
-	return hba->mcq_enabled;
-}
-
-static inline void ufshcd_set_ufs_dev_active(struct ufs_hba *hba)
-{
-	hba->curr_dev_pwr_mode = UFS_ACTIVE_PWR_MODE;
-}
-
 static const char *const ufshcd_state_name[] = {
 	[UFSHCD_STATE_RESET]			= "reset",
 	[UFSHCD_STATE_OPERATIONAL]		= "operational",
@@ -4936,12 +4926,6 @@ static inline int ufshcd_disable_device_tx_lcc(struct ufs_hba *hba)
 {
 	return ufshcd_disable_tx_lcc(hba, true);
 }
-
-int ufshcd_disable_host_tx_lcc(struct ufs_hba *hba)
-{
-	return ufshcd_disable_tx_lcc(hba, false);
-}
-EXPORT_SYMBOL_GPL(ufshcd_disable_host_tx_lcc);
 
 void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val)
 {
