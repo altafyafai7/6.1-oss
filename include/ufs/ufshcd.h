@@ -653,7 +653,7 @@ struct ufs_hba {
 #ifdef CONFIG_SCSI_UFS_CRYPTO
 	union ufs_crypto_capabilities crypto_capabilities;
 	u32 crypto_cfg_register;
-	const union ufs_crypto_cap_entry *crypto_cap_array;
+	union ufs_crypto_cap_entry *crypto_cap_array;
 	struct blk_crypto_profile crypto_profile;
 #endif
 
