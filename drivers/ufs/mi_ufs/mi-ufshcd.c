@@ -3312,21 +3312,21 @@ void mi_ufshcd_map_desc_id_to_length(struct ufs_hba *hba, enum desc_idn desc_id,
 	    desc_id == QUERY_DESC_IDN_RFU_1)
 		*desc_len = 0;
 	else
-		*desc_len = hba->desc_size[desc_id];
+		*desc_len = ufs_hba_add_info(hba)->desc_size[desc_id];
 }
 
 static void mi_ufshcd_update_desc_length(struct ufs_hba *hba,
 				      enum desc_idn desc_id, int desc_index,
 				      unsigned char desc_len)
 {
-	if (hba->desc_size[desc_id] == QUERY_DESC_MAX_SIZE &&
+	if (ufs_hba_add_info(hba)->desc_size[desc_id] == QUERY_DESC_MAX_SIZE &&
 	    desc_id != QUERY_DESC_IDN_STRING && desc_index != UFS_RPMB_UNIT)
 		/* For UFS 3.1, the normal unit descriptor is 10 bytes larger
 		 * than the RPMB unit, however, both descriptors share the same
 		 * desc_idn, to cover both unit descriptors with one length, we
 		 * choose the normal unit descriptor length by desc_index.
 		 */
-		hba->desc_size[desc_id] = desc_len;
+		ufs_hba_add_info(hba)->desc_size[desc_id] = desc_len;
 }
 
 /**
@@ -7388,7 +7388,7 @@ out:
 static void mi_ufshcd_set_active_icc_lvl(struct ufs_hba *hba)
 {
 	int ret;
-	int buff_len = hba->desc_size[QUERY_DESC_IDN_POWER];
+	int buff_len = ufs_hba_add_info(hba)->desc_size[QUERY_DESC_IDN_POWER];
 	u8 *desc_buf;
 	u32 icc_level;
 
@@ -7503,7 +7503,7 @@ static void mi_ufshcd_wb_probe(struct ufs_hba *hba, u8 *desc_buf)
 	     (hba->dev_quirks & UFS_DEVICE_QUIRK_SUPPORT_EXTENDED_FEATURES)))
 		goto wb_disabled;
 
-	if (hba->desc_size[QUERY_DESC_IDN_DEVICE] <
+	if (ufs_hba_add_info(hba)->desc_size[QUERY_DESC_IDN_DEVICE] <
 	    DEVICE_DESC_PARAM_EXT_UFS_FEATURE_SUP + 4)
 		goto wb_disabled;
 
@@ -7579,7 +7579,7 @@ static int mi_ufs_get_device_desc(struct ufs_hba *hba)
 	}
 
 	err = mi_ufshcd_read_desc_param(hba, QUERY_DESC_IDN_DEVICE, 0, 0, desc_buf,
-				     hba->desc_size[QUERY_DESC_IDN_DEVICE]);
+				     ufs_hba_add_info(hba)->desc_size[QUERY_DESC_IDN_DEVICE]);
 	if (err) {
 		dev_err(hba->dev, "%s: Failed reading Device Desc. err = %d\n",
 			__func__, err);
@@ -7826,7 +7826,7 @@ static int mi_ufshcd_device_geo_params_init(struct ufs_hba *hba)
 	size_t buff_len;
 	u8 *desc_buf;
 
-	buff_len = hba->desc_size[QUERY_DESC_IDN_GEOMETRY];
+	buff_len = ufs_hba_add_info(hba)->desc_size[QUERY_DESC_IDN_GEOMETRY];
 	desc_buf = kmalloc(buff_len, GFP_KERNEL);
 	if (!desc_buf) {
 		err = -ENOMEM;
@@ -7846,7 +7846,7 @@ static int mi_ufshcd_device_geo_params_init(struct ufs_hba *hba)
 	else if (desc_buf[GEOMETRY_DESC_PARAM_MAX_NUM_LUN] == 0)
 		hba->dev_info.max_lu_supported = 8;
 
-	if (hba->desc_size[QUERY_DESC_IDN_GEOMETRY] >=
+	if (ufs_hba_add_info(hba)->desc_size[QUERY_DESC_IDN_GEOMETRY] >=
 		GEOMETRY_DESC_PARAM_HPB_MAX_ACTIVE_REGS)
 		ufshpb_get_geo_info(hba, desc_buf);
 
@@ -7940,7 +7940,7 @@ static int mi_ufshcd_device_params_init(struct ufs_hba *hba)
 
 	 /* Init device descriptor sizes */
 	for (i = 0; i < QUERY_DESC_IDN_MAX; i++)
-		hba->desc_size[i] = QUERY_DESC_MAX_SIZE;
+		ufs_hba_add_info(hba)->desc_size[i] = QUERY_DESC_MAX_SIZE;
 
 	/* Init UFS geometry descriptor related parameters */
 	ret = mi_ufshcd_device_geo_params_init(hba);

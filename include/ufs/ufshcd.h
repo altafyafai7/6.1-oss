@@ -420,7 +420,6 @@ struct ufshcd_mcq_opr_info_t {
 };
 
 struct ufs_hba;
-struct ufs_dev_quirk;
 
 struct ufs_pm_lvl_states {
 	enum ufs_dev_pwr_mode dev_state;
@@ -449,33 +448,47 @@ struct ufs_hw_queue {
 struct ufs_hba_variant_ops {
 	const char *name;
 	int	(*init)(struct ufs_hba *);
-	void	(*exit)(struct ufs_hba *);
+	void    (*exit)(struct ufs_hba *);
 	u32	(*get_ufs_hci_version)(struct ufs_hba *);
-	int	(*clk_scale_notify)(struct ufs_hba *, bool, enum ufs_notify_change_status);
-	void	(*event_notify)(struct ufs_hba *, enum ufs_event_type, void *);
-	int	(*setup_clocks)(struct ufs_hba *, bool, enum ufs_notify_change_status);
-	int	(*setup_regulators)(struct ufs_hba *, bool);
-	int	(*hce_enable_notify)(struct ufs_hba *, enum ufs_notify_change_status);
-	int	(*link_startup_notify)(struct ufs_hba *, enum ufs_notify_change_status);
-	int	(*pwr_change_notify)(struct ufs_hba *, enum ufs_notify_change_status, struct ufs_pa_layer_attr *, struct ufs_pa_layer_attr *);
-	void	(*setup_xfer_req)(struct ufs_hba *, int, bool);
+	int	(*clk_scale_notify)(struct ufs_hba *, bool,
+				    enum ufs_notify_change_status);
+	int	(*setup_clocks)(struct ufs_hba *, bool,
+				enum ufs_notify_change_status);
+	int	(*hce_enable_notify)(struct ufs_hba *,
+				     enum ufs_notify_change_status);
+	int	(*link_startup_notify)(struct ufs_hba *,
+				       enum ufs_notify_change_status);
+	int	(*pwr_change_notify)(struct ufs_hba *,
+				enum ufs_notify_change_status status,
+				struct ufs_pa_layer_attr *desired_pwr_mode,
+				struct ufs_pa_layer_attr *final_params);
+	void	(*setup_xfer_req)(struct ufs_hba *hba, int tag,
+				  bool is_scsi_cmd);
 	void	(*setup_task_mgmt)(struct ufs_hba *, int, u8);
-	void	(*hibern8_notify)(struct ufs_hba *, enum uic_cmd_dme, enum ufs_notify_change_status);
-	int	(*apply_dev_quirks)(struct ufs_hba *);
-	void	(*fixup_dev_quirks)(struct ufs_hba *);
-	int	(*suspend)(struct ufs_hba *, enum ufs_pm_op, enum ufs_notify_change_status);
-	int	(*resume)(struct ufs_hba *, enum ufs_pm_op);
-	void	(*dbg_register_dump)(struct ufs_hba *);
+	void    (*hibern8_notify)(struct ufs_hba *, enum uic_cmd_dme,
+					enum ufs_notify_change_status);
+	int	(*apply_dev_quirks)(struct ufs_hba *hba);
+	void	(*fixup_dev_quirks)(struct ufs_hba *hba);
+	int     (*suspend)(struct ufs_hba *, enum ufs_pm_op,
+					enum ufs_notify_change_status);
+	int     (*resume)(struct ufs_hba *, enum ufs_pm_op);
+	void	(*dbg_register_dump)(struct ufs_hba *hba);
 	int	(*phy_initialization)(struct ufs_hba *);
-	int	(*device_reset)(struct ufs_hba *);
-	void	(*config_scaling_param)(struct ufs_hba *, struct devfreq_dev_profile *, struct devfreq_simple_ondemand_data *);
-	int	(*program_key)(struct ufs_hba *, const union ufs_crypto_cfg_entry *, int);
+	int	(*device_reset)(struct ufs_hba *hba);
+	void	(*config_scaling_param)(struct ufs_hba *hba,
+				struct devfreq_dev_profile *profile,
+				struct devfreq_simple_ondemand_data *data);
+	int	(*program_key)(struct ufs_hba *hba,
+			       const union ufs_crypto_cfg_entry *cfg, int slot);
+	void	(*event_notify)(struct ufs_hba *hba,
+				enum ufs_event_type evt, void *data);
 	void	(*reinit_notify)(struct ufs_hba *);
-	int	(*mcq_config_resource)(struct ufs_hba *);
-	int	(*get_hba_mac)(struct ufs_hba *);
-	int	(*op_runtime_config)(struct ufs_hba *);
-	int	(*get_outstanding_cqs)(struct ufs_hba *, unsigned long *);
-	int	(*config_esi)(struct ufs_hba *);
+	int	(*mcq_config_resource)(struct ufs_hba *hba);
+	int	(*get_hba_mac)(struct ufs_hba *hba);
+	int	(*op_runtime_config)(struct ufs_hba *hba);
+	int	(*get_outstanding_cqs)(struct ufs_hba *hba,
+				       unsigned long *ocqs);
+	int	(*config_esi)(struct ufs_hba *hba);
 };
 
 struct ufs_hba {
@@ -636,12 +649,10 @@ struct ufs_hba {
 	struct ufs_hw_queue *dev_cmd_queue;
 	struct ufshcd_mcq_opr_info_t mcq_opr[OPR_MAX];
 
-	unsigned char desc_size[QUERY_DESC_IDN_MAX];
-
 #ifdef CONFIG_SCSI_UFS_CRYPTO
 	union ufs_crypto_capabilities crypto_capabilities;
 	u32 crypto_cfg_register;
-	union ufs_crypto_cap_entry *crypto_cap_array;
+	const union ufs_crypto_cap_entry *crypto_cap_array;
 	struct blk_crypto_profile crypto_profile;
 #endif
 
@@ -907,14 +918,6 @@ static inline int ufshcd_mcq_vops_config_esi(struct ufs_hba *hba)
 	return -EOPNOTSUPP;
 }
 
-static inline int ufshcd_vops_setup_regulators(struct ufs_hba *hba, bool status)
-{
-	if (hba->vops && hba->vops->setup_regulators)
-		return hba->vops->setup_regulators(hba, status);
-
-	return 0;
-}
-
 #define ufshcd_is_hs_mode(pwr_info) \
 	((pwr_info)->pwr_rx == FAST_MODE || (pwr_info)->pwr_rx == FASTAUTO_MODE)
 
@@ -1046,20 +1049,11 @@ static inline bool ufshcd_can_aggressive_pc(struct ufs_hba *hba)
 		  (hba->caps & UFSHCD_CAP_AGGR_POWER_COLLAPSE));
 }
 
+void ufshcd_remove(struct ufs_hba *hba);
 int ufshcd_alloc_host(struct device *dev, struct ufs_hba **hba_handle);
 void ufshcd_dealloc_host(struct ufs_hba *hba);
 int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq);
 int ufshcd_shutdown(struct ufs_hba *hba);
-void ufshcd_remove(struct ufs_hba *hba);
-
-void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
-
-int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
-		     const char *prefix);
-
-void ufshcd_fixup_dev_quirks(struct ufs_hba *hba,
-			    const struct ufs_dev_quirk *fixups);
-
 int ufshcd_system_suspend(struct device *dev);
 int ufshcd_system_resume(struct device *dev);
 int ufshcd_system_freeze(struct device *dev);
@@ -1070,6 +1064,14 @@ int ufshcd_suspend_prepare(struct device *dev);
 void ufshcd_resume_complete(struct device *dev);
 int ufshcd_runtime_suspend(struct device *dev);
 int ufshcd_runtime_resume(struct device *dev);
+
+void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val);
+
+int ufshcd_dump_regs(struct ufs_hba *hba, size_t offset, size_t len,
+		     const char *prefix);
+
+void ufshcd_fixup_dev_quirks(struct ufs_hba *hba,
+			    const struct ufs_dev_quirk *fixups);
 
 void ufshcd_mcq_write_cqis(struct ufs_hba *hba, u32 val, int i);
 unsigned long ufshcd_mcq_poll_cqe_lock(struct ufs_hba *hba,
