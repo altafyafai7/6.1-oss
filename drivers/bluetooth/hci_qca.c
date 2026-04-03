@@ -1708,7 +1708,7 @@ static int qca_setup(struct hci_uart *hu)
 	enum qca_btsoc_type soc_type = qca_soc_type(hu);
 	const char *firmware_name = qca_get_firmware_name(hu);
 	int ret;
-	struct qca_btsoc_version ver;
+	u32 ver;
 	struct qca_serdev *qcadev;
 
 	ret = qca_check_speeds(hu);
