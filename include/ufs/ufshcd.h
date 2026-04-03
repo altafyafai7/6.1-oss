@@ -1065,6 +1065,7 @@ int ufshcd_system_resume(struct device *dev);
 int ufshcd_system_freeze(struct device *dev);
 int ufshcd_system_restore(struct device *dev);
 int ufshcd_system_thaw(struct device *dev);
+int __ufshcd_suspend_prepare(struct device *dev, bool rpm_ok_for_spm);
 int ufshcd_suspend_prepare(struct device *dev);
 void ufshcd_resume_complete(struct device *dev);
 int ufshcd_runtime_suspend(struct device *dev);
