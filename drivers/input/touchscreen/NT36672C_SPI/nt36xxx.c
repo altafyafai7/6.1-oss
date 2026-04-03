@@ -3078,9 +3078,11 @@ static void nvt_ts_late_resume(struct early_suspend *h)
 #endif
 
 static const struct spi_device_id nvt_ts_id[] = {
-	{ NVT_SPI_NAME, 0 },
+	{ "NVT-ts", 0 },
+	{ "novatek,NVT-ts-spi", 0 },
 	{ }
 };
+MODULE_DEVICE_TABLE(spi, nvt_ts_id);
 
 #ifdef CONFIG_OF
 static struct of_device_id nvt_match_table[] = {

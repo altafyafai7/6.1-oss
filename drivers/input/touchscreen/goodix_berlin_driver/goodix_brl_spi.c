@@ -270,8 +270,13 @@ static const struct of_device_id spi_matchs[] = {
 
 static const struct spi_device_id spi_id_table[] = {
 	{TS_DRIVER_NAME, 0},
+	{"goodix,gt9897S", 0},
+	{"goodix,gt9897T", 0},
+	{"goodix,gt9966S", 0},
+	{"goodix,gt9916S", 0},
 	{},
 };
+MODULE_DEVICE_TABLE(spi, spi_id_table);
 
 static struct spi_driver goodix_spi_driver = {
 	.driver = {

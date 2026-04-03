@@ -2762,8 +2762,10 @@ static const struct spi_device_id fts_ts_id[] = {
     {FTS_DRIVER_NAME, 0},
     {},
 };
+MODULE_DEVICE_TABLE(spi, fts_ts_id);
 static const struct of_device_id fts_dt_match[] = {
     {.compatible = "focaltech,fts", },
+    {.compatible = "focaltech,ft8720", },
     {},
 };
 MODULE_DEVICE_TABLE(of, fts_dt_match);
@@ -2774,10 +2776,10 @@ static struct spi_driver fts_ts_driver = {
     .driver = {
         .name = FTS_DRIVER_NAME,
         .owner = THIS_MODULE,
+        .of_match_table = fts_dt_match,
 #if defined(CONFIG_PM) && FTS_PATCH_COMERR_PM
         .pm = &fts_dev_pm_ops,
 #endif
-        .of_match_table = of_match_ptr(fts_dt_match),
     },
     .id_table = fts_ts_id,
 };
