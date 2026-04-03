@@ -4937,6 +4937,12 @@ static inline int ufshcd_disable_device_tx_lcc(struct ufs_hba *hba)
 	return ufshcd_disable_tx_lcc(hba, true);
 }
 
+int ufshcd_disable_host_tx_lcc(struct ufs_hba *hba)
+{
+	return ufshcd_disable_tx_lcc(hba, false);
+}
+EXPORT_SYMBOL_GPL(ufshcd_disable_host_tx_lcc);
+
 void ufshcd_update_evt_hist(struct ufs_hba *hba, u32 id, u32 val)
 {
 	struct ufs_event_hist *e;
